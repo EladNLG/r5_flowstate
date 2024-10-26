@@ -448,6 +448,7 @@ void function TrackerSupportedMode_Init()
 		ePlaylists.SURVIVAL,
 		ePlaylists.fs_haloMod,
 		ePlaylists.fs_survival_solos,
+		ePlaylists.fs_dm_fast_instagib
 		//ePlaylists.fs_survival_duos,
 		//ePlaylists.fs_survival_trios,
 	]

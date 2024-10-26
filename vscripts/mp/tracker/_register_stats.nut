@@ -1,4 +1,4 @@
-//untyped
+untyped
 globalize_all_functions
 #if TRACKER && HAS_TRACKER_DLL
 
@@ -106,6 +106,58 @@ void function Script_RegisterAllStats()
 
 		AddCallback_PlayerDataFullyLoaded( Callback_HandleScenariosStats )
 	}
+
+	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
+	{
+		Tracker_RegisterStat( "shots_hit", null, TrackerStats_InstagibKills )
+		Tracker_RegisterStat( "shots_fired", null, TrackerStats_InstagibShots )
+		Tracker_RegisterStat( "instagib_deaths", null, TrackerStats_InstagibDeaths )
+		Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_InstagibRailjumps )
+		Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_InstagibGamesPlayed )
+
+		//increment only on winner condition
+		Tracker_RegisterStat( "instagib_wins", null, TrackerStats_InstagibWins )
+	}
+}
+
+//Instagib
+var function TrackerStats_InstagibKills( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.GetPlayerNetInt( "kills" )
+}
+
+var function TrackerStats_InstagibShots( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.p.shotsfired
+}
+
+var function TrackerStats_InstagibDeaths( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.GetPlayerNetInt( "deaths" )
+}
+
+var function TrackerStats_InstagibRailjumps( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.p.railjumptimes 
+}
+
+var function TrackerStats_InstagibGamesPlayed( string uid )
+{
+	return 1
+}
+
+var function TrackerStats_InstagibWins( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player == GetBestPlayer() ? 1 : 0
 }
 
 ////////////////////

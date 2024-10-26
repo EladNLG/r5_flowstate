@@ -1144,6 +1144,10 @@ global struct ServerPlayerStruct
 	
 	int  weaponsAndMeleeLockedCount
 	float timeWaitingInLobby
+	
+	//instagib
+	int railjumptimes = 0
+	int shotsfired = 0
 }
 
 global struct ChallengeScore

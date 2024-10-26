@@ -256,11 +256,12 @@ bool function LGUN_CanPlayerRailjump( entity player ) //Cafe
 	player.p.lastTimeUsedRailjump = Time()
 	
 	weapon.StartCustomActivity("ACT_VM_DRAWFIRST", 0)
-	player.KnockBack( player.GetViewVector() * -800 * ( 1 - distanceValue ) , 0.1 )
+	player.KnockBack( player.GetViewVector() * -850 * ( 1 - distanceValue ) , 0.1 )
 	
 	StartParticleEffectInWorld( GetParticleSystemIndex( railjumpAsset ), trace.endPos, <0, 0, 0> ) //Explosion
 	
 	#if SERVER
+	player.p.railjumptimes++
 	thread LGUN_Airborne( player )
 	#endif
 	
@@ -712,6 +713,8 @@ var function OnWeaponPrimaryAttack_Clickweapon( entity weapon, WeaponPrimaryAtta
 		#if SERVER
 		foreach( splayer in GetPlayerArray() )
 			Remote_CallFunction_NonReplay( splayer, "ServerCallback_CreatesLaserFXFromServer", player, attackParams.pos, attackParams.dir ) //to send correct end laser pos to the client
+		
+		player.p.shotsfired++
 		#endif
 	}
 
@@ -853,7 +856,7 @@ void function FS_LG_HandleLaserForPlayer( entity player )
 
 	while( IsValid( player ) )
 	{
-		isAuto = !file.isInstaGib // Playlist() != ePlaylists.fs_dm_fast_instagib //todo (dw) aaaaaaaaaaaaaaaaaaa //we should def make a new weapon for the no auto one xd. Cafe
+		isAuto = !file.isInstaGib // Playlist() != ePlaylists.fs_dm_fast_instagib //we should def make a new weapon for the no auto one xd. Cafe
 		
 		if( !(player in file.handmover) || player in file.handmover && !IsValid( file.handmover[player] ) )
 			file.handmover[player] <- CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )

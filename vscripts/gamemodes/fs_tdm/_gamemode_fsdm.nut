@@ -4624,9 +4624,9 @@ entity function GetBestPlayer()
 			
 			default:
 			
-				if ( player.GetPlayerGameStat( PGS_KILLS ) > bestScore ) 
+				if ( player.GetPlayerNetInt( "kills" ) > bestScore ) 
 				{
-					bestScore = player.GetPlayerGameStat( PGS_KILLS )
+					bestScore = player.GetPlayerNetInt( "kills" )
 					bestPlayer = player
 				}
 				
@@ -4880,6 +4880,10 @@ void function ResetPlayerStats( entity player )
     player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 0)
     player.SetPlayerGameStat( PGS_ELIMINATED, 0)
 	player.p.playerDamageDealt = 0
+	
+	//Instagib
+	player.p.railjumptimes = 0
+	player.p.shotsfired = 0
 }
 
 void function PlayAnnounce( string sound )
