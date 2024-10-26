@@ -2117,6 +2117,13 @@ bool function IsTrackerAdmin( string CheckPlayer ) //todo:deprecate
 entity function GetPlayerEntityByUID( string str )
 {
 	#if TRACKER //Todo: direct global hook in client connected and lookups for name/uid to struct of name,uid,entity,etc
+		#if DEVELOPER
+			if( empty( str ) )
+			{
+				mAssert( false, "Empty uid passed to " + FUNC_NAME() + "()" + ( Flowstate_IsTrackerSupportedMode() ? "" : " -- Try ading mode to TrackerSupportedMode list if adding new stats and testing." ) )
+				return null
+			}
+		#endif 
 		return Tracker_StatsMetricsByUID( str ).ent
 	#else
 		entity candidate

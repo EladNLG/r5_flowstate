@@ -97,7 +97,7 @@ void function RegisterAllChatCommands() //if chat commands enabled.
 	//common
 	Commands_Register( "!id", cmd_id, [ "/id", "\\id" ] )
 	Commands_Register( "!aa", cmd_aa, [ "/aa", "\\aa" ] )
-	Commands_Register( "!inputs", cmd_inputs, [ "/inputs", "\\input" ] )
+	Commands_Register( "!inputs", cmd_inputs, [ "/inputs", "\\inputs" ] )
 	
 	//game varient
 	switch( Playlist() )
