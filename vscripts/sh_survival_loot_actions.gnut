@@ -477,9 +477,9 @@ bool function DataKnifePickUp_Use( entity pickup, entity player, int pickupFlags
 	{
 		#if CLIENT
 		if( player == GetLocalViewPlayer() && MapName() == eMaps.mp_rr_olympus_mu1 )
-			AddPlayerHint( 5.0, 0.25, $"", "#PING_LOOT_VAULT_REVEAL" )
-		else if( player == GetLocalViewPlayer() )
 			AddPlayerHint( 5.0, 0.25, $"", "#PING_LOOT_BRIDGE_REVEAL" )
+		else if( player == GetLocalViewPlayer() )
+			AddPlayerHint( 5.0, 0.25, $"", "#PING_LOOT_VAULT_REVEAL" )
 		#endif
 		#if SERVER
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultKeyGot" )
