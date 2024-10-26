@@ -951,7 +951,9 @@ void function StartRound()
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", -1 )
 	file.ctfState = eCTFState.WINNER_DECIDED
 	SetGlobalNetInt( "FSDM_GameState", file.ctfState )
-
+	
+	PIN_RoundEnd( file.currentRound )
+	
 	file.currentRound++
 }
 

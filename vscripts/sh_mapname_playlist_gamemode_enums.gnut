@@ -447,8 +447,11 @@ void function TrackerSupportedMode_Init()
 		ePlaylists.fs_survival,
 		ePlaylists.SURVIVAL,
 		ePlaylists.fs_haloMod,
+		ePlaylists.fs_haloMod_oddball,
+		ePlaylists.fs_haloMod_ctf,
 		ePlaylists.fs_survival_solos,
-		ePlaylists.fs_dm_fast_instagib
+		ePlaylists.fs_dm_fast_instagib,
+		ePlaylists.fs_snd
 		//ePlaylists.fs_survival_duos,
 		//ePlaylists.fs_survival_trios,
 	]
@@ -456,8 +459,8 @@ void function TrackerSupportedMode_Init()
 	array<int> supportedTrackerGamemodes = 
 	[
 		eGamemodes.fs_dm,
-		eGamemodes.SURVIVAL,
-		eGamemodes.TEAM_DEATHMATCH
+		eGamemodes.CUSTOM_CTF,
+		eGamemodes.SURVIVAL
 	]
 		
 	bool result = ( supportedTrackerGamemodes.contains( Gamemode() ) 

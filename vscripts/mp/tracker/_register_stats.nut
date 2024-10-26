@@ -109,55 +109,102 @@ void function Script_RegisterAllStats()
 
 	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
 	{
-		Tracker_RegisterStat( "shots_hit", null, TrackerStats_InstagibKills )
-		Tracker_RegisterStat( "shots_fired", null, TrackerStats_InstagibShots )
-		Tracker_RegisterStat( "instagib_deaths", null, TrackerStats_InstagibDeaths )
-		Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_InstagibRailjumps )
-		Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_InstagibGamesPlayed )
+		Tracker_RegisterStat( "shots_hit", null, TrackerStats_FSDMKills )
+		Tracker_RegisterStat( "shots_fired", null, TrackerStats_FSDMShots )
+		Tracker_RegisterStat( "instagib_deaths", null, TrackerStats_FSDMDeaths )
+		Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_FSDMRailjumps )
+		Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
 
 		//increment only on winner condition
-		Tracker_RegisterStat( "instagib_wins", null, TrackerStats_InstagibWins )
+		Tracker_RegisterStat( "instagib_wins", null, TrackerStats_FSDMWins )
+	}
+
+	if( Playlist() == ePlaylists.fs_haloMod )
+	{
+		Tracker_RegisterStat( "halo_dm_kills", null, TrackerStats_FSDMKills )
+		Tracker_RegisterStat( "halo_dm_deaths", null, TrackerStats_FSDMDeaths )
+		Tracker_RegisterStat( "halo_dm_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+		Tracker_RegisterStat( "halo_dm_wins", null, TrackerStats_FSDMWins )
+	}
+
+	if( Playlist() == ePlaylists.fs_haloMod_oddball )
+	{
+		Tracker_RegisterStat( "halo_oddball_kills", null, TrackerStats_FSDMKills )
+		Tracker_RegisterStat( "halo_oddball_deaths", null, TrackerStats_FSDMDeaths )
+		Tracker_RegisterStat( "halo_oddball_heldtime", null, TrackerStats_OddballHeldTime )
+		Tracker_RegisterStat( "halo_oddball_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+	}
+
+	if( Playlist() == ePlaylists.fs_haloMod_ctf )
+	{
+		Tracker_RegisterStat( "halo_ctf_flags_captured", null, TrackerStats_CtfFlagsCaptured )
+		Tracker_RegisterStat( "halo_ctf_flags_returned", null, TrackerStats_CtfFlagsReturned )
+		Tracker_RegisterStat( "halo_ctf_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+		Tracker_RegisterStat( "halo_ctf_wins", null, TrackerStats_CtfWins )
 	}
 }
 
-//Instagib
-var function TrackerStats_InstagibKills( string uid )
+//FSDM
+var function TrackerStats_FSDMKills( string uid )
 {
 	entity player = GetPlayerEntityByUID( uid )
 	
 	return player.GetPlayerNetInt( "kills" )
 }
 
-var function TrackerStats_InstagibShots( string uid )
+var function TrackerStats_FSDMShots( string uid )
 {
 	entity player = GetPlayerEntityByUID( uid )
 	
 	return player.p.shotsfired
 }
 
-var function TrackerStats_InstagibDeaths( string uid )
+var function TrackerStats_FSDMDeaths( string uid )
 {
 	entity player = GetPlayerEntityByUID( uid )
 	
 	return player.GetPlayerNetInt( "deaths" )
 }
 
-var function TrackerStats_InstagibRailjumps( string uid )
+var function TrackerStats_FSDMRailjumps( string uid )
 {
 	entity player = GetPlayerEntityByUID( uid )
 	
 	return player.p.railjumptimes 
 }
 
-var function TrackerStats_InstagibGamesPlayed( string uid )
+var function TrackerStats_FSDMGamesPlayed( string uid )
 {
 	return 1
 }
 
-var function TrackerStats_InstagibWins( string uid )
+var function TrackerStats_FSDMWins( string uid )
 {
 	entity player = GetPlayerEntityByUID( uid )
 	return player == GetBestPlayer() ? 1 : 0
+}
+
+var function TrackerStats_OddballHeldTime( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player.GetPlayerNetInt( "oddball_ballHeldTime" )
+}
+
+var function TrackerStats_CtfFlagsCaptured( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player.GetPlayerNetInt( "captures" )
+}
+
+var function TrackerStats_CtfFlagsReturned( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player.GetPlayerNetInt( "returns" )
+}
+
+var function TrackerStats_CtfWins( string uid )
+{
+	return 0 //todo
 }
 
 ////////////////////
