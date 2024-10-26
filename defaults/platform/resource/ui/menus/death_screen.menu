@@ -59,7 +59,7 @@ resource/ui/menus/death_screen.menu
 			visible					0
 			fontHeight				45
 			textAlignment			"west"
-			labelText				"FLOWSTATE SCENARIOS"
+			labelText				"FLOWSTATE ZONE WARS"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"191 13 13 255"
