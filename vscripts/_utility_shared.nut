@@ -5858,3 +5858,25 @@ vector function MapAngleToRadius( float angle, float radius )
 	vector offset = ( < offsetX, offsetY, 0 > )
 	return offset
 }
+
+
+#if DEVELOPER && CLIENT
+	void function DEV_PrintReadableBackendNames()
+	{
+		table<string, string> serverOutput =
+		{
+			//DEV_PrintBackendNames()
+		}
+		
+		string printText = "TableForBackend:\n\n [\n"
+		
+		foreach( string ref, string token in serverOutput )
+		{
+			printText += ( "'" + ref + "' => '" + Localize( token ) + "',\n" )
+		}
+		
+		printText += "]"
+		
+		print( printText )
+	}
+#endif 

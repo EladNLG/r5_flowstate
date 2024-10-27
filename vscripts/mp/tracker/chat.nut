@@ -588,8 +588,6 @@ void function __Commands( entity player, array<string> args )
 	
 	if( empty( baseCmd ) )
 		return 
-		
-	CommandCallback handler = Commands_GetCommandHandler( baseCmd )
 	
 	if( Commands_RequiresPlayersCommandsEnabled( baseCmd ) )
 	{
@@ -597,6 +595,7 @@ void function __Commands( entity player, array<string> args )
 			return
 	}
 	
+	CommandCallback handler = Commands_GetCommandHandler( baseCmd )
 	handler( baseCmd, args, player )
 }
 
@@ -1213,10 +1212,6 @@ void function ClientCommand_ParseSay( entity player, array<string> args )
 		printt( "count:", GetOffenceArray().len() )
 	}
 #endif 
-
-
-
-
 
 void function MutedList_Update( string uid, int timestamp = -1 )
 {

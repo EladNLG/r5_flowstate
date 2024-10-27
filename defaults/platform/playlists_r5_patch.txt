@@ -626,7 +626,6 @@ playlists
 				match_ending_enabled							0
 
 				//Flowstate by CafeFPS
-
 				flowstate_armed_and_dangerous_ltm				0
 				flowstate_disable_all_map_triggers				0
 
@@ -1861,7 +1860,7 @@ playlists
 				default_lock1v1_setting							1 // default setting for player preference
 				give_random_legend_on_spawn			 			0 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice									0
-				default_enable_input_banner_setting	 			0 ///disables spammy player input banner on spawn //deprecated?
+				default_enable_input_banner_setting	 			1
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				give_weapon_stack_count_amount					3 // Gives extra ammo stacks for the random given weapon - DOES NOT WORK WITH: survival_infinite_ammo 1
@@ -2305,7 +2304,7 @@ playlists
 				default_lock1v1_setting							1 // default setting for player preference
 				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice									0
-				default_enable_input_banner_setting	 			0 ///disables spammy player input banner on spawn //deprecated?
+				default_enable_input_banner_setting	 			1 ///disables spammy player input banner on spawn //deprecated?
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				
@@ -2455,7 +2454,7 @@ playlists
 				default_lock1v1_setting							1 // default setting for player preference
 				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				enable_voice									0
-				default_enable_input_banner_setting	 			0 ///disables spammy player input banner on spawn //deprecated?
+				default_enable_input_banner_setting	 			1 ///disables spammy player input banner on spawn //deprecated?
 				custom_match_ending_title						"Match complete"
 				custom_match_ending_message						"Don't leave. Server is going to change maps."
 				
@@ -2717,7 +2716,7 @@ playlists
 				flowstateDoorsRegen								0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
 				enable_afk_thread 								1 //0 disables afk thread for this mode
 		
-				//visuals
+				//visuals		
 				battlechatter_enabled							0
 				flowstateRandomCharacterOnSpawn					0
 		

@@ -11,6 +11,7 @@ global function RegisterCustomWeaponDamageDef
 
 #if DEVELOPER
 	global function DEV_PrintDamageSourceIDs
+	global function DEV_PrintBackendNames
 #endif
 
 struct
@@ -794,6 +795,7 @@ string function PIN_GetDamageCause( var damageInfo )
 }
 
 #if DEVELOPER
+
 	void function DEV_PrintDamageSourceIDs()
 	{
 		string data = "\n\n ------ DAMAGE SOURCE IDS ------ \n\n";
@@ -805,4 +807,22 @@ string function PIN_GetDamageCause( var damageInfo )
 		
 		printt( data )
 	}
+	
+	void function DEV_PrintBackendNames()
+	{
+		string printText = "TableForClientScript:\n\n table< string, string > serverOutput = {\n"
+		
+		foreach( int enumIdx, string ref in DamageSourceIDToStringTable()  )
+		{
+			if( enumIdx in file.damageSourceIDToName )//janu weapon framework weapons will be here too + precached weps
+			{
+				printText += ( "[ \"" + ref + "\" ] = \"" + file.damageSourceIDToName[ enumIdx ] + "\",\n" )
+			}
+		}
+		
+		printText += "}"
+		
+		print( printText )
+	}
+	
 #endif

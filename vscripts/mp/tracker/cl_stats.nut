@@ -263,7 +263,7 @@ bool function PlayerStatTableExists( entity player )
 void function __RequestPlayerStat( entity player, string stat )
 {
 	player.EndSignal( "OnDestroy" )
-	EndSignal( file.infoSignal, "RequestStatFailed" )
+	//EndSignal( file.infoSignal, "RequestStatFailed" )
 	
 	ValidatePlayerStatTable( player )
 	
@@ -279,14 +279,17 @@ void function __RequestPlayerStat( entity player, string stat )
 	
 	LockStat( player, stat )
 	localPlayer.ClientCommand( "requestStat " + string( player.GetEncodedEHandle() ) + " " + stat )
-	table statData = WaitSignal( file.infoSignal, "StatDataReceived" )
+	table statData = WaitSignal( file.infoSignal, "StatDataReceived", "RequestStatFailed" )
 	
-	SetStat( player, stat, statData.value )
-	UnlockStat( player, stat )
-	
+	if( expect string( statData.signal ) == "RequestStatFailed" )
+		SetStat( player, stat, null )
+	else
+		SetStat( player, stat, statData.value )
+		
 	#if DEVELOPER && DEBUG_CL_STATS
-		printw( "Stat set for player: ", player, stat, "=", statData.value )
+		printw( "Stat set for player: ", player, stat, "=", GetStatValue( player, stat ) )
 	#endif
+	UnlockStat( player, stat )
 }
 
 void function SetStat( entity player, string stat, var value )
@@ -295,6 +298,16 @@ void function SetStat( entity player, string stat, var value )
 		file.playerStatTables[ player ][ stat ] = value
 	else 
 		file.playerStatTables[ player ][ stat ] <- value
+}
+
+var function GetStatValue( entity player, string stat )
+{
+	if( stat in file.playerStatTables[ player ] )
+		return file.playerStatTables[ player ][ stat ]
+	else 
+		return null 
+		
+	unreachable
 }
 
 void function Tracker_StatRequestFailed()

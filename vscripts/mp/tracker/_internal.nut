@@ -42,8 +42,8 @@ StatsTable function Stats__GetPlayerStatsTable( string uid )
 {	
 	if( !Stats__PlayerExists( uid ) ) //Tracker_IsStatsReadyFor( entity player )
 	{
-		#if DEVELOPER
-			mAssert( false, "Attempted to use " + FUNC_NAME() + "() on a player who's stats were not yet available" )
+		#if DEVELOPER //No need for this assert, this may happen.
+			//Assert( false, "Attempted to use " + FUNC_NAME() + "() on a player who's stats were not yet available" )
 		#endif
 	
 		return EmptyStats()

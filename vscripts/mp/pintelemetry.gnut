@@ -1683,7 +1683,7 @@ void function Tracker_SettingsInit()
 	file.global_stats 						= GetCurrentPlaylistVarBool( "use_global_stats", false )
 	file.restricted_server 					= GetCurrentPlaylistVarBool( "restricted_server", false )
 	file.DefaultLock1v1Setting 				= GetCurrentPlaylistVarBool( "default_lock1v1_setting", true )
-	file.DefaultEnableInputBannerSetting 	= GetCurrentPlaylistVarBool( "default_enable_input_banner_setting", false )
+	file.DefaultEnableInputBannerSetting 	= GetCurrentPlaylistVarBool( "default_enable_input_banner_setting", true )
 	file.DefaultStartInRestSetting 			= GetCurrentPlaylistVarBool( "default_start_in_rest_setting", false )
 
 	//restricted init 
@@ -1723,6 +1723,10 @@ void function PlayerConnectedCallback( entity player )
 	player.p.UID = playerUID
 	player.p.handle = playerHandle
 	//sqprint(format("Added handle as: %d,  saved state: %d", playerHandle, player.p.handle ))
+	
+	string uid = player.GetPlatformUID()
+	int mID = InitializePlayerMetricsStructForPlayer( player )
+	__GetPlayerMetrics( mID ).ent = player
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
 	if( !file.LogOn )
@@ -4866,10 +4870,6 @@ void function PIN_AddPlayer( entity player )
 		return
 	}//
 	
-	string uid = player.GetPlatformUID()
-	int mID = InitializePlayerMetricsStructForPlayer( player )
-	__GetPlayerMetrics( mID ).ent = player
-	
 	if( !file.global_stats || !bLog() )
 		SetStatsReadyFlag( player, true )
 	
@@ -4914,7 +4914,7 @@ void function PIN_AddPlayer( entity player )
 			format
 			( 
 				"^^,%s,0,%s,%d,,,,%i,,,,,%s\n",
-				uid,
+				player.GetPlatformUID(),
 				GetNumTeamsRemaining().tostring(),
 				GetUnixTimestamp(),
 				Tracker_DecideTimeRemaining(),
@@ -5448,10 +5448,10 @@ void function ClientCommand_RequestStat( entity player, array<string> args )
 			
 		default:
 			StatFailed( player )
-			
-			#if DEVELOPER
-				printw( "Invalid stat type requested by client. Type was:", type, "stat was:", statname )
-			#endif
+
+		#if DEVELOPER
+			printw( "Invalid stat type requested by client. Type was:", type, "stat was:", statname )
+		#endif
 	}
 }
 
