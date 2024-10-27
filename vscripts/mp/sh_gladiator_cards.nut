@@ -1850,46 +1850,34 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 
 bool function IsValidPlayerForR5RDevBadge( entity player )
 {
-	if( !IsValid( player ) )
+	if( !IsValid( player ) )// || !GetServerVar( "tracker_enabled" ) )
 		return false
 	
-	#if TRACKER
-		if( !Tracker_StatExists( player, "isDev" ) )
+	if( !Tracker_StatExists( player, "isDev" ) )
+	{
+		Tracker_PreloadStat( player, "isDev" )
+		
+		float startTime = Time()
+		while( !Tracker_StatExists( player, "isDev" ) )
 		{
-			Tracker_PreloadStat( player, "isDev" )
-			
-			float startTime = Time()
-			while( !Tracker_StatExists( player, "isDev" ) )
+			WaitFrame()
+			if( Time() > startTime + MAX_PRELOAD_TIMEOUT )
 			{
-				WaitFrames( 5 )
-				if( Time() > startTime + MAX_PRELOAD_TIMEOUT )
-				{
-					#if DEVELOPER 
-						printw( "Timeout while waiting for isDev stat from player", player )
-					#endif 
-					
-					break
-				}
+				#if DEVELOPER 
+					printw( "Timeout while waiting for isDev stat from player", player )
+				#endif 
+				
+				break
 			}
 		}
-		
-		var isDev = Tracker_FetchStat( player, "isDev" )
-		
-		if( isDev != null )
-			return expect bool ( isDev )
-		
-		return false
-	#else 
-		switch( player.GetPlatformUID() )
-		{
-			case "1007946891142":
-			case "1011657326453": 
-			
-			return true
-		}
-		
-		return false
-	#endif
+	}
+	
+	var isDev = Tracker_FetchStat( player, "isDev" )
+	
+	if( isDev != null )
+		return expect bool ( isDev )
+	
+	return false
 }
 #endif
 

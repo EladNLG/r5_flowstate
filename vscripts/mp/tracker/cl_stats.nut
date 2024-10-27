@@ -10,7 +10,7 @@ global function Tracker_PreloadStat
 global function Tracker_FetchStat
 global function Tracker_StatExists
 
-global const float MAX_PRELOAD_TIMEOUT = 5.0
+global const float MAX_PRELOAD_TIMEOUT = 0.35
 
 typedef EntityStatStruct table < entity, table < string, var > >
 const bool DEBUG_CL_STATS = true
@@ -55,7 +55,7 @@ void function Tracker_ClientStats_Init()
 
 	thread ClientStats_Think()
 	
-	#if DEBUG_CL_STATS
+	#if DEVELOPER && DEBUG_CL_STATS
 		printw( "NOTICE: DEBUG_CL_STATS is set to true in", FILE_NAME() )
 	#endif
 }
