@@ -231,20 +231,20 @@ global function DEV_ManualLogKill
 global function LogError
 global function GetTrackerErrorArray
 
-const int MAX_SECONDS_WAIT_FOR_BATCH_LOAD = 5
-const float MAX_FIGHT_HISTORY_TIME = 20;
-const float MAX_WAIT_FOR_LOGGING_THREAD = 10 //5 seconds
-const float DAMAGE_LOOKBACK_TIME_WINDOW = 20.0;
-const int MAX_SAY_MSG = 255;
-const int RESTRICTED_ACCESS_STATUS_REQUIRED = 7; // refer to CheckIfPlayerHasAccess()
-const int REQUIRED_SYNC_DATA_FIELDS = 1;  //amount of fields returned by stats the scripts require (non-settings values)
-const float TRACKER_VERSION = 2.1
+const int 	MAX_SECONDS_WAIT_FOR_BATCH_LOAD 	= 5
+const float MAX_FIGHT_HISTORY_TIME 				= 20
+const float MAX_WAIT_FOR_LOGGING_THREAD 		= 10 //5 seconds
+const float DAMAGE_LOOKBACK_TIME_WINDOW 		= 20.0
+const int 	MAX_SAY_MSG 						= 255
+const int 	RESTRICTED_ACCESS_STATUS_REQUIRED 	= 7 // refer to CheckIfPlayerHasAccess()
+const int 	REQUIRED_SYNC_DATA_FIELDS 			= 1  //amount of fields returned by stats the scripts require (non-settings values)
+const float TRACKER_VERSION 					= 2.1
 
 const array<string> SERVER_MSG_EVENT_TYPES = 
 [
 	"start",
 	"end"		
-];
+]
 	
 
 //(respawns) game summary
@@ -348,20 +348,20 @@ struct PlayerMetrics
 };
 
 //tables
-table < string, bool > PlayerDidJump
-table<string, int> PlayerIdMap
+table< string, bool > PlayerDidJump
+table< string, int > PlayerIdMap
 
 //script arrays
-array<DamageEvent> allDamageEvents
-table<int, DamageEvent> allDamageEventsMap = {}
-array<PlayerMetrics> PlayerMetricsArray
-array<PlayerVerifyCount> playerVerifyCounts
-array<DeleteEvents> DeleteEventTaskList // queue for managing event deletion //TODO rework
+array< DamageEvent > allDamageEvents
+table< int, DamageEvent > allDamageEventsMap = {}
+array< PlayerMetrics > PlayerMetricsArray
+array< PlayerVerifyCount > playerVerifyCounts
+array< DeleteEvents > DeleteEventTaskList // queue for managing event deletion //TODO rework
 
 #if SERVER   
 bool function Logging_ShipStats() 				{ return GetCurrentPlaylistVarBool("logging_shipstats", false) }
 bool function Enable_CC_Administration() 		{ return GetCurrentPlaylistVarBool("cc_administration", false) }
-bool function Ea_Verify_Server()				{ return GetCurrentPlaylistVarBool("ea_verify_server", false) }
+bool function Ea_Verify_Server()				{ return ( GetConVarInt( "sv_onlineAuthEnable" ) == 1 && GetCurrentPlaylistVarBool( "ea_verify_server", false ) ) }
 #endif
 
 struct PlayerData 
@@ -554,7 +554,7 @@ void function __t_set( string uid, SettingsTable settingsTbl, bool sync )
 
 void function CodeCallback_BatchStatsLoaded()
 {
-	svGlobal.levelEnt.Signal( "BatchFetchComplete" )
+	svGlobal.levelEnt.Signal( "BatchFetchComplete" ) //Todo: This should be a flag.
 	
 	#if DEVELOPER
 		printt( "CodeCallback_BatchStatsLoaded" )
@@ -826,7 +826,7 @@ void function __QueryString_Callbacks( string setting, string value )
 		return 
 		
 	foreach ( callbackFunc in file.queryStringCallbackFuncs[ setting ] )
-			callbackFunc( value )
+		callbackFunc( value )
 }
 
 void function NULL_QUERY( string retData ){}
@@ -861,7 +861,7 @@ bool function AddCallback_QueryString( string query, QueryFunc ornull callbackFu
 		return false
 	}
 	
-	file.queryStringInitFuncs[query].append( callbackFunc )
+	file.queryStringInitFuncs[ query ].append( callbackFunc )
 	return true
 }
 
@@ -878,14 +878,14 @@ string function GetQueryDataString()
 		
 		string queryFormatted = StringReplace( query, ",", "" )
 		
-		if( queryFormatted.find(":") == -1 )
+		if( queryFormatted.find( ":" ) == -1 )
 		{
 			queryFormatted += ":"
 		}
 		
 		query_data_string += queryFormatted + ( iter != omitFinalCommaOn ? "," : "" )
 		
-		int querySlice = query.find(":")
+		int querySlice = query.find( ":" )
 		file.queryStringCallbackFuncs[query.slice( 0, querySlice )] <- callbackArray //returns setting and sets as key 
 	}
 	
@@ -1118,7 +1118,8 @@ void function Tracker_QueryInit()
 
 	if( file.restricted_server )
 	{
-		AddCallback_QueryString( "restricted_rank:" + GetCurrentPlaylistVarInt( "restricted_rank", 0 ).tostring(), DummyFunction_ProofOfConcept )
+		string queryString = "restricted_rank:" + GetCurrentPlaylistVarInt( "restricted_rank", 0 ).tostring()
+		AddCallback_QueryString( queryString, DummyFunction_ProofOfConcept )
 	}
 	
 	if( file.bMotdEnabled )
@@ -2959,9 +2960,9 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
             float timeRemaining = Tracker_DecideTimeRemaining()
             int placement = GetNumTeamsRemaining() //ty ida
 
-			string attName = "";
-			string aController = "";
-			string attTeam = "-1";
+			string attName = ""
+			string aController = ""
+			string attTeam = "-1"
 			
 			if ( !attacker.IsPlayer() )
 			{
@@ -2975,36 +2976,32 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			}
 
 
-            string team_of_killer = attTeam;
+            string team_of_killer = attTeam
             string team_of_killed = victim.GetTeam().tostring()
-			float pingVictim = victimIsPlayer ? ( victim.GetLatency() * 1000 - 40 ) : -1.0 ;
-			float pingAttacker = 0;
-			string a_OID = "";
-			string v_OID = victimUID;
+			float pingVictim = victimIsPlayer ? ( victim.GetLatency() * 1000 - 40 ) : -1.0
+			float pingAttacker = 0
+			string a_OID = ""
+			string v_OID = victimUID
 
+			int iAttackerScore = 0
 			if ( attacker.IsPlayer() )
 			{
 				attName = attacker.p.name;
 				pingAttacker = attacker.GetLatency() * 1000 - 40;
 				a_OID = attacker.p.UID
+				iAttackerScore = attacker.p.season_score
 				
 				if ( REPORT_STATS && attacker != victim )
-				{
 					AddToPlayerKills( a_OID )
-				}	
 			}
 			else if( attacker.IsNPC() )
 			{
 				string ornull potentialName = attacker.GetNetworkedClassName() 
 				
 				if( potentialName != null )
-				{
 					attName = expect string( potentialName )
-				}
 				else 
-				{
 					attName = "NULL_DEBUGIT";
-				}
 				
 				a_OID = attName
 			}
@@ -3018,15 +3015,14 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			}
 			
 			if ( REPORT_STATS )
-			{
 				AddToPlayerDeaths( victim )
-			}
 			
-			string victimcontroller = victimIsPlayer ? victim.p.input.tostring() : "1" ;
+			string victimcontroller = victimIsPlayer ? victim.p.input.tostring() : "1"
+			int iVictimScore = victimIsPlayer ? victim.p.season_score : 0
 
 			int pA = pingAttacker.tointeger();
 			int pV = pingVictim.tointeger();
-            logString += format("\n^^,%s,1,%d,%d,%s,%s,%s,%i,%d,%s,%d,%d,%s,%s\n&&,%s,%d,%s,%d,%s,%s,%i,%d,%s,%d,%d,%s,%s,%s\n",
+            logString += format("\n^^,%s,1,%d,%d,%s,%s,%s,%i,%d,%s,%d,%d,%s,%s,%i,%i\n&&,%s,%d,%s,%d,%s,%s,%i,%d,%s,%d,%d,%s,%s,%s,%i,%i\n",
                 a_OID, 					//0
                 GetNumTeamsRemaining(), //2
                 GetUnixTimestamp(), 	//3
@@ -3039,7 +3035,9 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 				pA, 					//10
 				pV, 					//11
 				attName, 				//12	
-				victimName, 			//13	
+				victimName, 			//13
+				iAttackerScore,			//14
+				iVictimScore,			//15
                 v_OID, 				//0
                 placement, 			//1
                 a_OID, 				//2
@@ -3053,7 +3051,9 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 				pA, 				//10
 				victimcontroller, 	//11
 				attName, 			//12
-				victimName 			//13
+				victimName, 		//13
+				iAttackerScore,		//14
+				iVictimScore		//15
             );
 
 			if ( REPORT_STATS && file.bSafeLog )
@@ -3131,14 +3131,12 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		#endif
 	}
 	
-int function SetWeaponSettingsFromFile( string weaponRef, string setting )
+int function SetWeaponSettingIntFromFile( string weaponRef, string setting )
 {
 	var data = GetWeaponInfoFileKeyField_Global( weaponRef, setting ) 
 
 	if( data != null )
-	{
 		return expect int( data )
-	}
 	
 	#if DEVELOPER
 		printw( "Invalid weapons settings for", weaponRef, setting )
@@ -3160,10 +3158,10 @@ void function WeaponSettings_Init()
 		if( !WeaponIsPrecached( weapon ) ) //wont have a set file / wont be used.
 			continue
 		
-		int projectiles_per_shot = SetWeaponSettingsFromFile( weapon, pps )	
+		int projectiles_per_shot = SetWeaponSettingIntFromFile( weapon, pps )	
 		if( projectiles_per_shot > 1 )
 		{
-			file.DamagePerBullet[ id ] <- float( SetWeaponSettingsFromFile( weapon, dnv ) )
+			file.DamagePerBullet[ id ] <- float( SetWeaponSettingIntFromFile( weapon, dnv ) )
 			file.SpecialWeaponsBulletsPerShot[ id ] <- projectiles_per_shot
 			
 			#if DEVELOPER
@@ -3244,11 +3242,9 @@ void function Tracker_HandleDamage( DamageEvent event, entity attacker, int weap
 
 	// headshot count
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_HEADSHOT ) 
-	{
-		event.headshots++;
-	}
+		event.headshots++
 
-	bool multiple = false;
+	bool multiple = false
 	
 	// count damageInfo from special weapons as a single shot
 	float currentTime = Time()
@@ -3278,22 +3274,16 @@ void function Tracker_HandleDamage( DamageEvent event, entity attacker, int weap
 		event.damage = damageAmount
 
 		if ( multiple ) 
-		{
-			event.isNew = true;
-		} 
+			event.isNew = true
 		else 
-		{
-			event.isNew = false;
-		}
+			event.isNew = false
 	} 
 	else 
 	{
 		event.damage += damageAmount
 		
 		if ( multiple ) 
-		{
 			event.isNew = true
-		}
 	}
 
 	//sqprint(format("Handling damage for an event with isNew: %s and existing damage: %.2f\n", event.isNew ? "true" : "false", event.damage));
@@ -3386,33 +3376,31 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 		if( !attacker.IsPlayer() && attacker.GetClassName() == "trigger_hurt" )
 		{
 			#if DEVELOPER && DEBUGDMG
-				Warning("Setting to worldspawn")
+				Warning( "Setting to worldspawn" )
 			#endif
 			
-			attacker = GetEnt("worldspawn")
+			attacker = GetEnt( "worldspawn" )
 		}
 		else if( trackedEventDamageSource.contains( weaponSource ) ) 
 		{
-			attacker = GetEnt("worldspawn")
+			attacker = GetEnt( "worldspawn" )
 			attackerHandle = weaponSource
 		}
 		else
 		{		
 			#if DEVELOPER 
-				sqerror("STATS:: invalid owner for damage event, returning")
-				printt("DEBUGIT:", attacker, "weaponSource: ", weaponSource )
+				sqerror( "STATS:: invalid owner for damage event, returning" )
+				printt( "DEBUGIT:", attacker, "weaponSource: ", weaponSource )
 			#endif
 					
 			return
 		}
     }
 
-	float shotIdentifier = 0.0;
+	float shotIdentifier = 0.0
 	
     if ( IsSpecialWeapon( weaponSource ) ) 
-	{
         shotIdentifier = float( weaponSource ) + Time() 
-    }
 	
 	int eventID = eventID( attackerHandle, victimHandle ) 
 	DamageEvent existingEvent = Tracker_GetRecentDamageEvent( eventID )
@@ -3455,11 +3443,10 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 
     
 	#if DEVELOPER && DEBUGDMG
-		sqprint("Current Damage Events: \n");
-		foreach (DamageEvent event in allDamageEvents) 
-		{
+		sqprint( "Current Damage Events: \n" )
+		
+		foreach( DamageEvent event in allDamageEvents ) 
 			sqprint(format("Attacker: %d, Victim: %d, Damage: %.2f, Time: %.2f, shots: %d\n", event.attackerHandle, event.victimHandle, event.damage, event.actionTimestamp, event.hitCount ))
-		}
 	#endif
 	
 }
@@ -3467,19 +3454,13 @@ void function Tracker_OnPlayerDamaged( entity victim, var damageInfo )
 int function Tracker_FetchHandle( entity ent )
 {
 	if( !IsValid( ent ) )
-	{
 		return -1
-	}
 	
 	if( ent.IsPlayer() )
-	{
 		return ent.p.handle
-	}
 	
 	if( ent.IsNPC() )
-	{
 		return ent.GetEncodedEHandle()
-	}
 	
 	return 0
 }
@@ -3537,7 +3518,7 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 	bool function ClientCommand_mkos_ea_verify(entity player, array<string> args)
 	{	
 		thread PlayerEA_Verify( player, args )	
-		return true;	
+		return true
 	}
 	
 	

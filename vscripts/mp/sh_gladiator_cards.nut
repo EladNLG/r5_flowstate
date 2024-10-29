@@ -1850,7 +1850,7 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 
 bool function IsValidPlayerForR5RDevBadge( entity player )
 {
-	if( !IsValid( player ) )// || !GetServerVar( "tracker_enabled" ) )
+	if( !GetServerVar( "tracker_enabled" ) || !IsValid( player ) )// || !GetServerVar( "tracker_enabled" ) )
 		return false
 	
 	if( !Tracker_StatExists( player, "isDev" ) )
