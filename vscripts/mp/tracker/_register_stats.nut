@@ -1,4 +1,4 @@
-untyped
+//untyped
 globalize_all_functions
 #if TRACKER && HAS_TRACKER_DLL
 
@@ -144,69 +144,6 @@ void function Script_RegisterAllStats()
 	}
 }
 
-//FSDM
-var function TrackerStats_FSDMKills( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	
-	return player.GetPlayerNetInt( "kills" )
-}
-
-var function TrackerStats_FSDMShots( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	
-	return player.p.shotsfired
-}
-
-var function TrackerStats_FSDMDeaths( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	
-	return player.GetPlayerNetInt( "deaths" )
-}
-
-var function TrackerStats_FSDMRailjumps( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	
-	return player.p.railjumptimes 
-}
-
-var function TrackerStats_FSDMGamesPlayed( string uid )
-{
-	return 1
-}
-
-var function TrackerStats_FSDMWins( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	return player == GetBestPlayer() ? 1 : 0
-}
-
-var function TrackerStats_OddballHeldTime( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	return player.GetPlayerNetInt( "oddball_ballHeldTime" )
-}
-
-var function TrackerStats_CtfFlagsCaptured( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	return player.GetPlayerNetInt( "captures" )
-}
-
-var function TrackerStats_CtfFlagsReturned( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	return player.GetPlayerNetInt( "returns" )
-}
-
-var function TrackerStats_CtfWins( string uid )
-{
-	return 0 //todo
-}
-
 ////////////////////
 // STAT FUNCTIONS //
 ////////////////////
@@ -271,6 +208,71 @@ var function Tracker_RecentKills( string uid )
 var function Tracker_RecentDamage( string uid )
 {
 	return Tracker_StatsMetricsByUID( uid ).damage
+}
+
+//(mk): The following need replaced before release, as the player may have already left.
+
+//FSDM 
+var function TrackerStats_FSDMKills( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.GetPlayerNetInt( "kills" )
+}
+
+var function TrackerStats_FSDMShots( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.p.shotsfired
+}
+
+var function TrackerStats_FSDMDeaths( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.GetPlayerNetInt( "deaths" )
+}
+
+var function TrackerStats_FSDMRailjumps( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	
+	return player.p.railjumptimes 
+}
+
+var function TrackerStats_FSDMGamesPlayed( string uid )
+{
+	return 1
+}
+
+var function TrackerStats_FSDMWins( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player == GetBestPlayer() ? 1 : 0
+}
+
+var function TrackerStats_OddballHeldTime( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player.GetPlayerNetInt( "oddball_ballHeldTime" )
+}
+
+var function TrackerStats_CtfFlagsCaptured( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player.GetPlayerNetInt( "captures" )
+}
+
+var function TrackerStats_CtfFlagsReturned( string uid )
+{
+	entity player = GetPlayerEntityByUID( uid )
+	return player.GetPlayerNetInt( "returns" )
+}
+
+var function TrackerStats_CtfWins( string uid )
+{
+	return 0 //todo
 }
 
 //////////////////////////////////////////////////////////
