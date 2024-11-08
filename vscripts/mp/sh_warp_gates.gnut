@@ -25,9 +25,9 @@ global function ServerCallback_PlayPhaseGateSoundSuite
 
 const FX_1P_GATE_ENTER = $"P_wrth_tt_portal_screen_flash"
 
-const string PHASE_GATE_ENTER_1P = "Olympus_Phaserunner_Enter_1p"
-const string PHASE_GATE_TRAVEL_1P = "Olympus_Phaserunner_Travel_1p"
-const string PHASE_GATE_EXIT_1P = "Olympus_Phaserunner_Exit_1p"
+const string PHASE_GATE_ENTER_1P = "PhaseGate_Enter_1p"
+const string PHASE_GATE_TRAVEL_1P = "PhaseGate_Travel_1p"
+const string PHASE_GATE_EXIT_1P = "PhaseGate_Exit_1p"
 #endif
 
 #if SERVER
@@ -56,9 +56,9 @@ global const FX_PLAYER_ENTER_WARP_GATE = $"P_wrth_tt_phase"
 const float TRACE_DIST_IS_AIRBORNE = 1500
 const float MIN_IS_AIRBORNE_DIST = 1500
 
-const string PHASE_GATE_ENTER_3P = "Olympus_Phaserunner_Enter_3p"
-const string PHASE_GATE_TRAVEL_3P = "Olympus_Phaserunner_Travel_3p"
-global const string PHASE_GATE_EXIT_3P = "Olympus_Phaserunner_Exit_3p"
+const string PHASE_GATE_ENTER_3P = "PhaseGate_Enter_3p"
+const string PHASE_GATE_TRAVEL_3P = "PhaseGate_Travel_3p"
+global const string PHASE_GATE_EXIT_3P = "PhaseGate_Exit_3p"
 
 global const float PHASE_REPOSITION_TIME = 2.0//1.5		// Extending by 0.5s to account for the higher exit position
 global const float PHASE_EXIT_VELOCITY = 140
