@@ -107,41 +107,39 @@ void function Script_RegisterAllStats()
 		AddCallback_PlayerDataFullyLoaded( Callback_HandleScenariosStats )
 	}
 
-	if( Playlist() == ePlaylists.fs_dm_fast_instagib )
-	{
-		Tracker_RegisterStat( "shots_hit", null, TrackerStats_FSDMKills )
-		Tracker_RegisterStat( "shots_fired", null, TrackerStats_FSDMShots )
-		Tracker_RegisterStat( "instagib_deaths", null, TrackerStats_FSDMDeaths )
-		Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_FSDMRailjumps )
-		Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+	// if( Playlist() == ePlaylists.fs_dm_fast_instagib )
+	// {
+		// Tracker_RegisterStat( "shots_hit", null, TrackerStats_FSDMKills )
+		// Tracker_RegisterStat( "shots_fired", null, TrackerStats_FSDMShots )
+		// Tracker_RegisterStat( "instagib_deaths", null, TrackerStats_FSDMDeaths )
+		// Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_FSDMRailjumps )
+		// Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+		// Tracker_RegisterStat( "instagib_wins", null, TrackerStats_FSDMWins )
+	// }
 
-		//increment only on winner condition
-		Tracker_RegisterStat( "instagib_wins", null, TrackerStats_FSDMWins )
-	}
+	// if( Playlist() == ePlaylists.fs_haloMod )
+	// {
+		// Tracker_RegisterStat( "halo_dm_kills", null, TrackerStats_FSDMKills )
+		// Tracker_RegisterStat( "halo_dm_deaths", null, TrackerStats_FSDMDeaths )
+		// Tracker_RegisterStat( "halo_dm_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+		// Tracker_RegisterStat( "halo_dm_wins", null, TrackerStats_FSDMWins )
+	// }
 
-	if( Playlist() == ePlaylists.fs_haloMod )
-	{
-		Tracker_RegisterStat( "halo_dm_kills", null, TrackerStats_FSDMKills )
-		Tracker_RegisterStat( "halo_dm_deaths", null, TrackerStats_FSDMDeaths )
-		Tracker_RegisterStat( "halo_dm_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-		Tracker_RegisterStat( "halo_dm_wins", null, TrackerStats_FSDMWins )
-	}
+	// if( Playlist() == ePlaylists.fs_haloMod_oddball )
+	// {
+		// Tracker_RegisterStat( "halo_oddball_kills", null, TrackerStats_FSDMKills )
+		// Tracker_RegisterStat( "halo_oddball_deaths", null, TrackerStats_FSDMDeaths )
+		// Tracker_RegisterStat( "halo_oddball_heldtime", null, TrackerStats_OddballHeldTime )
+		// Tracker_RegisterStat( "halo_oddball_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+	// }
 
-	if( Playlist() == ePlaylists.fs_haloMod_oddball )
-	{
-		Tracker_RegisterStat( "halo_oddball_kills", null, TrackerStats_FSDMKills )
-		Tracker_RegisterStat( "halo_oddball_deaths", null, TrackerStats_FSDMDeaths )
-		Tracker_RegisterStat( "halo_oddball_heldtime", null, TrackerStats_OddballHeldTime )
-		Tracker_RegisterStat( "halo_oddball_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-	}
-
-	if( Playlist() == ePlaylists.fs_haloMod_ctf )
-	{
-		Tracker_RegisterStat( "halo_ctf_flags_captured", null, TrackerStats_CtfFlagsCaptured )
-		Tracker_RegisterStat( "halo_ctf_flags_returned", null, TrackerStats_CtfFlagsReturned )
-		Tracker_RegisterStat( "halo_ctf_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-		Tracker_RegisterStat( "halo_ctf_wins", null, TrackerStats_CtfWins )
-	}
+	// if( Playlist() == ePlaylists.fs_haloMod_ctf )
+	// {
+		// Tracker_RegisterStat( "halo_ctf_flags_captured", null, TrackerStats_CtfFlagsCaptured )
+		// Tracker_RegisterStat( "halo_ctf_flags_returned", null, TrackerStats_CtfFlagsReturned )
+		// Tracker_RegisterStat( "halo_ctf_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+		// Tracker_RegisterStat( "halo_ctf_wins", null, TrackerStats_CtfWins )
+	// }
 }
 
 ////////////////////
