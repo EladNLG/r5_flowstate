@@ -879,7 +879,7 @@ void function PlayerLaunched( entity player, SkydiveLauncherData data, entity tr
 
 	bool shouldSnapViewVector = false
 	if ( shouldSnapViewVector )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_FlashScreenForPlayer" )
+		Remote_CallFunction_ByRef( player, "ServerCallback_FlashScreenForPlayer" )
 
 	/*
 	if ( PlayerHasPassive( player, ePassives.PAS_OCTANE ) )

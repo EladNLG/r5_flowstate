@@ -1049,7 +1049,7 @@ void function MovementRecorder_WaitForAnimToFinish( var anim )
 {
 	Assert( IsThreadTop(), "not thread top" )
 	//Todo(mk): Implement wait based on playback rate setting for this player, for this slot. (currently global setting)
-	wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate * file.adminSetPlaybackRate )
+	wait GetRecordedAnimationDuration( anim ) / ( file.adminSetPlaybackRate * file.adminSetPlaybackRate ) //(mk): don't worry about it.
 }
 
 void function RemoveDummyForPlayer( entity player, entity dummy, int slot )
