@@ -845,7 +845,7 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 		return
 
 	//If TROPHY_DESTROY_FRIENDLY_PROJECTILES is set to false dont destroy teammates projectiles
-	if(!TROPHY_DESTROY_FRIENDLY_PROJECTILES)
+	if( !TROPHY_DESTROY_FRIENDLY_PROJECTILES && IsValid( pylonowner ) )
 	{
 		if( projectile.GetTeam() == pylonowner.GetTeam() )
 			return
