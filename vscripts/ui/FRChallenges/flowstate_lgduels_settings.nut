@@ -15,6 +15,8 @@ void function OpenLGDuelsSettings()
 	EmitUISound("UI_Menu_SelectMode_Extend")
 	AdvanceMenu( file.menu )
 	SetSettingsMenuOpen( true )
+
+	Hud_SetText( Hud_GetChild( file.menu, "Title" ), Playlist() == ePlaylists.fs_dm_fast_instagib ? "FLOWSTATE CAFE'S INSTAGIB" : "FLOWSTATE LG DUELS" )
 }
 
 void function CloseLGDuelsSettings()
@@ -44,9 +46,15 @@ void function InitLGDuelsSettings( var newMenuArg )
 	
 	AddButtonEventHandler( Hud_GetChild( file.menu, "SelectBeamToModifyButton_Local" ), UIE_CLICK, BeamToModifyChanged_Local )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "SelectBeamToModifyButton_Enemy" ), UIE_CLICK, BeamToModifyChanged_Enemy )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SupportTheDev"), UIE_CLICK, SupportTheDev)
 
 	RuiSetInt( Hud_GetRui( Hud_GetChild( file.menu, "SelectBeamToModifyButton_Local" ) ), "status", eFriendStatus.ONLINE_AWAY )
 	RuiSetInt( Hud_GetRui( Hud_GetChild( file.menu, "SelectBeamToModifyButton_Enemy" ) ), "status", eFriendStatus.ONLINE_INGAME )
+}
+
+void function SupportTheDev(var button)
+{
+	LaunchExternalWebBrowser( "https://www.patreon.com/c/r5_CafeFPS", WEBBROWSER_FLAG_NONE )
 }
 
 void function BeamToModifyChanged_Local( var button )
