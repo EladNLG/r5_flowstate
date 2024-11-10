@@ -2527,6 +2527,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		}
 		
 		string victimUID = victimIsPlayer ? victim.p.UID : string( victim.GetEncodedEHandle() )
+		victimUID = statPrintUID( victimUID )
 		
 		string attackerUID
 		string attackerName
@@ -2669,7 +2670,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 		{	
 			if ( file.gamemode_type_1v1 || ( deathtime - event.actionTimestamp <= timeWindow ) ) 
 			{			
-				attackerUID = GetPlayerIdFromHandle( event.attackerHandle )
+				attackerUID = statPrintUID( GetPlayerIdFromHandle( event.attackerHandle ) )
 				attackerName = GetPlayerNameFromHandle( event.attackerHandle )
 				
 				totalDamageToVictim += event.damage;
@@ -3953,7 +3954,8 @@ const table<int,string> hardcodedWorldspawnRefs = //unordered int requires looku
 {
 	[ eDamageSourceId.deathField ] 			= "_DEATHFIELD",
 	[ eDamageSourceId.bleedout ] 			= "_BLEEDOUT",
-	[ eDamageSourceId.damagedef_suicide ] 	= "_SUICIDE"
+	[ eDamageSourceId.damagedef_suicide ] 	= "_SUICIDE",
+	[ eDamageSourceId.damagedef_despawn ]	= "_DESPAWN"
 }
 
 string function _GetHardcodedWorldspawnRef( int ref )
@@ -5285,6 +5287,14 @@ void function Tracker_SetForceUpdatePlayerData()
 int function Tracker_GetStartUnixTime()
 { 
 	return file.launchStartUnixTime 
+}
+
+string function statPrintUID( string uid )
+{
+	if( UIDisWorldSpawn( int( uid ) ) )
+		return _GetHardcodedWorldspawnRef( int( uid ) )
+
+	return uid
 }
 #endif //END TRACKER DEFINE
 
