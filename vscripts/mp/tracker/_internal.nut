@@ -27,10 +27,11 @@ global function SetPlayerStatBool
 global function SetPlayerStatFloat
 
 global typedef StatsTable table< string, var >
+typedef UIDString string
 
 struct
 {
-	table< string, StatsTable > allStatsTables
+	table< UIDString, StatsTable > allStatsTables
 	array< string > statKeys
 	
 	table< string, var functionref( string UID ) > registeredStatOutboundValues

@@ -533,10 +533,15 @@ void function __HideAllBanners( entity player, BannerGroupData groupData )
 		if( !banners[ iter ].isValid )
 			continue 
 			
+		int iRui = GetRUIID( player, groupData.groupId, banner.assetType )
+
+		if( iRui < 0 )
+			continue
+			
 		WorldDrawAsset_SetVisible
 		(
 			player,
-			GetRUIID( player, groupData.groupId, banner.assetType ),
+			iRui,
 			groupData.groupId,
 			false,
 			false, 
@@ -551,7 +556,7 @@ void function __HideAllBanners( entity player, BannerGroupData groupData )
 
 table<int,int> function CreateAssetTbl()
 {
-	table< int, int > tbl = {}
+	table< int, int > tbl = {} 
 	
 	foreach( keyName, value in eAssetType )
 	{
