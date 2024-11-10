@@ -1235,7 +1235,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 					return
 				}
 
-	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && bShouldShowReplay )
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && bShouldShowReplay && ShouldSetObserverTarget( attacker ) )
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
