@@ -525,7 +525,10 @@ void function OnEntitiesDidLoad()
 	}
 
 	file.trainRef = GetEntByScriptName( TRAIN_MOVER_NAME + "_0" )
-	printf( "Train Ref is " + file.trainRef )
+	
+	#if DEVELOPER
+		print( "Train Ref is " + file.trainRef )
+	#endif
 
 	foreach ( trigger in GetEntArrayByScriptName( "train_objective_holiday" ) )
 	{
@@ -784,7 +787,10 @@ void function OnClientConnected( entity player )
 		triggerMatrix[trigger] <- false
 	}
 	file.isPlayerInTrainCar[player] <- triggerMatrix
-	printt( "WINTER EXPRESS ON CLIENT CONNECTED", player )
+	
+	#if DEVELOPER
+		printt( "WINTER EXPRESS ON CLIENT CONNECTED", player )
+	#endif
 }
 
 void function OnClientDisconnected( entity player )
@@ -894,7 +900,10 @@ void function OnEntityEnterObjectiveTrigger( entity trigger, entity ent )
 	if ( !IsValidPlayer( ent ) || GetGameState() != eGameState.Playing)
 		return
 
-	printf( "WINTER EXPRESS: Player Entered Trigger" )
+	#if DEVELOPER 
+		print( "WINTER EXPRESS: Player Entered Trigger" )
+	#endif 
+	
 	file.isPlayerInTrainCar[ent][trigger] <- true
 
 	bool alreadyOnTrain = false
@@ -919,7 +928,10 @@ void function OnEntityLeaveObjectiveTrigger( entity trigger, entity ent )
 	if ( !IsValidPlayer( ent ) || GetGameState() != eGameState.Playing)
 		return
 
-	printf( "WINTER EXPRESS: Player Left Trigger" )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Player Left Trigger" )
+	#endif 
+	
 	file.isPlayerInTrainCar[ent][trigger] <- false
 
 	bool stillOnTrain = false
@@ -941,7 +953,9 @@ void function OnEntityLeaveObjectiveTrigger( entity trigger, entity ent )
 
 void function OnEntityEnterTrain( entity ent )
 {
-	printf( "WINTER EXPRESS: Player Entered Train" )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Player Entered Train" )
+	#endif
 
 	int team = ent.GetTeam()
 	//register objective owners
@@ -970,7 +984,9 @@ void function OnEntityLeaveTrain( entity ent )
 		return
 	}
 
-	printt( "WINTER EXPRESS: Player Left Train" )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Player Left Train" )
+	#endif
 
 	int team              = ent.GetTeam()
 	bool teamStillOnTrain = false
@@ -1493,13 +1509,17 @@ void function TrainArrivedAtStation_Internal()
 
 	if ( GetGlobalNetInt( "squadsRemainingCount" ) == 0 )
 	{
-		printf( "WINTER EXPRESS: Trying to end round with no squads alive" )
+		print( "WINTER EXPRESS: Trying to end round with no squads alive" )
+		
 		thread TryDetermineRoundWinner( -1, eWinterExpressRoundEndCondition.NO_SQUADS_ALIVE )
 		return
 	}
 	else if ( GetGlobalNetInt( "squadsRemainingCount" ) == 1 && GetPlayerArray_Alive().len() > 0 ) //add safety check. Cafe
 	{
-		printf( "WINTER EXPRESS: Trying to check if alive player is last squad alive" )
+		#if DEVELOPER
+			print( "WINTER EXPRESS: Trying to check if alive player is last squad alive" )
+		#endif
+		
 		thread ProcessLastSquadAlive( null, GetPlayerArray_Alive()[0] )
 		return
 	}
@@ -1590,7 +1610,9 @@ void function TrainLeavingStation()
 //objective scoring processing
 void function ProcessInactiveObjective()
 {
-	printf( "WINTER EXPRESS: Objective inactive" )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Objective inactive" )
+	#endif
 
 	file.objectiveOwners.clear()
 
@@ -1603,7 +1625,9 @@ void function ProcessInactiveObjective()
 
 void function ProcessUncontrolledObjective( int team )
 {
-	printf( "WINTER EXPRESS: Objective uncontrolled" )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Objective uncontrolled" )
+	#endif
 
 	UpdateObjectiveStateForTeam( eWinterExpressObjectiveState.UNCONTROLLED, -1 )
 	svGlobal.levelEnt.Signal( "WinterExpress_ObjectiveCaptureCancelled" )
@@ -1612,7 +1636,10 @@ void function ProcessUncontrolledObjective( int team )
 void function ProcessContestedObjective()
 {
 	FlagWait( "WinterExpress_ObjectiveActive" )
-	printf( "WINTER EXPRESS: Objective contested" )
+	
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Objective contested" )
+	#endif
 
 	svGlobal.levelEnt.Signal( "WinterExpress_ObjectiveCaptureCancelled" )
 	UpdateObjectiveStateForTeam( eWinterExpressObjectiveState.CONTESTED, -1 )
@@ -1641,12 +1668,18 @@ void function ProcessControlledObjective( int team )
 	svGlobal.levelEnt.EndSignal( "WinterExpress_RoundOver" )
 
 	FlagWait( "WinterExpress_ObjectiveActive" )
-	printf( "WINTER EXPRESS: Objective capture started" )
+	
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Objective capture started" )
+	#endif
 
 	OnThreadEnd(
 		function() : ()
 		{
-			printf( "WINTER EXPRESS: Objective Capture End Condition Cancelled" )
+			#if DEVELOPER
+				print( "WINTER EXPRESS: Objective Capture End Condition Cancelled" )
+			#endif 
+			
 			SetGlobalNetTime( "WinterExpress_CaptureEndTimeCopy", -1 )
 		}
 	)
@@ -1666,7 +1699,9 @@ void function ProcessRound()
 	OnThreadEnd(
 		function() : ()
 		{
-			printf( "WINTER EXPRESS: Round Over End Condition Cancelled" )
+			#if DEVELOPER
+				print( "WINTER EXPRESS: Round Over End Condition Cancelled" )
+			#endif
 		}
 	)
 
@@ -1688,7 +1723,9 @@ void function ProcessOvertime()
 	OnThreadEnd(
 		function() : ()
 		{
-			printf( "WINTER EXPRESS: Overtime End Condition Cancelled" )
+			#if DEVELOPER
+				print( "WINTER EXPRESS: Overtime End Condition Cancelled" )
+			#endif
 		}
 	)
 
@@ -1750,10 +1787,16 @@ void function TryDetermineRoundWinner( int team, int endCondition )
 	if ( !GamePlayingOrSuddenDeath() )
 		return
 
-	printf( "WINTER EXPRESS: Round ended because of condition " + endCondition )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Round ended because of condition " + endCondition )
+	#endif
 
 	//team won the round
-	printf( "WINTER EXPRESS: Awarding round to team " + team )
+	
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Awarding round to team " + team )
+	#endif 
+	
 	if ( team in file.objectiveScore )
 		file.objectiveScore[team]++
 	else
@@ -2062,7 +2105,10 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 	{
 		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
-		printt( "should have skins")
+		
+		#if DEVELOPER
+			print( "should have skins")
+		#endif
 	}
 
 	//give weapons on landing only? Cafe
@@ -2426,7 +2472,9 @@ void function RespawnPlayer( entity player, bool startingGame = false )
 	if ( file.playersInGracePeriod.contains( player ) )
 		file.playersInGracePeriod.fastremovebyvalue( player )
 
-	printf( "WINTER EXPRESS: Grace Period Permit removed from player " + player.GetPlayerName() )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Grace Period Permit removed from player " + player.GetPlayerName() )
+	#endif
 
 	if ( !IsAlive( player ) )
 	{
@@ -2466,8 +2514,11 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startin
 	int livingTeamMembers = GetPlayerArrayOfTeam_AliveConnected( team ).len()
 
 	bool success = false
-	printf("Winter Express: spawning this player current scoring team is: " + file.lastValidTeamToScore)
-	printf("Winter Express: spawning player current actual team: " + team)
+	
+	#if DEVELOPER
+		print( "Winter Express: spawning this player current scoring team is: " + file.lastValidTeamToScore )
+		print( "Winter Express: spawning player current actual team: " + team )
+	#endif
 
 	if ( team == file.lastValidTeamToScore )
 	{
@@ -2591,7 +2642,8 @@ bool function WinterExpress_RespawnOnTrain( entity player, bool isGameStartLerp 
 			}
 		}
 	}
-	printf("winter express: Failing a train spawn falling back to something else")
+	
+	print( "winter express: Failing a train spawn falling back to something else" ) //(mk): keep this for prod
 	return false
 }
 
@@ -2694,7 +2746,9 @@ void function WinterExpress_RespawnHoverTank( entity player, bool isGameStartLer
 	string spawnTank = spawnIndex == 0 ? "HoverTank_holiday" : "HoverTank_holiday02"
 	entity hoverTank = GetEntByScriptNameInInstance( "_hover_tank_mover", spawnTank )
 
-	printf( "WINTER EXPRESS: Spawning " + player.GetPlayerName() + " on " + spawnTank + " at index " + playerIndex  )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Spawning " + player.GetPlayerName() + " on " + spawnTank + " at index " + playerIndex  )
+	#endif
 
 	vector spawnOffset = WinterExpress_GetHoverTankSpawnOffset( playerIndex )
 	vector spawnOrigin = LocalPosToWorldPos( spawnOffset, hoverTank )
@@ -3305,7 +3359,11 @@ string function PickCommentaryLineFromBucket_WinterExpressCustom( int commentary
 
 	if ( LONG_OR_FLAVORFUL_LINES.contains( line ) && RandomInt( 100 ) < REROLL_CHANCE )
 		line = PickCommentaryLineFromBucket( commentaryBucket )
-	printt("CHOSEN LINE", line )
+	
+	#if DEVELOPER
+		printt("CHOSEN LINE", line )
+	#endif 
+	
 	return line
 }
 #endif
@@ -3657,7 +3715,9 @@ void function ServerCallback_CL_GameStartAnnouncement()
 
 void function ServerCallback_CL_RoundEnded( int endCondition, int winningTeam, int newScore )
 {
-	printt( "ServerCallback_CL_RoundEnded - Team:", winningTeam, "now has", newScore )
+	#if DEVELOPER
+		printt( "ServerCallback_CL_RoundEnded - Team:", winningTeam, "now has", newScore )
+	#endif
 
 	string winningSquad      = ""
 	vector announcementColor = <1, 1, 1>
@@ -3772,7 +3832,9 @@ void function OnServerVarChanged_RoundState( entity player, int old, int new, bo
 	if ( GetGameState() != eGameState.Playing )
 		return
 
-	printf( "WINTER EXPRESS: server var changed: " + new )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: server var changed: " + new )
+	#endif
 
 	if ( new == eWinterExpressRoundState.OBJECTIVE_ACTIVE )
 		thread DisplayRoundStart()
@@ -3868,7 +3930,9 @@ void function OnServerVarChanged_ObjectiveState( entity player, int old, int new
 {
 	FlagSet( "WinterExpress_ObjectiveStateUpdated" )
 
-	printf( "WINTER EXPRESS: Setting your train status to: " + new )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Setting your train status to: " + new )
+	#endif
 
 	//Revisit this. The train state could be shown in a custom hud ui as well. Cafe
 	if ( new == eWinterExpressObjectiveState.CONTROLLED )
@@ -4131,7 +4195,9 @@ void function SendDeadPlayersToSpectateCamera( int index )
 {
 	WaitFrame()
 
-	printf( "Winter Express: Sending dead players to camera " + index )
+	#if DEVELOPER
+		print( "Winter Express: Sending dead players to camera " + index )
+	#endif
 
 	foreach ( player in file.deadPlayers )
 	{
@@ -4141,7 +4207,9 @@ void function SendDeadPlayersToSpectateCamera( int index )
 		if ( !IsTeamEliminated( player.GetTeam() ) )
 			continue
 
-		printf( "Winter express: Player " + player.GetPlayerName() + " is dead without living teammates. Sending to new camera" )
+		#if DEVELOPER
+			print( "Winter express: Player " + player.GetPlayerName() + " is dead without living teammates. Sending to new camera" )
+		#endif
 
 		player.ClearParent()
 		PutPlayerInObserverModeWithOriginAngles( player, OBS_MODE_STATIC_LOCKED, file.spectateCameraLocations[file.currentSpectateCamera], file.spectateCameraAngles[file.currentSpectateCamera] )
@@ -4237,7 +4305,10 @@ void function SpawnHoverTanks()
 		HoverTank hoverTank = SpawnHoverTank_Cheap( spawnerName, pathGroup )
 		hoverTank.playerRiding = true
 
-		printt( "HOVER TANKS HOLIDAY SPAWNER:", spawnerName )
+		#if DEVELOPER
+			printt( "HOVER TANKS HOLIDAY SPAWNER:", spawnerName )
+		#endif 
+		
 		file.hoverTanks.append( hoverTank )
 		file.hoverTankToNodeGroup[ hoverTank ] <- pathGroup
 	}
@@ -4256,7 +4327,10 @@ void function SetupHolidayHoverTank_OnGameStartedPlaying()
 
 	HoverTank_AddCallback_OnPlayerExitedVolume( PutPlayerIntoSkydiveWhenLeavingHovertank )
 	HoverTank_AddCallback_OnPlayerEnteredVolume( DisablePlayerWeaponsAndAbilities )
-	printt( "SetupHolidayHoverTank_OnGameStartedPlaying" )
+	
+	#if DEVELOPER
+		print( "SetupHolidayHoverTank_OnGameStartedPlaying" )
+	#endif
 }
 
 void function SetupHovertankForFlight( HoverTank hoverTank, entity startNode )
@@ -4372,7 +4446,10 @@ entity function HolidayHoverTank_GetClosestStationNodeToPosition( string nodeGro
 
 void function DisablePlayerWeaponsAndAbilities( entity player )
 {
-	printf( "WINTER EXPRESS: Player entering hovertank" )
+	#if DEVELOPER
+		print( "WINTER EXPRESS: Player entering hovertank" )
+	#endif
+	
 	if ( !file.playersOnHovertank.contains( player ) )
 		file.playersOnHovertank.append( player )
 	thread DelayedDisablePlayerWeaponsAndAbilities( player, PlayerMatchState_GetFor( player ) == ePlayerMatchState.SKYDIVE_FALLING )
@@ -4392,7 +4469,11 @@ void function DelayedDisablePlayerWeaponsAndAbilities( entity player, bool shoul
 		WaitFrame()
 
 	// *** Intentionally won't run the rest of this if the thread is ended, to handle the case that DelayedPutPlayerIntoSkydiveFromHovertank() fires first because we were waiting for skydive to finish ***
-	printf( "WINTER EXPRESS: hover tank contains player" + file.playersOnHovertank.contains( player ) )
+	
+	#if DEVELOPER
+		print( "WINTER EXPRESS: hover tank contains player" + file.playersOnHovertank.contains( player ) )
+	#endif 
+	
 	if ( IsValid( player ) && file.playersOnHovertank.contains( player ) )
 	{
 		player.SetAimAssistAllowed( false )
@@ -4413,7 +4494,10 @@ void function DelayedDisablePlayerWeaponsAndAbilities( entity player, bool shoul
 
 void function PutPlayerIntoSkydiveWhenLeavingHovertank( entity player )
 {
-	printf( "WINTER EXPRESS: Player leaving hovertank" )
+	#if DEVELOPER 
+		print( "WINTER EXPRESS: Player leaving hovertank" )
+	#endif
+		
 	if ( file.playersOnHovertank.contains( player ) )
 		file.playersOnHovertank.fastremovebyvalue( player )
 	thread DelayedPutPlayerIntoSkydiveFromHovertank( player )
@@ -4537,8 +4621,11 @@ void function FS_ReloadScoreHUD()
 
 	if( GetGameState() != eGameState.Playing )
 		return
-	printt( "FS_ReloadScoreHUD()", file.enemyTeamScoreValue, file.enemyTeam2ScoreValue )
-
+		
+	#if DEVELOPER
+		printt( "FS_ReloadScoreHUD()", file.enemyTeamScoreValue, file.enemyTeam2ScoreValue )
+	#endif 
+	
 	FS_CreateScoreHUD()
 
 	if( file.localTeamScoreValue > 0 && file.enemyTeamScoreValue <= 3 )
@@ -4570,11 +4657,15 @@ void function FS_CreateScoreHUD()
 	string name = Localize( Squads_GetSquadName( localIndex, true ) ).tolower()
 
 	array<int> teams = GetTeamsIndexesForPlayers( GetPlayerArrayOfEnemies( localteam ) )
-	printt( "WEHUD - Localindex", localIndex )
-	foreach( team in teams )
-	{
-		printt( "WEHUD - TEAM:", team ) //" - ", Squads_GetSquadUIIndex( team ), Squads_GetSquadUIIndex( team ), Localize( Squads_GetSquadName( Squads_GetSquadUIIndex( team ), true ) ).tolower() )
-	}
+	
+	#if DEVELOPER
+		printt( "WEHUD - Localindex", localIndex )
+		
+		foreach( team in teams )
+		{
+			printt( "WEHUD - TEAM:", team ) //" - ", Squads_GetSquadUIIndex( team ), Squads_GetSquadUIIndex( team ), Localize( Squads_GetSquadName( Squads_GetSquadUIIndex( team ), true ) ).tolower() )
+		}
+	#endif
 
 	// if( teams.contains( TEAM_IMC ) ) //remove local
 		// teams.removebyvalue( TEAM_IMC )
@@ -4718,9 +4809,11 @@ void function FS_UpdateScoreForTeam( int team, int score )
 
 	bool isLocalTeam = team == GetLocalClientPlayer().GetTeam() //TEAM_IMC
 	
-	printt( "FS_UpdateScoreForTeam CURRENT SAVED TEAMS", file.currentEnemy1, file.currentEnemy2, GetLocalClientPlayer().GetTeam()  )
-	printt( "FS_UpdateScoreForTeam", team, score, name, isLocalTeam )
-
+	#if DEVELOPER
+		printt( "FS_UpdateScoreForTeam CURRENT SAVED TEAMS", file.currentEnemy1, file.currentEnemy2, GetLocalClientPlayer().GetTeam()  )
+		printt( "FS_UpdateScoreForTeam", team, score, name, isLocalTeam )
+	#endif
+		
 	var teamScoreElement
 	string toconvert
 	score = minint( 3, score )
@@ -4744,13 +4837,16 @@ void function FS_UpdateScoreForTeam( int team, int score )
 
 	if( teamScoreElement == null )
 	{
-		printt( "FS_UpdateScoreForTeam BUGTHIS" )
+		print( "FS_UpdateScoreForTeam BUGTHIS; teamScoreElement == null" ) //(mk):keep this print in prod
 		return
 	}
 
 	Hud_SetVisible( teamScoreElement, true )
 	RuiSetImage( Hud_GetRui( teamScoreElement ), "basicImage", CastStringToAsset( toconvert ) )
-	printt( "FS_UpdateScoreForTeam END" )
+	
+	#if DEVELOPER
+		printt( "FS_UpdateScoreForTeam END" )
+	#endif
 }
 
 void function ServerCallback_CL_CameraLerpFromStationToHoverTank( entity player, entity stationNode, entity hoverTankMover, entity trainMover, bool isGameStartLerp )

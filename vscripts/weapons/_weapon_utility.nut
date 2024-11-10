@@ -2621,14 +2621,22 @@ void function AddToTrackedEnts( entity player, entity ent )
 {
 	if( isScenariosMode() )
 	{
-		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player) 	
+		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player ) 	
+		
 		if( IsValid( group ) )
 		{
-			AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
-			
-			#if DEVELOPER
-				printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
-			#endif
+			if( GetScriptManagedEntArrayLen( group.trackedEntsArrayIndex ) > 0 )
+			{
+				AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
+				
+				#if DEVELOPER
+					printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
+				#endif
+			}
+			else 
+			{
+				print( "Tried to add to ScriptManagedEntArray that was already destroyed/not created" )//(mk): keep for prod
+			}
 		}
 	} 
 	else

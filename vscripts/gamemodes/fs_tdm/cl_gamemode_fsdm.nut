@@ -2183,7 +2183,7 @@ void function FS_Scenarios_SetupPlayersCards( bool onlyUpdate )
 	
 	foreach( int i, int handle in file.enemyTeamHandles2 )
 	{
-		if( i > file.enemyTeamCards2.len() )
+		if( i >= file.enemyTeamCards2.len() )
 			continue
 
 		thread function() : ( i, handle )

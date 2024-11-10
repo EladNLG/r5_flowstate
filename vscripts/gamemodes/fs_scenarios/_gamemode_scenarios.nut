@@ -1589,7 +1589,7 @@ void function FS_Scenarios_Main_Thread()
 					}
 				}
 
-				DestroyScriptManagedEntArray( group.trackedEntsArrayIndex )
+				//DestroyScriptManagedEntArray( group.trackedEntsArrayIndex )
 
 				foreach( player in players )
 				{
@@ -1599,7 +1599,8 @@ void function FS_Scenarios_Main_Thread()
 					soloModePlayerToWaitingList( player )
 					HolsterAndDisableWeapons( player )
 				}
-
+				
+				DestroyScriptManagedEntArray( group.trackedEntsArrayIndex )
 				groupsToRemove.append(group)
 			}
 		}//foreach
