@@ -1466,7 +1466,7 @@ void function FS_Scenarios_Main_Thread()
 		foreach ( playerHandle, playerInWaitingStruct in FS_1v1_GetPlayersWaiting() )
 		{
 			entity player = playerInWaitingStruct.player
-			if ( !IsValid( player ) )
+			if ( !IsValidPlayer( player ) ) //IsValidPlayer will check if player is disconnecting as well
 			{
 				deleteWaitingPlayer(playerInWaitingStruct.handle) //struct contains players handle as basic int
 				continue
