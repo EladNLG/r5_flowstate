@@ -1487,6 +1487,7 @@ void function TrainArrivedAtStation_Internal()
 	SetGlobalNetInt( "WinterExpress_RoundState", eWinterExpressRoundState.ABOUT_TO_UNLOCK_STATION )
 	wait unlockDelay
 
+	UpdatePlayerCounts()
 	SetupObjectiveAtStation()
 	DesertlandsTrain_ClearAllowLeaveStation()
 
@@ -1496,7 +1497,7 @@ void function TrainArrivedAtStation_Internal()
 		thread TryDetermineRoundWinner( -1, eWinterExpressRoundEndCondition.NO_SQUADS_ALIVE )
 		return
 	}
-	else if ( GetGlobalNetInt( "squadsRemainingCount" ) == 1 )
+	else if ( GetGlobalNetInt( "squadsRemainingCount" ) == 1 && GetPlayerArray_Alive().len() > 0 ) //add safety check. Cafe
 	{
 		printf( "WINTER EXPRESS: Trying to check if alive player is last squad alive" )
 		thread ProcessLastSquadAlive( null, GetPlayerArray_Alive()[0] )
