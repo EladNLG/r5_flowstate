@@ -830,13 +830,14 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 	if( !IsValid( projectile ) )
 		return
 	
-	entity pylonowner = vortexTrigger.GetOwner()
 	entity pylon = vortexTrigger.GetParent()
 
 	entity playersTrigger = vortexTrigger.GetLinkEnt()
 
 	if ( !IsValid( pylon ) )
 		return
+	
+	entity pylonowner = pylon.GetBossPlayer()
 
 	if ( !projectile.DoesShareRealms( pylon ) )
 		return
@@ -845,11 +846,8 @@ void function Pylon_OnProjectilesTriggerTouch( entity vortexSphere, entity vorte
 		return
 
 	//If TROPHY_DESTROY_FRIENDLY_PROJECTILES is set to false dont destroy teammates projectiles
-	if( !TROPHY_DESTROY_FRIENDLY_PROJECTILES && IsValid( pylonowner ) )
-	{
-		if( projectile.GetTeam() == pylonowner.GetTeam() )
-			return
-	}
+	if( !TROPHY_DESTROY_FRIENDLY_PROJECTILES && IsValid( pylonowner ) && projectile.GetTeam() == pylonowner.GetTeam() )
+		return
 
 	//Check if the player threw the projectile in the trigger range
 	//If so dont zap this entity
@@ -961,7 +959,12 @@ void function OnTrophyShieldAreaEnter( entity trigger, entity ent )
 	printl("[pylon] entered - " + ent)
 	
 	entity trophy = trigger.GetParent() 
+	entity pylonowner = trophy.GetBossPlayer()
 
+	//If TROPHY_DESTROY_FRIENDLY_PROJECTILES is set to false dont destroy teammates projectiles
+	if( !TROPHY_DESTROY_FRIENDLY_PROJECTILES && IsValid( pylonowner ) && ent.GetTeam() == pylonowner.GetTeam() )
+		return
+	
 	if( ent.GetClassName()  == "grenade" )
 	{
 		HandleProjectileDestruction( null, trophy, ent )
