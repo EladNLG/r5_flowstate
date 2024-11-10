@@ -959,6 +959,10 @@ void function OnTrophyShieldAreaEnter( entity trigger, entity ent )
 	printl("[pylon] entered - " + ent)
 	
 	entity trophy = trigger.GetParent() 
+	
+	if( !IsValid( trophy ) )
+		return
+	
 	entity pylonowner = trophy.GetBossPlayer()
 
 	//If TROPHY_DESTROY_FRIENDLY_PROJECTILES is set to false dont destroy teammates projectiles
