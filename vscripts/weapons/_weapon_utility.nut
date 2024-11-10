@@ -2625,7 +2625,8 @@ void function AddToTrackedEnts( entity player, entity ent )
 		
 		if( IsValid( group ) )
 		{
-			if( GetScriptManagedEntArrayLen( group.trackedEntsArrayIndex ) > 0 )
+			int entArrayLen = GetScriptManagedEntArrayLen( group.trackedEntsArrayIndex )
+			if( entArrayLen > 0 && group.trackedEntsArrayIndex < entArrayLen )
 			{
 				AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
 				
