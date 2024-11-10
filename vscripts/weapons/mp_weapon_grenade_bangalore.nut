@@ -438,14 +438,17 @@ void function SmokeHighlight_Thread( entity player )
 				delete file.highlightedPlayersInSmoke[player]
 
 			#if SERVER
-			player.Highlight_SetCurrentContext( -1 )
+				if( player.Highlight_GetCurrentContext() > 0 )
+					player.Highlight_SetCurrentContext( -1 )
+				// else 
+					// Warning( "goteeem" )
 			#endif
 
 			#if CLIENT
-			foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
-			{
-				ManageHighlightEntity( otherPlayer )
-			}
+				foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
+				{
+					ManageHighlightEntity( otherPlayer )
+				}
 			#endif
 		}
 	)
@@ -454,7 +457,7 @@ void function SmokeHighlight_Thread( entity player )
 	const float effectMax = 0.2
 	int contextId = HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT // :nerd:
 
-	while(true)
+	for( ; ; )
 	{
 		array< entity > playersToHighlight
 		array< entity > playersToNotHighlight
