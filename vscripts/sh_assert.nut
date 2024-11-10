@@ -41,7 +41,10 @@ void function ErrorClientPlayer( string errorMsg )
 void function WaitValidPlayerThenError( entity player, string errorMsg )
 {
 	if( !IsValid( player ) )
+	{
+		RunUIScript( "OpenErrorDialog", errorMsg )
 		return
+	}
 		
 	player.ClientCommand( "disconnect " + errorMsg )
 	waitthread WaitSignalOrTimeout( player, 2, "OnDisconnected" )	
