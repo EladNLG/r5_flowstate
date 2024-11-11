@@ -1203,7 +1203,11 @@ void function CreateSkyFall( entity ent, float radius = 80, bool debugdraw = fal
                 StopSoundOnEntity( panel, "weapon_bulletcasings_bounce" )
                 StopSoundOnEntity( panel, "survival_loot_pickup_3p_ammo" )
 
-                entity weapon = user.GetNormalWeapon( SURVIVAL_GetActiveWeaponSlot( user ) )
+                int slot = SURVIVAL_GetActiveWeaponSlot( user )
+                entity weapon
+                
+                if( slot > -1 )
+                    weapon = user.GetNormalWeapon( slot )
 
                 if( IsValid( weapon ) )
                 {
