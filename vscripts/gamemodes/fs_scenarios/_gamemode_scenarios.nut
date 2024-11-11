@@ -242,7 +242,7 @@ void function EntitiesDidLoad()
 {
 	vector mapCenter = SURVIVAL_GetMapCenter()
 	
-	Scenarios_SetWaitingRoomRadius( 3000 )
+	Scenarios_SetWaitingRoomRadius( 2600 )
 	SpawnFlowstateLobbyProps( mapCenter + <0,0,50000> )
 	
 	file.pWorldSpawn = GetEnt( "worldspawn" )
