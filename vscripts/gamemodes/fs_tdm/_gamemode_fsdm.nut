@@ -1791,7 +1791,8 @@ void function SetPlayerCustomModel( entity player, int index )
 void function ReCheckGodMode(entity player)
 {
 	wait 0.1
-	if(!IsValid(player) || IsValid(player) && !IsAlive(player)) return
+	if( !IsValid( player ) || !IsAlive( player ) ) 
+		return
 	
 	player.MakeVisible()
 	player.ClearInvulnerable()

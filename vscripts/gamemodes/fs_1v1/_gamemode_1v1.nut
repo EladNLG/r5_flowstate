@@ -68,7 +68,7 @@ global function ValidateBlacklistedWeapons
 
 global typedef PanelTable table<string, entity>
 const bool TEST_WORLDDRAW = false
-const bool RELEASE_TESTED = true
+const bool RELEASE_TESTED = false
 
 //DEV 
 #if DEVELOPER
@@ -2922,7 +2922,7 @@ bool function isGroupValid(soloGroupStruct group)
 
 void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复活死亡玩家和同一个sologroup的玩家
 {
-	if ( !IsValid(player) ) 
+	if ( !IsValid( player ) ) 
 		return
 	
 	if ( !player.p.isConnected ) 
@@ -3011,7 +3011,8 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 	
 	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
 
-	if(!IsValid(player)) return
+	if( !IsValid( player ) ) 
+		return
 
 	if( Equipment_GetDefaultShieldHP() > 0 && !Flowstate_IsLGDuels() )
 	{
@@ -3354,13 +3355,9 @@ void function Gamemode1v1_Init( int eMap )
 	
 	//INIT PRIMARY WEAPON SELECTION
 	if ( Flowstate_IsLGDuels() ) //todo fire a SetCallback to set
-	{
 		file.Weapons = [ "mp_weapon_lightninggun" ]	
-	} 
 	else 
-	{	
-		file.Weapons= file.custom_weapons_primary;
-	}
+		file.Weapons = file.custom_weapons_primary
 			
 	if ( file.Weapons.len() <= 0 )
 	{		
@@ -3391,17 +3388,12 @@ void function Gamemode1v1_Init( int eMap )
 	
 	//INIT SECONDARY WEAPON SELECTION	
 	if ( Flowstate_IsLGDuels() ) 
-	{
 		file.WeaponsSecondary = [ "mp_weapon_lightninggun" ] //Lg_Duel beta		
-	} 
-	else
-	{		
-		file.WeaponsSecondary = file.custom_weapons_secondary;	
-	}
+	else	
+		file.WeaponsSecondary = file.custom_weapons_secondary
 	
 	if ( file.WeaponsSecondary.len() <= 0 )
 	{
-
 		file.WeaponsSecondary = 
 		[	
 			//default R5R.DEV selection
@@ -3410,7 +3402,6 @@ void function Gamemode1v1_Init( int eMap )
 			"mp_weapon_mastiff shotgun_bolt_l2",
 			"mp_weapon_doubletake energy_mag_l3 stock_sniper_l3"	
 		]
-	
 	}
 
 	//R5RDEV-1
@@ -3429,9 +3420,7 @@ void function Gamemode1v1_Init( int eMap )
 	//FlagWait( "EntitiesDidLoad" ) //creates timing issues to wait here
 	
 	if( Playlist() == ePlaylists.fs_vamp_1v1 ) //Todo: This should be handled by the mode's script file using AddCallback_FlowstateSpawnsSettings
-	{
 		SpawnSystem_SetCustomPlaylist( "fs_1v1" )
-	}
 
 	eMap = SpawnSystem_FindBaseMapForPak( eMap )
 	array<SpawnData> allSoloLocations = SpawnSystem_ReturnAllSpawnLocations( eMap )
@@ -3472,9 +3461,7 @@ void function Gamemode1v1_Init( int eMap )
 			int teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 3 )
 			
 			for ( int j = 0; j < teamAmount; j++  )
-			{
 				p.respawnLocations.append( allSoloLocations[ i + j ].spawn )
-			}
 
 			p.Center = GetCenterOfCircle( p.respawnLocations )
 			
@@ -4570,14 +4557,10 @@ void function PlayerDisconnected_CheckChallenge( entity player )
 	entity opponent = returnChallengedPlayer( player )
 	
 	if( IsValid( opponent ) )
-	{
 		endLock1v1( opponent )
-	}
 	
 	if( player.p.handle in file.acceptedChallenges )
-	{
 		delete file.acceptedChallenges[ player.p.handle ]
-	}
 	
 	foreach( index, zstruct in file.allChallenges )
 	{
@@ -4631,6 +4614,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 	//printw( "giving weapons for players: ", players[0], players[1] )
 	thread function () : ( players )
 	{
+		
 		foreach( player in players )
 		{
 			if( !IsValid( player ) )
@@ -4641,6 +4625,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			Gamemode1v1_SetPlayerGamestate( player, e1v1State.MATCHING )
 		}
 
+		//could set up end signals on players for OnDestroy. 
 		wait 0.2
 
 		string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
@@ -4658,20 +4643,20 @@ void function GiveWeaponsToGroup( array<entity> players )
 				random_character = file.characters[characterslist[random_character_index]]
 			}
 		}
+
+		ArrayRemoveInvalid( players ) //(mk): we waited above
+		
+		if( !players.len() )
+			return
 		
 		bool bInChallenge = false
 		soloGroupStruct group = returnSoloGroupOfPlayer( players[0] )
 		
 		if( isGroupValid( group ) && group.IsKeep )
-		{
 			bInChallenge = true
-		}
 		
 		foreach( player in players )
-		{
-			if( !IsValid( player ) )
-				continue
-			
+		{		
 			if ( settings.bGiveSameRandomLegendToBothPlayers && random_character_index <= 10 )
 			{	
 				CharacterSelect_AssignCharacter( ToEHI( player ), random_character )
@@ -4708,9 +4693,8 @@ void function GiveWeaponsToGroup( array<entity> players )
 		}
 		
 		if( bInChallenge )
-		{
 			_decideLegend( group )	
-		}	
+			
 	}()
 }
 
