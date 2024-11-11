@@ -148,6 +148,7 @@ struct
 	bool fs_scenarios_characterselect_enabled = true
 	float fs_scenarios_ringclosing_maxtime = 120
 	float fs_scenarios_matchmaking_delay_after_dying = 8.0
+	bool fs_scenarios_recharge_tactical_only
 	
 	int waitingRoomRadius = 3000
 	array<LocPair> lobbyLocs
@@ -185,6 +186,7 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_characterselect_time_per_player = GetCurrentPlaylistVarFloat( "fs_scenarios_characterselect_time_per_player", 3.5 )
 	settings.fs_scenarios_ringclosing_maxtime = GetCurrentPlaylistVarFloat( "fs_scenarios_ringclosing_maxtime", 100 )
 	settings.fs_scenarios_matchmaking_delay_after_dying = GetCurrentPlaylistVarFloat( "fs_scenarios_matchmaking_delay_after_dying", 8.0 )
+	settings.fs_scenarios_recharge_tactical_only = GetCurrentPlaylistVarBool( "fs_scenarios_recharge_tactical_only", true )
 
 	settings.lobbyLocs.append( NewLobbyPair( <-495.617645, 1285.12402, 50272.0625> , <0, -42.2699738, 0>))
 	settings.lobbyLocs.append( NewLobbyPair( <-460.676514, 20.4265499, 50272.0625> , <0, 49.0330009, 0>))
@@ -2100,7 +2102,7 @@ void function FS_Scenarios_Main_Thread()
 							Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")
 							Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 							
-							array<string> loot = ["mp_weapon_frag_grenade", "mp_weapon_grenade_emp", "mp_weapon_thermite_grenade", "health_pickup_combo_full", "health_pickup_combo_large", "health_pickup_combo_large", "health_pickup_health_large", "health_pickup_health_large", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_health_small", "health_pickup_health_small"]
+							array<string> loot = [ "mp_weapon_frag_grenade", "health_pickup_ultimate", "health_pickup_ultimate", "health_pickup_combo_full", "health_pickup_combo_large", "health_pickup_combo_large", "health_pickup_health_large", "health_pickup_health_large", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_combo_small", "health_pickup_health_small", "health_pickup_health_small"]
 								foreach(item in loot)
 									SURVIVAL_AddToPlayerInventory(player, item)
 							
@@ -2433,7 +2435,7 @@ void function FS_Scenarios_StartCharacterSelectForGroup( scenariosGroupStruct gr
 			{
 				ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				CharacterSelect_AssignCharacter( player, selectedCharacter )
-				thread RechargePlayerAbilities( player ) // may need threaded or pass legend index in second param -- since you already have the flacor we should pass that directly to avoid double waits. 
+				thread RechargePlayerAbilities( player, -1, settings.fs_scenarios_recharge_tactical_only ) // may need threaded or pass legend index in second param -- since you already have the flacor we should pass that directly to avoid double waits. 
 			}
 
 			foreach ( player in FS_Scenarios_GetAllPlayersOfLockstepIndex( pickIndex + 1, players ) )

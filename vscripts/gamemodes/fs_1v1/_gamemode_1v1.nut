@@ -5114,7 +5114,7 @@ bool function ValidLegendRange( int i )
 	return i > file.minLegendRange && i < file.maxLegendRange
 }
 
-void function RechargePlayerAbilities( entity player, int index = -1 )
+void function RechargePlayerAbilities( entity player, int index = -1, bool noUltimate = false )
 {
 	if( !IsValid( player ) ){ return }
 	
@@ -5164,10 +5164,8 @@ void function RechargePlayerAbilities( entity player, int index = -1 )
 	
 	entity wep = player.GetOffhandWeapon( OFFHAND_INVENTORY )
 	
-	if( IsValid( wep ) )
-	{
+	if( !noUltimate && IsValid( wep ) )
 		wep.SetWeaponPrimaryClipCount( wep.GetWeaponPrimaryClipCountMax() )
-	}
 	
 	ReloadTactical( player )
 	player.Server_TurnOffhandWeaponsDisabledOff()
