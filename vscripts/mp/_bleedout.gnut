@@ -130,16 +130,21 @@ void function Bleedout_OnClientConnected( entity player )
 	file.isGivingFirstAid[ player ] <- false
 	file.IsGettingFirstAidFrom[ player ] <- null
 
+	if( !(player in file.playerBleedoutInfo) )
+		CreateBleedoutStructForPlayer( player )
+
+	Bleedout_SetPlayerBleedoutType( player, 0 )
+}
+
+void function CreateBleedoutStructForPlayer( entity player )
+{
 	BleedoutInfo info
 	info.attacker = null
 	info.attackerWeaponEnt = null
 	info.bleedoutStartTime = -999.0
 
 	file.playerBleedoutInfo[ player ] <- info
-
-	Bleedout_SetPlayerBleedoutType( player, 0 )
 }
-
 
 void function Bleedout_OnClientDisconnected( entity player )
 {
@@ -291,12 +296,19 @@ void function PlayerDying( entity player, entity attacker, var damageInfo )
 
 	file.playerBleedoutInfo[ player ].bleedoutStartTime = Time()
 	file.playerBleedoutInfo[ player ].attacker = attacker
-	file.playerBleedoutInfo[ player ].damageInfoClone = CloneScriptDamageInfo( damageInfo ) // todo(dw): aaaaaaaaaaa
+	
+	if( damageInfo != null )
+		file.playerBleedoutInfo[ player ].damageInfoClone = CloneScriptDamageInfo( damageInfo ) // todo(dw): aaaaaaaaaaa
 
 	// Melee_StoreBleedoutAttackerForVictim( player, attacker ) // needed to get cosmetic deathbox info
 
-	entity weapon = DamageInfo_GetWeapon( damageInfo )
-	file.playerBleedoutInfo[ player ].attackerWeaponEnt = weapon
+	entity weapon
+	
+	if( damageInfo != null )
+		weapon = DamageInfo_GetWeapon( damageInfo )
+	
+	if( IsValid( weapon ) )
+		file.playerBleedoutInfo[ player ].attackerWeaponEnt = weapon
 
 	float bleedoutEndTime = (Time() + bleedoutTime)
 	
@@ -377,7 +389,7 @@ void function PlayerDying( entity player, entity attacker, var damageInfo )
 	OnThreadEnd(
 		function() : ( player, ids, equipSlot, forceHolster, lastActiveSlot, forceCrouchHandle )
 		{
-			if ( IsValid( player ) )
+			if ( IsValidPlayer( player ) )
 			{
 				foreach ( id in ids )
 					StatusEffect_Stop( player, id )
@@ -557,6 +569,9 @@ void function SetPlayerNotBleedingOut( entity player )
 	if ( IsAlive( player ) )
 		player.SetUseDoomedAnims( false )
 
+	if( !(player in file.playerBleedoutInfo) ) //Safety check. Cafe. Shouldn't happen, but just in case.
+		CreateBleedoutStructForPlayer( player )
+		
 	// file.playerBleedoutInfo[ player ].damageSourceId = -1
 	// file.playerBleedoutInfo[ player ].bleedoutStartTime = -999.0
 	file.playerBleedoutInfo[ player ].attacker = null
@@ -926,6 +941,12 @@ string function GetReviveAnimation_Reviver( entity reviver, bool endCrouched )
 			return "Pilot_doomed_revive_crouch_shock_healthy"
 		else
 			return "Pilot_doomed_revive_shock_healthy"
+	} else if ( GibraltarIsInDome( reviver ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
+	{
+		if ( endCrouched )
+			return "Pilot_doomed_revive_crouch_slap_healthy"
+		else
+			return "Pilot_doomed_revive_stand_slap_healthy"
 	}
 
 	if ( endCrouched )
@@ -960,10 +981,10 @@ string function GetReviveAnimation_Victim( entity reviver, entity victim, bool e
 		setFile              = victim.GetPlayerSettings()
 		string rigWeight = GetGlobalSettingsString( setFile, "bodyModelRigWeight" )
 
-		if ( (StatusEffect_GetSeverity( reviver, eStatusEffect.ring_immunity ) > 0.0) && heatShieldSelfReviveTime < REVIVE_PASSIVE_SELF_REVIVE && canVRFastRevive )
-		{
-			return format( "mp_pt_%s%s", rigWeight, (endCrouched ? "_self_revive_crouch_fast" : "_self_revive_stand_fast") ) //todo: for Devan "Let me know how much buffer we have here." Animation is 9.67seconds.  Right now it works at 9 seconds but it has an extra 20 frames if we need.
-		}
+		// if ( (StatusEffect_GetSeverity( reviver, eStatusEffect.ring_immunity ) > 0.0) && heatShieldSelfReviveTime < REVIVE_PASSIVE_SELF_REVIVE && canVRFastRevive )
+		// {
+			// return format( "mp_pt_%s%s", rigWeight, (endCrouched ? "_self_revive_crouch_fast" : "_self_revive_stand_fast") ) //todo: for Devan "Let me know how much buffer we have here." Animation is 9.67seconds.  Right now it works at 9 seconds but it has an extra 20 frames if we need.
+		// }
 		return format( "mp_pt_%s%s", rigWeight, (endCrouched ? "_self_revive_crouch" : "_self_revive_stand") )
 	}
 
@@ -973,6 +994,12 @@ string function GetReviveAnimation_Victim( entity reviver, entity victim, bool e
 			return "Pilot_doomed_revive_crouch_shock_injured"
 		else
 			return "Pilot_doomed_revive_shock_injured"
+	}else if ( GibraltarIsInDome( reviver ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
+	{
+		if ( endCrouched )
+			return "Pilot_doomed_revive_crouch_slap_injured"
+		else
+			return "Pilot_doomed_revive_stand_slap_injured"
 	}
 
 	if ( endCrouched )
@@ -1298,6 +1325,11 @@ float function Bleedout_SetRevivedPlayerHealth( entity reviver, entity target )
 		targetHealth = min( targetHealth, target.GetMaxHealth() )
 	}
 
+	// if ( reviver.HasPassive( ePassives.PAS_SUPPORT_REVIVES ) )
+	// {
+		// targetHealth = float( target.GetMaxHealth() )
+	// }
+	
 	return targetHealth
 }
 

@@ -478,8 +478,8 @@ float function Bleedout_GetBaseFirstAidTime( entity player )
 {
 	int type = player.GetPlayerNetInt( "bleedoutType" )
 
-	// if ( GibraltarIsInDome( player ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
-		// return GIB_DOME_REVIVE_TIME
+	if ( GibraltarIsInDome( player ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
+		return GIB_DOME_REVIVE_TIME
 
 	return file.bleedoutTypes[ type ].firstAidTime
 }
