@@ -162,8 +162,9 @@ void function GamemodeSurvival_Init()
 	AddCallback_OnPlayerRespawned( Survival_OnPlayerRespawned )
 	AddDamageCallbackSourceID( eDamageSourceId.deathField, RingDamagePunch )
 
+	AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
+	
 	#if DEVELOPER //uncommented dev defines
-		AddClientCommandCallback("Flowstate_AssignCustomCharacterFromMenu", ClientCommand_Flowstate_AssignCustomCharacterFromMenu)
 		AddClientCommandCallback("SpawnDeathboxAtCrosshair", ClientCommand_deathbox)
 		AddClientCommandCallback("forceBleedout", ClientCommand_bleedout)
 		AddClientCommandCallback("lsm_restart", ClientCommand_restartServer)
