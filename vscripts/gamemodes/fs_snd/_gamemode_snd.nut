@@ -3364,6 +3364,8 @@ void function CleanupGroundAfterEachRound()
 
 void function TrackPlayerSprinting(entity player)
 {
+	EndSignal( player, "OnDestroy" )
+	
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.JUMP, OnPlayerJumpedStamina )
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.MANTLE, OnPlayerMantleStamina )
 
@@ -3377,6 +3379,10 @@ void function TrackPlayerSprinting(entity player)
 			player.SetPlayerNetBool( "playerStaminaRecovering", true )
 			player.ForceStand()
 			waitthread StaminaRegenAfterOut(player)
+			
+			if( !IsValid( player ) )
+				break
+			
 			player.UnforceStand()
 			StatusEffect_StopAllOfType( player, eStatusEffect.move_slow)
 			player.SetPlayerNetBool( "playerStaminaRecovering", false )
@@ -3432,6 +3438,8 @@ void function OnPlayerJumpedStamina(entity player)
 
 void function StaminaRegenAfterOut(entity player)
 {
+	EndSignal( player, "OnDestroy" )
+	
 	while( IsValid( player ) && player.GetPlayerNetInt( "playerStamina" ) < 100)
 	{
 		player.SetPlayerNetInt( "playerStamina", player.GetPlayerNetInt( "playerStamina" ) + 1 )
