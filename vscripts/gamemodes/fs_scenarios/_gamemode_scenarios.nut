@@ -28,6 +28,7 @@ global function FS_Scenarios_getWaitingRoomLocation
 global function FS_Scenarios_ForceRest
 global function FS_Scenarios_SetupPanels
 global function FS_Scenarios_ClientCommand_Rest
+global function FS_Scenarios_PlayerCanPing
 
 #if TRACKER 
 	global function Scenarios_PlayerDataCallbacks
@@ -2862,6 +2863,14 @@ void function DefinePanelCallbacks( PanelTable panels )
 			FS_Scenarios_ClientCommand_Rest( user, [] )
 		}
 	)
+}
+
+bool function FS_Scenarios_PlayerCanPing( entity player )
+{
+	if( !IsCurrentState( player, e1v1State.MATCHING ) )
+		return false 
+		
+	return true
 }
 
 int function DetermineLowThreshold( int teamAmount, int playersPerTeam )
