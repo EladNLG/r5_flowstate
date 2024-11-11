@@ -1581,11 +1581,7 @@ void function PIN_Init()
 		string message = format( "R5R.DEV metrics initialized at:  %d ", GetUnixTimestamp() )
 		printt( message )
 		
-		AddCallback_OnClientDisconnected( PlayerDisconnectedCallback )	
-		
-		if ( Ea_Verify_Server() ) //You should not attempt to enable this, the backend will verify..
-			AddClientCommandCallback( "ea_verify", ClientCommand_mkos_ea_verify ) 
-		
+		AddCallback_OnClientDisconnected( PlayerDisconnectedCallback )		
 		AddCallback_OnWeaponAttack( WeaponAttack )
 		
 		RegisterSignal( "SuperglideDetectionResetStats" ) 
@@ -1593,6 +1589,9 @@ void function PIN_Init()
 		
 		file.FS_MaxHealth = ( GetCurrentPlaylistVarFloat( "default_shield_hp", 0 ) ) + 100 //TODO: Use health/shield getters
 	}
+	
+	if ( Ea_Verify_Server() ) //You should not attempt to enable this, the backend will verify..
+		AddClientCommandCallback( "ea_verify", ClientCommand_mkos_ea_verify )
 	
 	//moved to r5rdev_config.json for security reasons
 	file.DISCORD_PLAYERS_WEBHOOK = ( GetCurrentPlaylistVarString( "DISCORD_PLAYERS_WEBHOOK", "" ) )
