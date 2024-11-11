@@ -76,7 +76,7 @@ void function Sh_FS_MovementRecorder_Init()
 {
 	#if CLIENT
 		AddCallback_OnClientScriptInit( FS_MovementRecorder_SetBindings )
-		AddClientCallback_OnResolutionChanged( FS_MovementRecorder_OnResolutionChanged )
+		AddClientCallback_OnResolutionChanged( FS_MovementRecorder_OnResolutionChanged )	
 	#endif
 	
 	#if SERVER
@@ -234,6 +234,9 @@ string function MovementRecorder_GetSavedBindCommand( string keyName )
 
 void function FS_MovementRecorder_ResetAllBindings( entity player )
 {
+	if( player != GetLocalClientPlayer() )
+		return 
+		
 	foreach( keyName, _ in RECORDER_BINDINGS )
 	{
 		string commandToRestore = MovementRecorder_GetSavedBindCommand( keyName )
