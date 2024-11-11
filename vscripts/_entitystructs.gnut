@@ -1148,6 +1148,8 @@ global struct ServerPlayerStruct
 	//instagib
 	int railjumptimes = 0
 	int shotsfired = 0
+	
+	int quickHealEnableCount
 }
 
 global struct ChallengeScore
