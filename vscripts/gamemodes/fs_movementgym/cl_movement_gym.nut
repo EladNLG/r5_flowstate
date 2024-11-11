@@ -3,7 +3,7 @@ untyped
 globalize_all_functions
 
 //  +-++-+-  -+-++-++-+++++-+  +-+- -+-+
-//  ���� �++++�� ����� ��� �   � -+-+���
+//  ¦¦¦¦ ¦++++¦¦ ¦¦¦¦¦ ¦¦¦ ¦   ¦ -+-+¦¦¦
 //  - -+-+ ++ +-+- -+-++++ -   +-+ - - -
 //  
 //  Client Script
@@ -83,7 +83,7 @@ float PBGhostDurationTime
 
 
 //  -+++-+-+-+-++-++-+
-//  ����� � �+-� � +� 
+//  ¦¦¦¦¦ ¦ ¦+-¦ ¦ +¦ 
 //  -+++- - -- - - +-+
 void function Cl_MovementGym_Init()
 {
@@ -160,7 +160,7 @@ void function MG_ServerCallback_Invis(){
 }
 
 //  +-++-++-++-+- -+-++-++-+- -
-//  +-+ � � �+-+���+-� � �  +-�
+//  +-+ ¦ ¦ ¦+-+¦¦¦+-¦ ¦ ¦  +-¦
 //  +-+ - +-+-  +-+- - - +-+- -
 void function MG_StopWatch_toggle(bool visible){
 	if(visible == true){
@@ -296,7 +296,7 @@ void function MG_StopWatch_destroy(){
 
 
 //  +-++-++-++-++-++-++-++-++-++-+--+
-//  +-++-++� +�  ��� ����+�  � +� +-+
+//  +-++-++¦ +¦  ¦¦¦ ¦¦¦¦+¦  ¦ +¦ +-+
 //  +-+-  +-++-+--++-+- -+-+ - +-+-+-
 void function MG_Speedometer_toggle(bool visible){
 	if(visible == true){
@@ -420,7 +420,7 @@ void function MG_Speedometer_destroy(){
 
 
 //  +-++-+++++-+  +-+- -+-++-+-+-+-++-+-++++-+  +-++-++-++-++-++-++-+
-//  +-++� ��� ��  �  +-�+� �  +-++-+� ����� �   ���+� +-++-++-�� -+� 
+//  +-++¦ ¦¦¦ ¦¦  ¦  +-¦+¦ ¦  +-++-+¦ ¦¦¦¦¦ ¦   ¦¦¦+¦ +-++-++-¦¦ -+¦ 
 //  +-++-++++--+  +-+- -+-++-+- --  +-+-+++ -   - -+-++-++-+- -+-++-+
 void function MG_Checkpoint_Msg(){
 	
@@ -459,7 +459,7 @@ void function MG_ForceLighting(){
 
 
 //  +-++-+-  -+-++-++-+++++-+  - -+-++-++-+  +-+-  -+-+--+-  +-+- -
-//  ���� �+++++� ���+� ��� �   ����-�+-+ ��  � �+++++� +-+�  +-�+-+
+//  ¦¦¦¦ ¦+++++¦ ¦¦¦+¦ ¦¦¦ ¦   ¦¦¦¦-¦+-+ ¦¦  ¦ ¦+++++¦ +-+¦  +-¦+-+
 //  - -+-+ ++ +-+- -+-++++ -   +-+- -+-+--+  +-+ ++ +-+-+---+- - - 
 void function MG_MovementOverlay_toggle(bool visible){
 	
@@ -588,7 +588,7 @@ void function MG_MovementOverlay_SPACE_Released(var button){
 
 
 //  - -- +-+--++-+-+---  -    +-++-+- --  +-++-++-++-++-+--+
-//  � ��  � +-++-�+-+��  �    +-+ � +-+�  +� ���+�  � +� +-+
+//  ¦ ¦¦  ¦ +-++-¦+-+¦¦  ¦    +-+ ¦ +-+¦  +¦ ¦¦¦+¦  ¦ +¦ +-+
 //  +-+--+- -+-- -- ----+--+  +-+ -  - --++-+- -+-+ - +-+-+-
 void function MG_Ultrakill_styleemeter_toggle(bool visible){
 	if(visible == true){
@@ -937,7 +937,7 @@ void function MG_Pet_setActive(string petname){
 }
 
 //  -  -+-+--+- -  +-++-++-+-    -++++-+--++-+  +-++-++-++-+--++-+
-//  +++++� +-++-+  �  � �� ��    ���� � +-+� �  �  +-����+� +-++-�
+//  +++++¦ +-++-+  ¦  ¦ ¦¦ ¦¦    ¦¦¦¦ ¦ +-+¦ ¦  ¦  +-¦¦¦¦+¦ +-++-¦
 //   ++ +-+-+- -   +-++-++-+--+  -+++ - -+-+-+  +-+- -- -+-+-+-- -
 void function MG_CoolCamera(){
 	
@@ -1317,7 +1317,7 @@ void function MG_SpecCam_Destroy()
 
 
 //  +-++-++-+- -+++  +-+++   +-+-+-++-+--++-+
-//  +-++-++-�������  �-+�-+   � ����+� +-++-+
+//  +-++-++-¦¦¦¦¦¦¦  ¦-+¦-+   ¦ ¦¦¦¦+¦ +-++-+
 //  +-+-  - -+-++++  -  +-+   - -- -+-+-+-+-+
 void function MG_Spawn_PB_Timers()
 {
@@ -1336,6 +1336,34 @@ void function MG_Spawn_PB_Timers()
 	
 	MG_CreateTextInfoPanel( MG_Convert_Sec_to_Time(pb_time_m4), "", < 10450, 9710, -4317 >, < 0, 180, 0 >, 15, 4, 1) //PB
 	MG_CreateTextInfoPanel( MG_Convert_Sec_to_Time(lasttime_m4), "", < 10450, 9637, -4317 >, < 0, 180, 0 >, 15, 4, 2) //LAST TIME
+
+	///////////////////////////////////////////// HUB PROPS /////////////////////////////////////////////
+	//
+	// ** Info **
+	MG_CreateTextInfoPanel( "MOVEMENT HUB", "", < 690, -736, 40861.3 >, < 0, -45, 0 >, 50, 99, 3)
+	MG_CreateTextInfoPanel( "The Movement Community's Home", "", < 910, -510, 40986 >, < 0, -45, 0 >, 35, 99, 0)
+	//
+	// ** Gym Map **
+	MG_CreateTextInfoPanel( "Gym Map", "", < 501.64, -4.1, 40368 >, < -15, 0, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "Difficulty: Easy", "", < 478.54, 47.70, 40455 >, < -15, 0, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "", "by: LoyTakian", < 484.74, -4.1, 40436.77 >, < -15, 0, 0 >, 10, 99, 3)
+	//
+	// ** It Hurts Map **
+	MG_CreateTextInfoPanel( "It Hurts", "", < -74.96, 576.9, 40368 >, < -15, 90, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "Difficulty: Hard", "", < -126.96, 553.9, 40455 >, < -15, 90, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "","by: LoyTakian", < -74.96, 559.1, 40435.67 >, < -15, 90, 0 >, 10, 99, 3)
+	//
+	// ** Mantle Jump Map **
+	MG_CreateTextInfoPanel( "Mantle Jump Map", "", < -640.96, -3, 40368 >, < -15, -180, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "Difficulty: Medium", "", < -617.96, -55, 40455 >, < -15, -180, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "", "by: LoyTakian  &  Treeree", < -623.06, -3, 40435.57 >, < -15, -180, 0 >, 10, 99, 3)
+	//
+	// ** First Map **
+	MG_CreateTextInfoPanel( "First Map", "", < -75.85, -583.7, 40368 >, < -15, -90, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "Difficulty: Medium", "", < -14.45, -560, 40455 >, < -15, -90, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "", "by: JayTheYggDrasil  &  Treeree", < -70.7584, -565.4001, 40434.67 >, < -15, -90, 0 >, 10, 99, 3)
+	//
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void function MG_ButtonImgs()
@@ -1358,7 +1386,7 @@ void function MG_ButtonImgs()
 }
 
 //  +-++-+-  -+-+  +-++-+   +++- -+-+
-//  +-++-�+++++�    � � �   ���� � � 
+//  +-++-¦+++++¦    ¦ ¦ ¦   ¦¦¦¦ ¦ ¦ 
 //  +-+- - ++ +-+   - +-+  o++++-+ - 
 void
 function MovementGymSavePBToFile() {
@@ -1563,7 +1591,7 @@ void function MG_CustomPilotRUI( entity player, var rui ) {
 }
 
 //  +-+-  +-++-++-+-+-+  +-++-+-  -+-++-++-+++++-+
-//  �  �  +-�+-++-+��    ���� �+++++� ���+� ��� � 
+//  ¦  ¦  +-¦+-++-+¦¦    ¦¦¦¦ ¦+++++¦ ¦¦¦+¦ ¦¦¦ ¦ 
 //  +-+--+- -+-++-+-+-+  - -+-+ ++ +-+- -+-++++ - 
 void function Cl_Classic_Movement(){
 	
@@ -1594,6 +1622,3 @@ void function Cl_Classic_Movement_AutoBHOP(){
 		wait 0.005
 	}
 }
-
-
-
