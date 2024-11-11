@@ -235,6 +235,7 @@ void function SurvivalFreefall_Init()
 		PrecacheModel( CLOUD_MODEL )
 		PrecacheImpactEffectTable( "human_land_jetwash" )
 
+		RegisterSignal( "DevPlaneTest" )
 		RegisterSignal( "PlayerSkyDive" )
 		RegisterSignal( "PlayerSkydiveFromCurrentPosition" )
 		RegisterSignal( "PlayerFallAssistanceDetection" )
