@@ -1098,6 +1098,14 @@ void function ByRef_ConsistencyCheck()
 	
 	#if CLIENT
 		file.iConsistencyCheck = file.functionrefs.len()
+		
+		AddCallback_OnPlayerDisconnected
+		(
+			void function( entity player )
+			{
+				file.bConsistencyCheckComplete = false
+			}
+		)
 	#endif
 }
 
