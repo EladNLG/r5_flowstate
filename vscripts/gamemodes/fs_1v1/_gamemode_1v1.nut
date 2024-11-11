@@ -1442,53 +1442,54 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 				return true
 			}
 			
-			if( param == "" )
+			//because we don't want to have to update the client always,
+			//this param comes as a clientcommand with the legend guid ref
+			string param2 = ""
+			if( args.len() > 2 )
+				param2 = args[2]
+			
+			if( param == "" || param2 == "" )
 			{
 				Remote_CallFunction_NonReplay( player, "Gamemode1v1_ForceLegendSelector_Deprecated" )
-			}
-			else if( param == "help" )
-			{
-				string legendList = "\n\n\n\n\n\n\n\n\n\n\n";
-				
-				int j = 0
-				foreach( legend in LEGEND_INDEX_ARRAY )
-				{
-					legendList += format("%d = %s \n", j, legend)
-					j++;
-				}
-				
-				Message( player, "LEGENDS", legendList, 20 )
 				return true
 			}
 			
-			string param2 = ""
+			// else if( param == "help" )
+			// {
+				// string legendList = "\n\n\n\n\n\n\n\n\n\n\n";
+				
+				// int j = 0
+				// foreach( legend in LEGEND_INDEX_ARRAY )
+				// {
+					// legendList += format("%d = %s \n", j, legend)
+					// j++;
+				// }
+				
+				// Message( player, "LEGENDS", legendList, 20 )
+				// return true
+			// }
 			
-			//because we don't want to have to update the client always,
-			//this param comes as a clientcommand with the legend guid ref
-			if( args.len() > 2 )
-			{
-				param2 = args[2]
-			}
+
 		
 			string legend = "undefined";
 			int index = -1;
 			int indexMapLen = LEGEND_INDEX_ARRAY.len()
 			
-			if( IsNumeric( param, 0, indexMapLen ) )
-			{
-				index = param.tointeger()
-			}
-			else 
-			{
-				index = -1
-				for( int i = 0; i < indexMapLen; i++ )
-				{
-					if ( LEGEND_INDEX_ARRAY[i].tolower() == param.tolower() )
-					{
-						index = i;
-					}
-				}	
-			}
+			// if( IsNumeric( param, 0, indexMapLen ) )
+			// {
+				// index = param.tointeger()
+			// }
+			// else 
+			// {
+				// index = -1
+				// for( int i = 0; i < indexMapLen; i++ )
+				// {
+					// if ( LEGEND_INDEX_ARRAY[i].tolower() == param.tolower() )
+					// {
+						// index = i;
+					// }
+				// }	
+			// }
 			
 			if( param2 != "" )
 			{
