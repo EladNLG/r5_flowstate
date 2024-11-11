@@ -75,13 +75,23 @@ int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
 	return 0;
 }
 
+const array<int> playlistExtendedHighlightRange = [
+	ePlaylists.fs_1v1,
+	ePlaylists.fs_lgduels_1v1,
+	ePlaylists.fs_vamp_1v1,
+	ePlaylists.fs_dm_fast_instagib
+]
+
 void function Sh_CustomTDM_Init()
 {
-
 	file.highlightDistance = GetCurrentPlaylistVarFloat( "redish_highlight_los_range", 30 ) * METERS_TO_INCHES
 	
+	if( playlistExtendedHighlightRange.contains( Playlist() ) )
+	{
+		file.highlightDistance = 900 * METERS_TO_INCHES
+	}
+	
     // Map locations
-
     switch( MapName() )
     {
 	case eMaps.mp_rr_olympus_mu1:
