@@ -298,6 +298,9 @@ void function LGUN_TryRailJump( entity player )
 
 void function ServerCallback_CreatesLaserFXFromServer( entity fromPlayer, vector origin, vector direction )
 {
+	if( !IsValid( fromPlayer ) )
+		return
+	
 	if( fromPlayer != GetLocalViewPlayer() )
 	{
 		OnEnemyPlayerShoot( fromPlayer, origin, direction ) //this method should ensure correct endpos for the laser (the actual hitscan weapon endpos and not a predicted one) Cafe
