@@ -132,6 +132,8 @@ struct
 
 	float fs_scenarios_max_queuetime = 30.0
 	int fs_scenarios_min_players_forced_match = 2 // used only when max_queuetime is triggered
+	int fs_scenarios_low_player_threshold
+	float fs_scenarios_max_queuetime_low
 	
 	bool fs_scenarios_ground_loot = false
 	bool fs_scenarios_inventory_empty = false
@@ -158,11 +160,17 @@ array< bool > teamSlots
 void function Init_FS_Scenarios()
 {
 	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
-	settings.fs_scenarios_playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
-	settings.fs_scenarios_teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
 	
-	settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 30.0 )
+	int playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
+	int teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
+	
+	settings.fs_scenarios_playersPerTeam = playersPerTeam
+	settings.fs_scenarios_teamAmount = teamAmount
+	
+	settings.fs_scenarios_max_queuetime = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime", 35.0 )
 	settings.fs_scenarios_min_players_forced_match =  GetCurrentPlaylistVarInt( "fs_scenarios_min_players_forced_match", 2 )
+	settings.fs_scenarios_low_player_threshold = GetCurrentPlaylistVarInt( "fs_scenarios_low_player_threshold", DetermineLowThreshold( teamAmount, playersPerTeam ) )
+	settings.fs_scenarios_max_queuetime_low = GetCurrentPlaylistVarFloat( "fs_scenarios_max_queuetime_low", 15.0 )
 	
 	settings.fs_scenarios_ground_loot = GetCurrentPlaylistVarBool( "fs_scenarios_ground_loot", true )
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
@@ -1670,8 +1678,16 @@ void function FS_Scenarios_Main_Thread()
 			if( player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) == -1 ) //shouldn't happen but just in case
 				player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
 			
-			if( Time() - player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) > settings.fs_scenarios_max_queuetime )
-				playersThatForceMatchmaking++
+			if( GetGlobalNetInt( "livingPlayerCount" ) >= settings.fs_scenarios_low_player_threshold )
+			{
+				if( Time() - player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) > settings.fs_scenarios_max_queuetime )
+					playersThatForceMatchmaking++
+			}
+			else 
+			{
+				if( Time() - player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) > settings.fs_scenarios_max_queuetime_low )
+					playersThatForceMatchmaking++
+			}
 			
 			waitingPlayers.append( player )
 		}
@@ -2840,6 +2856,11 @@ void function DefinePanelCallbacks( PanelTable panels )
 			FS_Scenarios_ClientCommand_Rest( user, [] )
 		}
 	)
+}
+
+int function DetermineLowThreshold( int teamAmount, int playersPerTeam )
+{
+	return teamAmount * playersPerTeam 
 }
 
 #if TRACKER
