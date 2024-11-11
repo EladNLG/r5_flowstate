@@ -399,6 +399,16 @@ void function Localization_ConsistencyCheck()
 			}
 		)
 	#endif
+	
+	#if CLIENT
+		AddCallback_OnPlayerDisconnected
+		(
+			void function( entity player )
+			{
+				file.bConsistencyCheckComplete = false
+			}
+		)
+	#endif
 }
 // end SHARED
 
