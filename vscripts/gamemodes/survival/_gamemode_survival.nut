@@ -1387,6 +1387,9 @@ void function Delayed_TryEliminateTeammates( entity victim, entity attacker = nu
 	foreach ( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
 	{
 		wait 0.1
+		if( !IsValid( player ) ) //
+			continue
+			
 		if ( GetGameState() <= eGameState.Playing &&
 				IsAlive( player ) &&
 				player != victim &&
@@ -1406,6 +1409,10 @@ void function Delayed_TryEliminateTeammates( entity victim, entity attacker = nu
 
 	EndSignal( attacker, "OnDestroy" )
 	wait 0.1
+	
+	
+	if( !IsValid( attacker ) || !IsValid( victim ) ) //check again since waited frames...
+		return
 
 	if( attacker.IsPlayer() && bleedingMatesKilled != 0 ) //Squad wipe logic should only be triggered if there are not bleeding teammates
 	{
@@ -1420,7 +1427,8 @@ void function Delayed_TryEliminateTeammates( entity victim, entity attacker = nu
 		
 		foreach ( func in file.Callbacks_OnAttackerSquadWipe )
 			func( victim, attacker )
-	} else if( attacker.IsPlayer() && bleedingMatesKilled == 0 )
+	} 
+	else if( attacker.IsPlayer() && bleedingMatesKilled == 0 )
 	{
 		if( IsPlaylistAllowedForDefaultKillNotifications() && GetCurrentPlaylistVarBool( "flowstate_rat_wipe_notification", false ) )
 		{
