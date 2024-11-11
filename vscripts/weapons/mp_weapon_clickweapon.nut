@@ -248,7 +248,10 @@ bool function LGUN_CanPlayerRailjump( entity player ) //Cafe
 	
 	float distanceValue = min( traceDistance, LG_MAX_DISTANCE_RAILJUMP_TRACE )
 	distanceValue = distanceValue / LG_MAX_DISTANCE_RAILJUMP_TRACE
+	
+	#if DEVELOPER
 	printw( "Distance to the endPos", traceDistance, distanceValue )
+	#endif
 	
 	if( distanceValue < 0.1 )
 		return false

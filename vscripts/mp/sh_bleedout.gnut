@@ -59,8 +59,7 @@ const bool DEFAULT_FORCE_WEAPON_HOLSTER = true
 const bool DEFAULT_DEATH_ON_TEAM_BLEEDOUT = true
 
 //MEDIC BLEEDOUT RULES
-const float MEDIC_FIRSTAID_TIME = 4.5
-const float GIB_DOME_REVIVE_TIME = 4.5
+const float SUPPORT_REVIVE_TIME = 4.5
 global const float VOID_RING_REVIVE_TIME = 4.5
 global const float VOID_RING_SELF_REVIVE_TIME = 9
 global const bool VOID_RING_CAN_FAST_REVIVE = true
@@ -466,11 +465,6 @@ float function Bleedout_GetFirstAidTime( entity player )
 		firstAidTimeScaler = 0.65
 	}
 
-	// if( PlayerHasPassive( player, ePassives.PAS_FASTER_REVIVES ) )
-	// {
-		// firstAidTimeScaler = Bleedout_GetFastReviveScaler()
-	// }
-
 	return Bleedout_GetBaseFirstAidTime( player ) * firstAidTimeScaler
 }
 
@@ -478,8 +472,8 @@ float function Bleedout_GetBaseFirstAidTime( entity player )
 {
 	int type = player.GetPlayerNetInt( "bleedoutType" )
 
-	if ( GibraltarIsInDome( player ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 1 ) == 1 )
-		return GIB_DOME_REVIVE_TIME
+	if ( PlayerHasPassive( player, ePassives.PAS_SUPPORT ) )
+		return SUPPORT_REVIVE_TIME
 
 	return file.bleedoutTypes[ type ].firstAidTime
 }

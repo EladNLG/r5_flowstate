@@ -32,6 +32,8 @@ global function PlayerHasStealthMovement
 
 #if SERVER
 global function AttemptDecoyDrop
+global function EnableQuickHeal
+global function DisableQuickHeal
 #endif
 
 
@@ -93,7 +95,8 @@ global enum ePassives
 	PAS_ARMOR_5,
 	PAS_ARMOR_6,
 	PAS_ARMOR_7,
-	PAS_SLIPSTREAM
+	PAS_SLIPSTREAM,
+	PAS_SUPPORT
 	
 	_count,
 }
@@ -532,18 +535,39 @@ void function PassiveToggleFastHeal( entity player, int passive, bool didHave, b
 
 	if ( didHave )
 	{
-		TakeExtraWeaponMod( player, "fast_heal" )
-		if ( PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
-			GiveExtraWeaponMod( player, "lifeline_heal" )
+		TakeExtraWeaponMod( player, "quick_heal" )
+		// if ( InDomeShield( player ) )
+			// GiveExtraWeaponMod( player, "quick_heal" )
 	}
 
 	if ( nowHas )
 	{
-		if ( PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
-			TakeExtraWeaponMod( player, "lifeline_heal" )
-		GiveExtraWeaponMod( player, "fast_heal" )
+		if ( player.GetExtraWeaponMods().contains( "quick_heal" ) )
+			TakeExtraWeaponMod( player, "quick_heal" )
+		// GiveExtraWeaponMod( player, "fast_heal" )
+		GiveExtraWeaponMod( player, "quick_heal" )
 	}
 }
+
+void function EnableQuickHeal( entity player )
+{
+	if ( player.p.quickHealEnableCount == 0 )
+	{
+		GiveExtraWeaponMod( player, "quick_heal" )
+	}
+
+	player.p.quickHealEnableCount++
+}
+
+void function DisableQuickHeal( entity player )
+{
+	player.p.quickHealEnableCount--
+	Assert( player.p.quickHealEnableCount >= 0, "< 0 can cause bugs" )
+	if ( player.p.quickHealEnableCount == 0 )
+		TakeExtraWeaponMod( player, "quick_heal" )
+}
+
+
 void function ThreadSlipstream_Passive( entity player, int passive, bool didHave, bool nowHas )
 {
 	thread Slipstream_Passive(player, passive, didHave, nowHas)

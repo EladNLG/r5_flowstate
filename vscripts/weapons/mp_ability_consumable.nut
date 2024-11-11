@@ -518,7 +518,7 @@ void function OnWeaponActivate_Consumable( entity weapon )
 					if ( InPrediction() )
 			#endif
 			{
-				if( modName != "ultimate_battery" )
+				if( modName != "ultimate_battery" && !PlayerHasPassive( weaponOwner, ePassives.PAS_SUPPORT ) )
 					useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.479 ) )
 	
 				useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.disable_wall_run_and_double_jump, 1.0 ) )
@@ -545,7 +545,12 @@ void function OnWeaponActivate_Consumable( entity weapon )
 	{
 		if ( Time() - file.playerToLastHealChatterTime[ weaponOwner ] > HEAL_CHATTER_DEBOUNCE )
 		{
-			file.playerToLastHealChatterTime[ weaponOwner ] <- Time()
+			#if CLIENT
+			if ( !IsSpectatorSpectatingPlayer( weaponOwner ) )
+			#endif
+			{
+			
+				file.playerToLastHealChatterTime[ weaponOwner ] <- Time()
 				if(modName == "phoenix_kit")
 				{
 					PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healingPhoenix" )
@@ -554,6 +559,7 @@ void function OnWeaponActivate_Consumable( entity weapon )
 				{
 					PlayBattleChatterToSelfOnClientAndTeamOnServer( weaponOwner, "bc_healing" )
 				}
+			}
 		}
 	}
 	else if ( file.consumableTypeToInfo[ consumableType ].shieldAmount > 0 )
@@ -1071,11 +1077,17 @@ float function CalculateTotalHealFromItem( entity player, ConsumableInfo info )
 	if( PlayerHasPassive( player, ePassives.PAS_HEALTH_BONUS_ALL ) )
 		return info.healAmount + info.healBonus[ ePassives.PAS_HEALTH_BONUS_ALL ]
 
+	if( PlayerHasPassive( player, ePassives.PAS_BONUS_SMALL_HEAL ) )
+		return info.healAmount + info.healBonus[ ePassives.PAS_BONUS_SMALL_HEAL ]
+	
 	return float( info.healAmount )
 }
 
 float function CalculateTotalShieldFromItem( entity player, ConsumableInfo info )
 {
+	if( PlayerHasPassive( player, ePassives.PAS_BONUS_SMALL_HEAL ) )
+		return info.shieldAmount + info.shieldBonus[ ePassives.PAS_BONUS_SMALL_HEAL ]
+	
 	return float( info.shieldAmount )
 }
 

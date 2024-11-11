@@ -1325,11 +1325,6 @@ float function Bleedout_SetRevivedPlayerHealth( entity reviver, entity target )
 		targetHealth = min( targetHealth, target.GetMaxHealth() )
 	}
 
-	// if ( reviver.HasPassive( ePassives.PAS_SUPPORT_REVIVES ) )
-	// {
-		// targetHealth = float( target.GetMaxHealth() )
-	// }
-	
 	return targetHealth
 }
 

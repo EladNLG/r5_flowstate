@@ -526,6 +526,18 @@ void function GiveLoadoutRelatedWeapons( entity player )
 		if( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
 			GivePassive( player, ePassives.PAS_CRYPTO )
 	}
+	
+	//Supports perks
+	if( ItemFlavor_GetHumanReadableRef( character ) == "character_lifeline" ||
+		ItemFlavor_GetHumanReadableRef( character ) == "character_gibraltar" ||
+		ItemFlavor_GetHumanReadableRef( character ) == "character_mirage" )
+	{
+		if( !PlayerHasPassive( player, ePassives.PAS_SUPPORT ) )
+			GivePassive( player, ePassives.PAS_SUPPORT )
+
+		if( !PlayerHasPassive( player, ePassives.PAS_BONUS_SMALL_HEAL ) )
+			GivePassive( player, ePassives.PAS_BONUS_SMALL_HEAL )
+	}
 }
 
 
