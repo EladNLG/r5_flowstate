@@ -289,7 +289,7 @@ bool function FS_Scenarios_ClientCommand_Rest( entity player, array<string> args
 		return false
 	}
 	
-	if( IsCurrentState( player, e1v1State.CHARSELECT ) )
+	if( IsCurrentState( player, e1v1State.CHARSELECT ) || IsCurrentState( player, e1v1State.PREMATCH ) )
 	{
 		LocalEventMsg( player, "#FS_NOT_AVAILABLE" )
 		return true 
@@ -1920,9 +1920,13 @@ void function FS_Scenarios_Main_Thread()
 			{
 				if( !IsValid( player ) )
 					return
+					
+				Gamemode1v1_SetPlayerGamestate( player, e1v1State.PREMATCH )
+				
 				LocalMsg( player, "#FS_NULL", "", eMsgUI.EVENT, 1 )
 				Remote_CallFunction_Replay( player, "Flowstate_ShowMatchFoundUI", 3 )
-			}			
+			}
+			
 			wait 3
 
 			FS_Scenarios_CreateCustomDeathfield( newGroup )

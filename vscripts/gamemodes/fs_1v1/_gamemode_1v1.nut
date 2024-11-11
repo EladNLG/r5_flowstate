@@ -143,12 +143,13 @@ global struct soloPlayerStruct
 global enum e1v1State
 {
 	INVALID = -1,
+	CHARSELECT,
+	PREMATCH,
 	MATCH_START,
 	WAITING, 
 	MATCHING,
 	RESTING,
-	RECAP,
-	CHARSELECT
+	RECAP
 }
 
 struct ChallengesStruct
