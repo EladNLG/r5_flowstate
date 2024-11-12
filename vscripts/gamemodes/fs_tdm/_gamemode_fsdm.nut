@@ -1139,6 +1139,9 @@ void function Flowstate_SaveBattleLogToFile_Linux() //Use parser
 
 void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 {
+	if( !IsValid( victim ) )
+		return
+	
 	if ( FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes() )
 		CreateFlowStateDeathBoxForPlayer( victim, attacker, damageInfo )
 
@@ -1198,7 +1201,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 
 				if( Flowstate_IsFastInstaGib() )
 				{
-					if( attacker.IsPlayer() )
+					if( IsValid( attacker) && attacker.IsPlayer() )
 						attacker.p.lastTimeUsedRailjump = -1 //todo change in client too or maybe not necessary if the actual wait is low
 					victim.Gib( <0,0,100> )
 				}
@@ -1235,7 +1238,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 					return
 				}
 
-	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && bShouldShowReplay && ShouldSetObserverTarget( attacker ) )
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && bShouldShowReplay && IsValid( attacker) && ShouldSetObserverTarget( attacker ) )
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
