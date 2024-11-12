@@ -1,5 +1,5 @@
 #base "_base_sniper.txt"
-#base "_base_sentinel_optics.txt"
+#base "_base_sniper_optics.txt"
 #base "_base_mags_heavy.txt"
 #base "_base_stocks_sniper.txt"
 
@@ -25,7 +25,7 @@
 
 	// Models
 	"viewmodel"                                "mdl/weapons/sentinel/ptpov_sentinel.rmdl"
-	"playermodel"                              "mdl/Weapons/sentinel/w_sentinel.rmdl"
+	"playermodel"                              "mdl/weapons/sentinel/w_sentinel.rmdl"
 
 	"chroma_color"								"1 .6 .2"
 
@@ -317,9 +317,9 @@
 			"fx_muzzle_flash_world"						""
 
             // Sounds
-			"fire_sound_1_player_1p"                    "weapon_dmr_fire_skull_1p"
-			"fire_sound_1_player_3p"                    "weapon_dmr_fire_skull_3p"
-			"fire_sound_1_npc"                          "weapon_dmr_fire_skull_3p"
+            "fire_sound_1_npc"                             "Weapon_DoubleTake_Fire_NPC"
+            "fire_sound_1_player_1p"                       "weapon_sentinel_fire_alt_1p"
+            "fire_sound_1_player_3p"                       "weapon_sentinel_fire_alt_3p"
 
             // Sound - Low Ammo
             "low_ammo_sound_name_1"                        "DoubleTake_LowAmmo_Shot1"
@@ -446,7 +446,7 @@
 
 		// RUI
 	"ui1_enable"                               "1"
-	"ui1_draw_cloaked"                         "0"
+	"ui1_draw_cloaked"                         "1"
 	"UiData1"
 	{
 
@@ -461,12 +461,12 @@
 		}
 	}
 
-	"ui2_enable"                               "0"
-	"ui2_draw_cloaked"                         "0"
+	"ui2_enable"                               "1"
+	"ui2_draw_cloaked"                         "1"
 	"UiData2"
 	{
 
-		"ui"    "ui/rspn101_dmr_ammo_counter"
+		"ui"    "ui/kraber_ammo_counter"
 		"mesh"  "models/weapons/attachments/sentinel_rui_ammo_counter"
 
 		"Args"
@@ -476,6 +476,151 @@
 			"clipSize"  "weapon_clipSize"
 		}
 	}
+
+
+	// optic_cq_hcog_classic
+    UiData6
+    {
+        "ui"	"ui/hcog_classic_sights"
+        "mesh" 	"models/weapons/attachments/hcog_classic_sights"
+        Args
+        {
+            vis							        player_zoomfrac
+            centerOffset		                weapon_ads_center_offset
+            clipSize                            weapon_clipSize
+        }
+    }
+
+    // optic_cq_hcog_bruiser
+    UiData7
+    {
+        "ui"						"ui/hcog_upper"
+        "mesh"						"models/weapons/attachments/hcog2_rui_upper"
+        Args
+        {
+            vis							        player_zoomfrac
+            centerOffset		                weapon_ads_center_offset
+            clipSize                            weapon_clipSize
+        }
+    }
+
+    // optic_cq_holosight
+    UiData8
+    {
+        "ui"					"ui/holo_sights"
+        "mesh"					"models/weapons/attachments/holo_rui_upper"
+        Args
+        {
+            vis					                player_zoomfrac
+            centerOffset		                weapon_ads_center_offset
+            clipSize                            weapon_clipSize
+                  
+        }
+    }
+
+
+    // optic_cq_holosight_variable
+    UiData9
+    {
+        "ui"						"ui/holo_variable_sights"
+        "mesh"						"models/weapons/attachments/holo_variable_sights"
+        Args
+        {
+            vis						            player_zoomfrac
+            zoomFOV                             weapon_zoom_fov
+            centerOffset			            weapon_ads_center_offset
+            clipSize                            weapon_clipSize
+                  
+        }
+    }
+
+	// optic_ranged_hcog
+	UiData16
+	{
+		"ui"					"ui/hcog_ranged_sights"
+		"mesh"					"models/weapons/attachments/acgs_rui_upper"
+		Args
+		{
+			vis					                player_zoomfrac
+            zoomFOV                             weapon_zoom_fov
+			centerOffset		                weapon_ads_center_offset
+			clipSize                            weapon_clipSize
+                  
+		}
+	}
+
+
+	// optic_ranged_aog_variable
+	UiData17
+	{
+		"ui"	"ui/aog_variable_sights"
+		"mesh" "models/weapons/attachments/aog_variable_sights"
+		Args
+		{
+			vis					                player_zoomfrac
+            zoomFOV                             weapon_zoom_fov
+			centerOffset		                weapon_ads_center_offset
+			clipSize                            weapon_clipSize
+                  
+		}
+	}
+
+	// optic_sniper
+    UiData30
+    {
+        "ui"			"ui/sniper_optic_sights"
+        "mesh"			"models/weapons/attachments/sniper_optic_sights"
+
+        Args
+        {
+            vis					                player_zoomfrac
+            crossDist			                distance_to_crosshair_target
+            zoomFOV         	                weapon_zoom_fov
+            varSightOffsets		                variable_sights_offsets
+            eyeAngles			                player_eye_angles
+            ammo				                weapon_ammo
+            clipCount			                weapon_ammoClipCount
+                  
+        }
+    }
+
+    // optic_sniper_variable
+    UiData31
+    {
+        "ui"			"ui/sniper_optic_variable_sights"
+        "mesh"			"models/weapons/attachments/sniper_optic_sights"
+
+        Args
+        {
+            vis					                player_zoomfrac
+            crossDist			                distance_to_crosshair_target
+            zoomFOV         	                weapon_zoom_fov
+            varSightOffsets		                variable_sights_offsets
+            eyeAngles			                player_eye_angles
+            ammo				                weapon_ammo
+            clipCount			                weapon_ammoClipCount
+                  
+        }
+    }
+
+    // optic_sniper_threat
+    UiData32
+    {
+        "ui" 		"ui/sniper_threat_optic_sights"
+        "mesh" 		"models/weapons/attachments/sniper_threat_optic_sights"
+
+        Args
+        {
+            vis					                player_zoomfrac
+            crossDist			                distance_to_crosshair_target
+            zoomFOV         	                weapon_zoom_fov
+            varSightOffsets		                variable_sights_offsets
+            eyeAngles			                player_eye_angles
+            ammo				                weapon_ammo
+            clipCount			                weapon_ammoClipCount
+                  
+        }
+    }
 
 	// UI - Crosshair
 	"rui_crosshair_index"                      "0"
