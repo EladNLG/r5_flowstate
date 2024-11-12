@@ -2219,7 +2219,7 @@ void function print_string_array( array<string> args )
 	sqprint(test)
 }
 
-
+//Returns false on limited. 
 bool function CheckRate( entity player, bool notify = NOTIFY_RATELIMIT_FAILED, float rate = COMMAND_RATE_LIMIT )
 {	
 	if ( !IsValid( player ) ) 
@@ -2233,8 +2233,7 @@ bool function CheckRate( entity player, bool notify = NOTIFY_RATELIMIT_FAILED, f
 		return false
 	}
 	
-	player.p.ratelimit = Time()
-	
+	player.p.ratelimit = Time()	
 	return true
 }
 

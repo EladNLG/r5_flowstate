@@ -1231,7 +1231,10 @@ int function GetSelectedConsumableTypeForPlayer( entity player )
 
 void function Consumable_SetSelectedConsumableType( int type )
 {
-	DumpStack()
+	#if DEVELOPER
+		DumpStack()
+	#endif 
+	
 	GetLocalClientPlayer().ClientCommand( "SetSelectedConsumableTypeNetInt " + type )
 	file.clientSelectedConsumableType = type
 }
@@ -1687,7 +1690,10 @@ void function ClientCommand_SetNextHealModType( entity player, array<string> arg
 
 	string nextModName = file.consumableTypeToInfo[ nextModType ].modName
 
-	printt( format( "[CONSUMABLE] Setting Next Heal Mod Type for player %s to %s", player.GetPlayerName(), nextModName ) )
+	#if DEVELOPER
+		printt( format( "[CONSUMABLE] Setting Next Heal Mod Type for player %s to %s", player.GetPlayerName(), nextModName ) )
+	#endif 
+	
 	file.playerToNextMod[ player ] <- nextModName}
 
 void function ClientCommand_SetSelectedConsumableTypeNetInt( entity player, array<string> args )

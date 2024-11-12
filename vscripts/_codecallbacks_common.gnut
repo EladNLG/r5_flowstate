@@ -1014,6 +1014,10 @@ void function RemoveTitanCallback_OnHealthSegmentLost( entity ent, void function
 
 void function AddEntityCallback_OnDamaged( entity ent, void functionref( entity ent, var damageInfo ) callbackFunc )
 {
+	//(mk): temp patch, will address logical error later
+	if( ent.e.entDamageCallbacks.contains( callbackFunc ) )
+		return
+	
 	#if DEVELOPER
 		mAssert( !ent.e.entDamageCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " to entity" )
 	#endif

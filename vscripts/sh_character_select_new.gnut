@@ -1838,7 +1838,11 @@ void function UpdateForFocusOnButtonIndex( int buttonIndex )
 
 	// Update our selection to other players if we haven't gotten turn yet, or during our turn
 	if ( !fileLevel.isBrowseMode && !GetLocalClientPlayer().GetPlayerNetBool( "hasLockedInCharacter" ) )
-		GetLocalClientPlayer().ClientCommand( "UpdateCharacterSelectFocus " + ItemFlavor_GetGUID( itemFlav ) )
+	{
+		//(mk): this is not a good solution
+		//if( CheckRate( player, false, 0.05 ) )//(mk): limit commands to prevent being kicked temp fix. (if needed)
+			GetLocalClientPlayer().ClientCommand( "UpdateCharacterSelectFocus " + ItemFlavor_GetGUID( itemFlav ) )
+	}
 
 	int stepIndex = Playlist() == ePlaylists.fs_scenarios ? GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepIndex" ) : GetGlobalNetInt( "characterSelectLockstepIndex" )
 	// We aren't in browse mode and it's not our turn to pick

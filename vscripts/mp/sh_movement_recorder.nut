@@ -451,6 +451,10 @@ void function _HandlePlayerDisconnect( entity player )
 {
 	int playerHandle = player.p.handle 
 	
+	//(mk): might be helpful to free up open slots. ty wanderer for looking up internal mechanisms. 
+	if( player.p.isRecording )
+		StopRecordingAnimation( player )
+	
 	foreach ( slot, dummies in file.playerDummyMaps[playerHandle] )
 			DestroyDummyForSlot( player, slot, playerHandle )
 }
@@ -508,7 +512,7 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 
 	if( player.p.isRecording )
 	{
-		thread StopRecordingAnimation( player )
+		StopRecordingAnimation( player )
 	} 
 	else
 	{
@@ -729,7 +733,7 @@ void function StartRecordingAnimation( entity player )
 	)
 	
 	//(mk): Recording animations disappear after 2:30, hard-set limit of 3000 frames.
-	waitthread WaitSignalOrTimeout( player, 150 , "OnDestroy", "OnDisconnected", "FinishedRecording" )
+	waitthread WaitSignalOrTimeout( player, 150, "OnDestroy", "OnDisconnected", "FinishedRecording" )
 }
 
 // void function MovementRecorder_SetStartRecordingTime( entity player, float time )
