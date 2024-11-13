@@ -1826,9 +1826,6 @@ void function FS_Scenarios_Main_Thread()
 				FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
 			}
 			
-			// FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team2Index, false )
-			// FS_Scenarios_SetIsUsedBoolForTeamSlot( newGroup.team3Index, false )
-
 			foreach( player in players )
 			{
 				if( !IsValid( player ) )
@@ -1938,8 +1935,8 @@ void function FS_Scenarios_Main_Thread()
 			//Match found.. show msg wait a bit. Cafe
 			foreach ( entity player in players )
 			{
-				if( !IsValid( player ) )
-					return
+				if( !IsValidPlayer( player ) )
+					continue
 					
 				Gamemode1v1_SetPlayerGamestate( player, e1v1State.PREMATCH )
 				
@@ -1959,8 +1956,8 @@ void function FS_Scenarios_Main_Thread()
 			if( !settings.fs_scenarios_characterselect_enabled )
 				foreach ( entity player in players )
 				{
-					if( !IsValid( player ) )
-						return
+					if( !IsValidPlayer( player ) )
+						continue
 
 					//Remote_CallFunction_NonReplay( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
 					Remote_CallFunction_ByRef( player, "FS_CreateTeleportFirstPersonEffectOnPlayer" )
@@ -1985,6 +1982,26 @@ void function FS_Scenarios_Main_Thread()
 			#endif
 
 			wait 0.5
+
+			if( !newGroup.isValid )
+			{
+				FS_Scenarios_RemoveGroup( newGroup )
+				
+				foreach( team in newGroup.teams )
+				{
+					FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
+				}
+				
+				foreach( player in players )
+				{
+					if( !IsValid( player ) )
+						continue
+
+					soloModePlayerToWaitingList(player)
+				}
+				
+				return
+			}
 			
 			ArrayRemoveInvalid( players )
 			int spawnSlot = -1
@@ -1992,7 +2009,7 @@ void function FS_Scenarios_Main_Thread()
 			int j = 0
 			foreach ( int i, entity player in players )
 			{
-				if( !IsValid( player ) )
+				if( !IsValidPlayer( player ) )
 					continue
 
 				FS_SetRealmForPlayer( player, newGroup.slotIndex )			
@@ -2078,7 +2095,7 @@ void function FS_Scenarios_Main_Thread()
 					{
 						foreach( entity player in players )
 						{
-							if( !IsValid( player ) )
+							if( !IsValidPlayer( player ) )
 								continue
 
 							player.Server_TurnOffhandWeaponsDisabledOff() //vm activity cant be enabled without
@@ -2137,7 +2154,7 @@ void function FS_Scenarios_Main_Thread()
 
 				foreach( player in players )
 				{
-					if( !IsValid( player ) )
+					if( !IsValidPlayer( player ) )
 						continue
 
 					player.ForceStand()
@@ -2213,7 +2230,7 @@ void function FS_Scenarios_Main_Thread()
 				float startTime = Time() + settings.fs_scenarios_game_start_time_delay
 				foreach( player in players )
 				{
-					if( !IsValid( player ) )
+					if( !IsValidPlayer( player ) )
 						continue
 
 					Highlight_ClearEnemyHighlight( player )
