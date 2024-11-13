@@ -880,8 +880,9 @@ int function GetCommsActionForBackpackItem( var button, int position )
 
 				case eAmmoPoolType.sniper:
 					return eCommsAction.INVENTORY_NEED_AMMO_SNIPER
-				//case eAmmoPoolType.arrows:
-				//	return eCommsAction.INVENTORY_NEED_AMMO_ARROWS
+					
+				case eAmmoPoolType.explosive:
+					return eCommsAction.INVENTORY_NEED_AMMO_EXPLOSIVE
 			}
 		}
 	}

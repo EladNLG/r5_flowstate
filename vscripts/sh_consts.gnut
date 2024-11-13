@@ -46,6 +46,7 @@ global const string SHOTGUN_AMMO = "shotgun"
 global const string SPECIAL_AMMO = "special"
 global const string ARROWS_AMMO = "arrows"
 global const string SNIPER_AMMO = "sniper"
+global const string EXPLOSIVE_AMMO = "explosive"
 
 #if UI
 global const float RUI_BADGAMETIME 	= -1 * pow( 10, 30 )
@@ -2152,6 +2153,7 @@ global enum eCommsAction
 	FLAVOR_OFFHAND_GRENADE_ARC,
 	FLAVOR_AMMO_SPECIAL,
 	FLAVOR_AMMO_SHOTGUN,
+	FLAVOR_AMMO_EXPLOSIVE,
 	FLAVOR_EQUIPMENT_ARMOR_1,
 	FLAVOR_EQUIPMENT_ARMOR_2,
 	FLAVOR_EQUIPMENT_ARMOR_3,
