@@ -6,8 +6,8 @@ WeaponData
 	"description" 									"Energy Propelled Grenade"
 	"longdesc"										"Energy Propelled Grenade"
 
-	"menu_icon"										"rui/weapon_icons/r2/epg"
-	"hud_icon"										"rui/weapon_icons/r2/epg"
+	"menu_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_epg1"
+	"hud_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_epg1"
 
 	"weaponClass" 									"human"
 	//"fire_mode"   									"semiauto"

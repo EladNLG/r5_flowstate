@@ -136,6 +136,9 @@ void function RegisterCustomComs()
 	// ammo
 	RegisterCustomCom( eCommsAction.PING_AMMO_SNIPER, "ping_foundAmmoSniper")
 	RegisterCustomCom( eCommsAction.INVENTORY_NEED_AMMO_SNIPER, "ping_needAmmoSniper")
+	
+	RegisterCustomCom( eCommsAction.PING_AMMO_EXPLOSIVE, "ping_foundAmmoExplosive")
+	RegisterCustomCom( eCommsAction.INVENTORY_NEED_AMMO_EXPLOSIVE, "ping_needAmmoExplosive")
 
 	// weapons
 	RegisterCustomCom( eCommsAction.PING_WEAPON_VOLT, "ping_foundVoltSmg")
