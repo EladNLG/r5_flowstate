@@ -1945,7 +1945,13 @@ void function FS_Scenarios_Main_Thread()
 			}
 			
 			wait 3
-
+			
+			if( !IsValid( newGroup ) || !newGroup.isValid )
+			{
+				NukeGroupCuzIsNotValidAnymore( newGroup )
+				return
+			}
+			
 			FS_Scenarios_CreateCustomDeathfield( newGroup )
 			soloLocStruct groupLocStruct = newGroup.groupLocStruct
 
@@ -1983,23 +1989,9 @@ void function FS_Scenarios_Main_Thread()
 
 			wait 0.5
 
-			if( !newGroup.isValid )
+			if( !IsValid( newGroup ) || !newGroup.isValid )
 			{
-				FS_Scenarios_RemoveGroup( newGroup )
-				
-				foreach( team in newGroup.teams )
-				{
-					FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
-				}
-				
-				foreach( player in players )
-				{
-					if( !IsValid( player ) )
-						continue
-
-					soloModePlayerToWaitingList(player)
-				}
-				
+				NukeGroupCuzIsNotValidAnymore( newGroup )
 				return
 			}
 			
@@ -2269,6 +2261,25 @@ void function FS_Scenarios_Main_Thread()
 	}//while(true)
 
 }//thread
+
+void funtion NukeGroupCuzIsNotValidAnymore( scenariosGroupStruct newGroup )
+{
+	FS_Scenarios_RemoveGroup( newGroup )
+	array<entity> players = FS_Scenarios_GetAllPlayersForGroup( newGroup )	
+	
+	foreach( team in newGroup.teams )
+	{
+		FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
+	}
+	
+	foreach( player in players )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		soloModePlayerToWaitingList(player)
+	}
+}
 
 void function SetGamestateForPlayers( array<entity> players, int state)
 {
