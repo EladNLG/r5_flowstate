@@ -1819,20 +1819,7 @@ void function FS_Scenarios_Main_Thread()
 
 		if( !success )
 		{
-			FS_Scenarios_RemoveGroup( newGroup )
-			
-			foreach( team in newGroup.teams )
-			{
-				FS_Scenarios_SetIsUsedBoolForTeamSlot( team.team, false )
-			}
-			
-			foreach( player in players )
-			{
-				if( !IsValid( player ) )
-					continue
-
-				soloModePlayerToWaitingList(player)
-			}
+			NukeGroupCuzIsNotValidAnymore( newGroup )
 			continue
 		}
 		else
