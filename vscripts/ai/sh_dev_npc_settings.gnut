@@ -131,6 +131,7 @@ void function SetupWeapons()
 	SetupDevCommand( "Dev: Smart Pistol", "give mp_weapon_smart_pistol" )
 	SetupDevCommand( "Dev: Wingman Elite", "give mp_weapon_wingman_n" )
 	SetupDevCommand( "Dev: Arc Tool", "give sp_weapon_arc_tool" )
+	SetupDevCommand( "Dev: EPG", "give mp_weapon_epg" )
 	#endif
 }
 
