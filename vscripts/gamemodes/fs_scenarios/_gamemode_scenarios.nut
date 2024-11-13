@@ -2249,7 +2249,7 @@ void function FS_Scenarios_Main_Thread()
 
 }//thread
 
-void funtion NukeGroupCuzIsNotValidAnymore( scenariosGroupStruct newGroup )
+void function NukeGroupCuzIsNotValidAnymore( scenariosGroupStruct newGroup )
 {
 	FS_Scenarios_RemoveGroup( newGroup )
 	array<entity> players = FS_Scenarios_GetAllPlayersForGroup( newGroup )	
