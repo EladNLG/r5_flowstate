@@ -2482,36 +2482,41 @@ void function soloModePlayerToWaitingList( entity player )
 
 		SetTeam( player, TEAM_IMC )
 
-		scenariosGroupStruct playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
+		scenariosGroupStruct ornull playerGroup = FS_Scenarios_ReturnGroupForPlayer( player )
 		
-		if( IsValid( playerGroup ) )
+		if( playerGroup != null )
 		{
-			foreach( scenariosTeamStruct team in playerGroup.teams )
+			expect scenariosGroupStruct( playerGroup )
+		
+			if( IsValid( playerGroup ) && playerGroup.isValid )
 			{
-				int maxIter = team.players.len() - 1
-				
-				for( int i = maxIter; i >= 0; i-- )
+				foreach( scenariosTeamStruct team in playerGroup.teams )
 				{
-					entity splayer = team.players[i]
+					int maxIter = team.players.len() - 1
 					
-					if( !IsValid( splayer ) || splayer == player )
+					for( int i = maxIter; i >= 0; i-- )
 					{
-						team.players.remove( i ) //cafe
+						entity splayer = team.players[i]
+						
+						if( !IsValid( splayer ) || splayer == player )
+						{
+							team.players.remove( i ) //cafe
+						}
 					}
 				}
-			}
 
-			if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
-				delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
-			
-			player.SetShieldHealth( 0 )
-			player.SetShieldHealthMax( 0 )
-			Inventory_SetPlayerEquipment(player, "", "armor")
-			Inventory_SetPlayerEquipment(player, "", "backpack")
-			Inventory_SetPlayerEquipment(player, "", "incapshield")
-			Inventory_SetPlayerEquipment(player, "", "helmet")
-			if( IsAlive( player ) )
-				player.SetHealth( player.GetMaxHealth() )
+				if( player.p.handle in FS_Scenarios_GetPlayerToGroupMap() )
+					delete FS_Scenarios_GetPlayerToGroupMap()[ player.p.handle ]
+				
+				player.SetShieldHealth( 0 )
+				player.SetShieldHealthMax( 0 )
+				Inventory_SetPlayerEquipment(player, "", "armor")
+				Inventory_SetPlayerEquipment(player, "", "backpack")
+				Inventory_SetPlayerEquipment(player, "", "incapshield")
+				Inventory_SetPlayerEquipment(player, "", "helmet")
+				if( IsAlive( player ) )
+					player.SetHealth( player.GetMaxHealth() )
+			}
 		}
 
 		//Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
@@ -2534,7 +2539,11 @@ void function soloModePlayerToWaitingList( entity player )
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.
-
+	
+	// Clear all equipment slots
+	foreach ( slot, slotData in EquipmentSlot_GetAllEquipmentSlots() )
+		Inventory_SetPlayerEquipment( player, "", slot )
+		
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
 	player.SetPlayerNetEnt( "FSDM_1v1_Enemy", null )
 
@@ -4668,10 +4677,16 @@ void function GiveWeaponsToGroup( array<entity> players )
 			
 			//re-enable for inventory. 
 			Survival_SetInventoryEnabled( player, true )
-			Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+			
 			SetPlayerInventory( player, [] ) //clear
-			EquipHostSetInventoryAttachments( player )
 
+			// Clear all equipment slots
+			foreach ( slot, slotData in EquipmentSlot_GetAllEquipmentSlots() )
+				Inventory_SetPlayerEquipment( player, "", slot )
+				
+			EquipHostSetInventoryAttachments( player )
+			Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+			
 			if ( ( settings.bNoCustomWeapons && !bInChallenge ) || !( player.p.name in weaponlist ) )//avoid give weapon twice if player saved his guns //TODO: change to eHandle - mkos
 			{
 				TakeAllWeapons(player)
@@ -4712,11 +4727,16 @@ void function FS_Scenarios_GiveWeaponsToGroup( array<entity> players )
 	if( players.len() == 0 )
 		return
 
-	scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( players[0] ) 
+	scenariosGroupStruct ornull group = FS_Scenarios_ReturnGroupForPlayer( players[0] ) 
 	
-	if( !group.isValid )
+	if( group == null )
 		return
-		
+	
+	expect scenariosGroupStruct( group )
+	
+	if( !IsValid( group ) || !group.isValid  ) //struct is always valid but i put this here so mkos don't cry
+		return
+	
 	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
 	//WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
 

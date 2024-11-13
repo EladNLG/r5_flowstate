@@ -4484,14 +4484,14 @@ void function SURVIVAL_AutoEquipOrdnanceFromInventory( entity player, bool shoul
 			
 			// RefreshOrdnanceSlot( player, lootRef )
 			// SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
-			Warning("Nade weapon removed")
+			// Warning("Nade weapon removed")
 		}
 
 	}
 	else
 	{
 		// RefreshOrdnanceSlot( player, lootRef )
-		Warning("Nade weapon the other way")
+		// Warning("Nade weapon the other way")
 		SURVIVAL_EquipOrdnanceFromInventory( player, lootRef, !shouldSwitch )
 	}
 }
@@ -4925,6 +4925,19 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	if ( player.IsPlayback() )
 		return
 
+	if( isScenariosMode() )
+	{
+		scenariosGroupStruct ornull group = FS_Scenarios_ReturnGroupForPlayer(player)
+		
+		if( group != null )
+		{
+			expect scenariosGroupStruct( group )
+			
+			if( IsValid( group ) )
+				EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" ) //Cafe
+		}
+	}
+
 	bool dropBox = settings.deathbox_ondeath_enabled
 
 	vector vOffset         = <0, 0, 32>
@@ -4948,9 +4961,9 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	array<entity> mainWeapons                      = SURVIVAL_GetPrimaryWeapons( player )
 	LootData armorData                             = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" ) //GamemodeUtility_GetPlayerArmorData( player )
 
-	#if DEVELOPER
-	Warning( "SURVIVAL_Death_DropLoot_Internal " + mainWeapons.len() + " weapons to drop" )
-	#endif
+	// #if DEVELOPER
+	// Warning( "SURVIVAL_Death_DropLoot_Internal " + mainWeapons.len() + " weapons to drop" )
+	// #endif
 
 	foreach ( w in mainWeapons )
 	{
@@ -5029,13 +5042,6 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	entity box
 
 	// DO NOT PROCEED UNTIL THE SYNC MELEE IS DONE
-
-	if( isScenariosMode() )
-	{
-		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer(player)
-		if( IsValid( group ) )
-			EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" ) //Cafe
-	}
 
 	if ( dropBox )
 	{
@@ -5153,9 +5159,9 @@ void function SURVIVAL_Death_DropLoot_Internal( entity player, entity attacker, 
 	{
 		if ( !SURVIVAL_Loot_IsRefValid( itemName ) )
 		{
-			#if DEVELOPER 
-				printw( "Invalid loot ref:", itemName )
-			#endif
+			// #if DEVELOPER 
+				// printw( "Invalid loot ref:", itemName )
+			// #endif
 			
 			continue
 		}
@@ -5300,9 +5306,9 @@ void function Death_DropPlayerItems( entity deathBox, entity player, string item
 
 	LootData lootData = SURVIVAL_Loot_GetLootDataByRef( item )
 
-	#if DEVELOPER
-		printt( "Death_DropPlayerItems", item )
-	#endif
+	// #if DEVELOPER
+		// printt( "Death_DropPlayerItems", item )
+	// #endif
 
 	int clipCount
 	int stockpileCount
@@ -5398,9 +5404,9 @@ void function Death_DropPlayerItems( entity deathBox, entity player, string item
 			zoffset += additionalOffset
 		}
 
-		#if DEVELOPER
-			printt( "Dropping:", item )
-		#endif
+		// #if DEVELOPER
+			// printt( "Dropping:", item )
+		// #endif
 
 		if ( mergeItems )
 			break

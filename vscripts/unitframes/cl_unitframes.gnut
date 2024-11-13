@@ -146,7 +146,8 @@ void function UpdateRUITest()
 	
 	if( Playlist() == ePlaylists.fs_scenarios )
 	{
-		Consumable_SetSelectedConsumableType( 2 )
+		if( GetLocalClientPlayer().GetPlayerNetInt( "selectedHealthPickupType" ) != 2 ) //sets shield cell as default
+			Consumable_SetSelectedConsumableType( 2 )
 	}
 	// thread InitSurvivalHealthBar()
 }

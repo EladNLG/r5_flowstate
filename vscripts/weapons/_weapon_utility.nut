@@ -2621,23 +2621,30 @@ void function AddToTrackedEnts( entity player, entity ent )
 {
 	if( isScenariosMode() )
 	{
-		scenariosGroupStruct group = FS_Scenarios_ReturnGroupForPlayer( player ) 	
+		scenariosGroupStruct ornull group = FS_Scenarios_ReturnGroupForPlayer(player)
+
+		bool iLoveMkos = false
 		
-		if( IsValid( group ) )
+		if( group != null )
 		{
-			int entArrayLen = GetScriptManagedEntArrayLen( group.trackedEntsArrayIndex )
-			if( entArrayLen > 0 && group.trackedEntsArrayIndex < entArrayLen )
+			expect scenariosGroupStruct( group )
+			
+			if( group.isValid && !group.IsFinished && group.trackedEntsArrayIndex > -1 )
 			{
 				AddToScriptManagedEntArray( group.trackedEntsArrayIndex, ent )
 				
 				#if DEVELOPER
 					printt( "tracked ent added to scenarios group managed ent array", group.trackedEntsArrayIndex, ent )
 				#endif
-			}
-			else 
-			{
-				print( "Tried to add to ScriptManagedEntArray that was already destroyed/not created" )//(mk): keep for prod
-			}
+			} else
+				iLoveMkos = true
+		} else
+			iLoveMkos = true
+			
+		if( iLoveMkos )
+		{
+			if( IsValid( ent ) ) //group does not exist anymore.. Cafe
+				ent.Destroy()
 		}
 	} 
 	else

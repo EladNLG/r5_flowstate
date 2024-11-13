@@ -1234,6 +1234,8 @@ void function Consumable_SetSelectedConsumableType( int type )
 	#if DEVELOPER
 		DumpStack()
 	#endif 
+	if( GetLocalClientPlayer().GetPlayerNetInt( "selectedHealthPickupType" ) == type ) //player has that consumable equipped already.. Cafe
+		return
 	
 	GetLocalClientPlayer().ClientCommand( "SetSelectedConsumableTypeNetInt " + type )
 	file.clientSelectedConsumableType = type
