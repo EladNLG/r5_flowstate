@@ -1,0 +1,12 @@
+// List of paks to preload. The preloading happens after all the core paks of
+// the engine and SDK have been loaded, but before the first level pak is being
+// loaded. The unloading happens right after the level paks have been unloaded.
+// Paks will be loaded and unloaded in the same order as defined in the array.
+
+Paks:
+[
+    common_flowstate_small.rpak
+    flowstate_all_loot.rpak
+    flowstate_all_loot_snd.rpak
+    fs_spawns.rpak
+]
