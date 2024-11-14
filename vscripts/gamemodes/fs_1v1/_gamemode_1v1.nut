@@ -1049,7 +1049,7 @@ void function addSoloPlayerResting( entity player )
 }
 
 void function deleteWaitingPlayer( int handle )
-{	
+{
 	if ( handle in file.soloPlayersWaiting )
 		delete file.soloPlayersWaiting[ handle ]
 }
@@ -3523,7 +3523,7 @@ void function Gamemode1v1_Init( int eMap )
 	AddCallback_OnPlayerRespawned( Gamemode1v1_OnSpawned )
 	
 	//challenges cleanup
-	AddCallback_OnClientDisconnected( PlayerDisconnected_CheckChallenge )
+	AddCallback_OnClientDisconnected( FS_1v1_OnPlayerDisconnected )
 	
 	//resting room init ///////////////////////////////////////////////////////////////////////////////////////
 			
@@ -3933,11 +3933,8 @@ void function soloModeThread( LocPair waitingRoomLocation )
 		//遍历等待队列 - cycle waiting queue (mkos version)
 		foreach ( playerHandle, playerInWaitingStruct in file.soloPlayersWaiting )
 		{
-			if ( !IsValid( playerInWaitingStruct.player ) )
-			{
-				deleteWaitingPlayer(playerInWaitingStruct.handle) //struct contains players handle as basic int
+			if ( !IsValidPlayer( playerInWaitingStruct.player ) )
 				continue
-			}
 
 			// check/update ibmm timeouts -- temporary try catch to test pinpoint
 			try 
@@ -4563,8 +4560,13 @@ void function soloModeThread( LocPair waitingRoomLocation )
 
 }//thread
 
-void function PlayerDisconnected_CheckChallenge( entity player )
+void function FS_1v1_OnPlayerDisconnected( entity player )
 {
+	#if DEVELOPER
+		printt( "[+] OnPlayerDisconnected 1v1 -", player )
+	#endif
+	
+	//Challenges
 	entity opponent = returnChallengedPlayer( player )
 	
 	if( IsValid( opponent ) )
@@ -4577,6 +4579,25 @@ void function PlayerDisconnected_CheckChallenge( entity player )
 	{
 		if( player == zstruct.player )
 			file.allChallenges.fastremove( index )
+	}
+
+	//If player was in waiting room, remove. Cafe
+	foreach ( playerHandle, playerInWaitingStruct in file.soloPlayersWaiting )
+	{
+		if( !IsValid( playerInWaitingStruct ) )
+			continue
+		
+		if ( playerInWaitingStruct.handle == player.p.handle )
+		{
+			deleteWaitingPlayer( player.p.handle )
+			break
+		}
+	}
+
+	//If player was in a match, remove. Cafe
+	if( player.p.handle in file.playerToGroupMap )
+	{
+		delete file.playerToGroupMap[ player.p.handle ]
 	}
 }
 
