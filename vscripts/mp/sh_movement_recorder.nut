@@ -88,6 +88,7 @@ void function Sh_FS_MovementRecorder_Init()
 		AddCallback_OnClientConnected( FS_MovementRecorder_OnPlayerConnected )
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
 		AddCallback_OnPlayerRespawned( _HandleRespawn )
+		AddCallback_OnPlayerKilled( _OnPlayerKilled )
 		
 		AddClientCommandCallback( "recorder_toggleRecorder", ClientCommand_ToggleMovementRecorder )
 		AddClientCommandCallback( "PlayAnimInSlot", ClientCommand_PlayAnimInSlot )
@@ -454,7 +455,7 @@ void function _HandlePlayerDisconnect( entity player )
 	
 	//(mk): might be helpful to free up open slots. ty wanderer for looking up internal mechanisms. 
 	if( player.p.isRecording )
-		StopRecordingAnimation( player )
+		ForceStopRecording( player )
 	
 	foreach ( slot, dummies in file.playerDummyMaps[playerHandle] )
 			DestroyDummyForSlot( player, slot, playerHandle )
@@ -463,6 +464,15 @@ void function _HandlePlayerDisconnect( entity player )
 void function _HandleRespawn( entity player )
 {
 	AssignCharacter( player, 8 )
+}
+
+void function _OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if( victim.p.isRecording )
+	{
+		victim.StopRecordingAnimation()
+		victim.p.isRecording = false
+	}
 }
 
 void function FS_MovementRecorder_OnPlayerConnected( entity player )
@@ -739,7 +749,16 @@ void function StartRecordingAnimation( entity player )
 	)
 	
 	//(mk): Recording animations disappear after 2:30, hard-set limit of 3000 frames.
-	waitthread WaitSignalOrTimeout( player, 150, "OnDestroy", "OnDisconnected", "FinishedRecording" )
+	waitthread WaitSignalOrTimeout( player, 148, "OnDestroy", "OnDisconnected", "FinishedRecording" )
+}
+
+void function ForceStopRecording( entity player ) //caller must check
+{
+	player.StopRecordingAnimation()
+	player.p.isRecording = false
+	
+	LocalEventMsg( player, "#FS_SPACE", "", 1 )
+	Remote_CallFunction_NonReplay( player, "FS_MovementRecorder_UpdateHints", 0, false, -1 )
 }
 
 // void function MovementRecorder_SetStartRecordingTime( entity player, float time )
@@ -774,6 +793,8 @@ void function StopRecordingAnimation( entity player )
 		if( !player.p.recorderHideHud )
 			LocalEventMsg( player, "#FS_NO_SLOTS" )
 			
+		ForceStopRecording( player )
+		
 		return
 	}
 
