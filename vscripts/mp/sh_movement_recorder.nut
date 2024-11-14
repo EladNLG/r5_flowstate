@@ -470,8 +470,7 @@ void function _OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if( victim.p.isRecording )
 	{
-		victim.StopRecordingAnimation()
-		victim.p.isRecording = false
+		ForceStopRecording( victim )
 	}
 }
 
