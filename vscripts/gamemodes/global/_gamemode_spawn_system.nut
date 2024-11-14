@@ -36,7 +36,7 @@ global function SpawnSystem_CreateLocPairObject
 	global function DEV_TeleportToSpawn
 	global function DEV_WriteSpawnFile
 	global function DEV_SpawnHelp
-	global function DEV_SetTeamSize
+	global function DEV_SetTeamCount
 	global function DEV_TeleportToPanels
 	global function DEV_LoadPak
 	global function DEV_HighlightAll
@@ -60,12 +60,15 @@ global function SpawnSystem_CreateLocPairObject
 	global function DEV_PrintSettings
 	global function DEV_AutoSetName
 	global function DEV_RenameSpawn
+	global function DEV_SpawnsPlaylist
+	global function DEV_SpawnsBaseMap
 	
 	const float HIGHLIGHT_SPAWN_DELAY 	= 7.0
 	const int SPAWN_POSITIONS_BUDGET 	= 210
 	const float DOOR_SCAN_RADIUS		= 100
 	const bool DEBUG_SPAWN_TRACE		= true
 	const int MAX_SPAWN_NAME_LENGTH	= 255
+	const string FILE_NAME_REGEX		= "^[A-Za-z0-9._\\-]+$"
 	
 	const bool REMOVE 	= true 
 	const bool LOAD 		= false
@@ -99,8 +102,8 @@ global function SpawnSystem_CreateLocPairObject
 		string currentSpawnPak 	= ""
 		string customSpawnpak 	= ""
 		string customPlaylist 	= ""
-		int teamsize 			= 2
-		bool overrideSpawns 	= false	
+		int iTeamCount 			= 2
+		bool bOverrideSpawns 	= false	
 		bool bSpawnsInitialized = false
 		bool bRunCallbacks 		= true
 		
@@ -128,6 +131,8 @@ global function SpawnSystem_CreateLocPairObject
 			bool bAutoSave = false
 			bool bFirstTimeUse = true
 			string spawnSetName = ""
+			string spawnsPlaylist = ""
+			string spawnsMap = ""
 			
 			table<string,string> DEV_POS_COMMANDS = 
 			{
@@ -141,12 +146,14 @@ global function SpawnSystem_CreateLocPairObject
 					[" script DEV_SetAutoSave( bool value = true )"] = "Disabled by default. Make sure folder 'output' in r5reloaded/platform exists",
 					[" script DEV_LoadPak( string pak = \"\", string playlist = \"\" )"] = "Loads spawn pak specifying rpak asset and playlist. If none provided, loads current pak. If custom spawns are wrote into the script test function, it loads those instead.",
 					[" script DEV_SpawnType( string setToType = \"\" )"] = "Params: \"csv\" or \"sq\" Sets/Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided. ( call with printt() )",
-					[" script DEV_SetTeamSize( int size )"] = "Sets the size of a team formatting the PrintSpawns() array",
+					[" script DEV_SetTeamCount( int size )"] = "Sets the count of teams per spawn set formatting the PrintSpawns() array",
 					[" script DEV_SpawnInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
 					[" script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
 					[" script DEV_AutoDeleteInvalid( bool setting = true )"] = "Set spawn tool to auto delete bad spawns on creation. Disavled by default",
 					[" script DEV_AutoSetName( string name = \"\" )"] = "Defines a custom spawn set name to auto use when creating spawns if not specified during DEV_AddSpawn(). Call with nothing to empty/disable. System automatically names spawns based on index otherwise.",
 					[" script DEV_KeepHighlight( bool setting = true )"] = "Sets whether spawn highlight stays after adding spawn.",
+					[" script DEV_SpawnsBaseMap( string baseMap = \"\", bool bIgnoreInvalid = false )"] = "Sets the base map the spawn system will use for coordinate data",
+					[" script DEV_SpawnsPlaylist( string playlist = \"\" ) "] = "Sets the playlist this spawn pak should load for",
 					["......"] = "",
 					["......."] = "",
 					[" ==== MAIN SPAWN FUNCTIONS ===="] = "",
@@ -168,12 +175,12 @@ global function SpawnSystem_CreateLocPairObject
 					[" script DEV_HighlightAll()"] = "Shows/Removes beams of light on all spawns in the PosArray",
 					[" script DEV_Highlight( int index, bool persistent = false )"] = "Highlight a single spawn by spawn index. Called automatically on spawn add. If persistent is not provided beam destroys after " + HIGHLIGHT_SPAWN_DELAY + " seconds. Set with DEV_KeepHighlight()",
 					[" script DEV_GetSpawn( int index )"] = "Returns lockpair object for given spawn. Indexed into with .origin and .angles such as script printt( DEV_GetSpawn(0).origin )",
-					[" script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teamsize.",
+					[" script DEV_ShowCenter( int set )"] = "Shows the calculated center of a set that would be calculated automatically in a game mode based on teams per spawn set.",
 					["..........."] = "",
 					["............"] = "",
 					[" ==== GENERATE FILE ===="] = "",
 					["............."] = "",
-					[" script DEV_WriteSpawnFile( type = \"\" )"] = "Write current locations to file in the current format or specified format ( csv | sq ), use printt( DEV_SpawnType() ) to see current type.",
+					[" script DEV_WriteSpawnFile( type = \"\" )"] = "Write current locations to file in the current format or specified format ( csv || sq ), use printt( DEV_SpawnType() ) to see current type.",
 					[".............."] = "",
 					["..............."] = "",
 					["................"] = "",
@@ -219,6 +226,7 @@ void function Flowstate_SpawnSystem_Init()
 		
 		CalculateMaxIndent()
 		InitClonedSettings()
+		AutoSetupSettings()
 	#endif
 }
 
@@ -558,7 +566,7 @@ array<SpawnData> function GenerateCustomSpawns( int eMap, int coreSpawnsLen = -1
 					#endif 
 					
 					customSpawns = SpawnSystem_CreateSpawnObjectArray( data.spawns, data.metaData )
-					file.overrideSpawns = true
+					file.bOverrideSpawns = true
 				}
 				else 
 				{
@@ -716,7 +724,7 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 	
 	if( extraSpawnLocations.len() > 0 )
 	{
-		if( file.overrideSpawns )
+		if( file.bOverrideSpawns )
 		{
 			allSoloLocations = extraSpawnLocations
 		}
@@ -1133,7 +1141,7 @@ void function DEV_PrintSpawns( bool bSyncInfoPanels = false )
 		foreach( index, posString in file.dev_positions )
 		{	
 			table<vector,string> spawnInfos = {}
-			string identifier = GetIdentifier( index, file.teamsize )
+			string identifier = GetIdentifier( index, file.iTeamCount )
 			
 			if( IsNewSet( index ) || index == 0 )
 			{
@@ -1169,10 +1177,10 @@ void function DEV_PrintSpawns( bool bSyncInfoPanels = false )
 
 bool function IsNewSet( int index )
 {
-	if( SpawnCount() < file.teamsize )
+	if( SpawnCount() < file.iTeamCount )
 		return false 
 		
-	return ( index + 1 ) % file.teamsize == 1
+	return ( index + 1 ) % file.iTeamCount == 1
 }
 
 void function __LoopPanelDeletion( array< table<vector, string> > spawnInfosListRef = [], bool bSyncInfoPanels = false )
@@ -1502,7 +1510,7 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 int function GetCurrentSpawnSet( int index, int teamsize = -1 )
 {
 	if ( teamsize == -1 )
-		teamsize = file.teamsize 
+		teamsize = file.iTeamCount 
 	
 	return ( index + 1 ) / teamsize + 1
 }
@@ -1510,7 +1518,7 @@ int function GetCurrentSpawnSet( int index, int teamsize = -1 )
 int function GetPreviousSpawnSet( int index, int teamsize = -1 )
 {
 	if ( teamsize == -1 )
-		teamsize = file.teamsize 
+		teamsize = file.iTeamCount 
 		
 	int previous = GetCurrentSpawnSet( index, teamsize ) - 1
 	
@@ -1615,8 +1623,10 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 {
 	if( file.dev_positions.len() <= 0 )
 	{
-		printt( "No spawn positions to write stdout" )
-		printm( "No spawn positions to write stdout" )
+		string msg = "No spawn positions to write stdout"
+		
+		printt( msg )
+		printm( msg )
 		return 
 	}
 	
@@ -1676,7 +1686,7 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 	}
 	
 	int uTime 			= GetUnixTimestamp()
-	string file 		= "spawns_" + string( uTime ) + fType
+	string file 		= "fs_spawns_" + DEV_SpawnsPlaylist() + "_" + DEV_SpawnsBaseMap() + "_set_" + string( uTime ) + fType
 	string directory 	= "output/"
 	
 	if( bAutoSave )
@@ -1687,8 +1697,23 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 	
 	if( !bAutoSave )
 	{
-		printt("Wrote file to: ", directory + file )
-		printm("Wrote file to: ", directory + file )
+		string msg = "Wrote file to: " + directory + file
+		
+		printt( msg )
+		printm( msg )
+		
+		string setPlaylist = DEV_SpawnsPlaylist( "", true )	
+		int maxTeamsPerArenaRound = GetTeamCount()
+		
+		if( maxTeamsPerArenaRound > -2 && maxTeamsPerArenaRound != 0 )
+		{
+			if( SpawnCount() % maxTeamsPerArenaRound != 0 )
+			{
+				Warning( "Warning: Expected total \"spawns\" to be multiples of \"teams per spawn set\"" )
+				Warning( "This pak may cause issues with gamemode logic" )
+				printw( "SpawnCount:", SpawnCount(), " Teams Per Spawn Set:", maxTeamsPerArenaRound )
+			}
+		}
 	}
 	else if( bReconvert )
 	{
@@ -1696,24 +1721,128 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 	}
 }
 
-void function DEV_SetTeamSize( int size )
+string function DEV_SpawnsPlaylist( string playlist = "", bool bDisablePrints = false )
+{
+	string context = " is "
+	
+	if( !empty( playlist ) && IsSafeString( playlist, 60, FILE_NAME_REGEX ) )
+	{
+		if( !AllPlaylistsArray().contains( playlist ) )
+			Warning( "Notice: \"" + playlist + "\" is not configured in \"sh_mapname_playlist_gamemode_enums.gnut\"" )
+		
+		file.spawnsPlaylist = playlist
+		context = " was "
+		
+		switch( playlist )
+		{
+			case "fs_scenarios":
+				
+				DEV_SetTeamCount( GetPlaylistVarInt( "fs_scenarios", "max_team_size", 5 ) )
+				break
+				
+			case "fs_1v1":
+				DEV_SetTeamCount( 2 )
+				break
+		}
+	}
+	
+	string filePlaylist = file.spawnsPlaylist	
+	
+	if( !bDisablePrints )
+	{
+		string msg = "SpawnSystem(dev):: playlist" + context + "set to: \"" + filePlaylist + "\""
+		
+		printt( msg )
+		printm( msg )
+	}
+	
+	return filePlaylist
+}
+
+string function DEV_SpawnsBaseMap( string baseMap = "", bool bIgnoreInvalid = false, bool bDisablePrints = false )
+{
+	string context = " is "
+	
+	if( !empty( baseMap ) && IsSafeString( baseMap, 60, FILE_NAME_REGEX ) )
+	{
+		if( !AllMapsArray().contains( baseMap ) )
+		{
+			Warning( "Notice: \"" + baseMap + "\" is not configured in \"sh_mapname_playlist_gamemode_enums.gnut\"" )
+		}
+		else 
+		{	
+			int mapEnumValue = GetEnumValue( "eMaps", baseMap )
+			int baseMapEnumValue = SpawnSystem_FindBaseMapForPak( mapEnumValue )
+			
+			if( mapEnumValue != baseMapEnumValue && !bIgnoreInvalid )
+			{
+				string newBaseMap = AllMapsArray()[ baseMapEnumValue ]
+				
+				string basemsg
+				{
+					basemsg += "\n\nProvided map was corrected to basemap for this spawn rpak: \n"
+					basemsg += "Old: " + baseMap + "\n"
+					basemsg += "New (basemap): " + newBaseMap + "\n"
+				}
+				
+				baseMap = newBaseMap
+				Warning( basemsg )
+			}
+			
+		}
+		
+		file.spawnsMap = baseMap
+		context = " was "
+	}
+	
+	string fileMap = file.spawnsMap
+	
+	if( !bDisablePrints )
+	{
+		string msg = "SpawnSystem(dev):: baseMap" + context + "set to: \"" + fileMap + "\""
+		
+		printt( msg )
+		printm( msg )
+	}
+	
+	return fileMap
+}
+
+void function DEV_SetTeamCount( int count )
 {
 	bool bReload = false
 	
-	if( file.teamsize != size )
+	if( count == 0 )
+	{
+		string modu = "Cannot set team count to 0. Did you mean -1 for all spawns same team?"
+		
+		printt( modu )
+		printm( modu )
+		
+		return
+	}
+	
+	if( file.iTeamCount != count )
 	{
 		bReload = true
 	}
 	
-	file.teamsize = size
+	file.iTeamCount = count
 	
-	printt( "Team size set to", size )
-	printm( "Team size set to", size )
+	string msg = "Team count per \"Spawn Set\" was set to"
+	
+	printt( msg, count )
+	printm( msg, count )
 	
 	if( bReload )
 	{
 		DEV_PrintSpawns( true )
 	}
+}
+
+int function GetTeamCount()
+{
+	return file.iTeamCount
 }
 
 void function DEV_TeleportToPanels( string identifier )
@@ -2027,8 +2156,8 @@ array<LocPair> function DEV_ShowCenter( int set, bool bReturnData = false )
 	array<LocPair> spawns = [] 
 	
 	int iSpawnsLen = SpawnCount()	
-	int iStartPos = ( set - 1 ) * file.teamsize 
-	int iEndPos = iStartPos + file.teamsize
+	int iStartPos = ( set - 1 ) * file.iTeamCount 
+	int iEndPos = iStartPos + file.iTeamCount
 	
 	if( iStartPos < 0 || iStartPos >= iSpawnsLen || iEndPos > iSpawnsLen )//for loop end
 	{
@@ -2395,6 +2524,12 @@ void function CalculateMaxIndent()
 	file.maxIndentNeeded = maxlen + 3
 }
 
+void function AutoSetupSettings()
+{
+	DEV_SpawnsPlaylist( GetCurrentPlaylistName(), true )
+	DEV_SpawnsBaseMap( GetMapName(), false, true )
+}
+
 void function DEV_AutoDeleteInvalid( bool setting = true )
 {
 	file.bAutoDelInvalid = setting
@@ -2464,10 +2599,12 @@ array<string> function GetSpawnSettings()
 	
 	settings.append( " === CURRENT SETTINGS === " )
 	settings.append( " Auto Save = " + file.bAutoSave )
+	settings.append( " Spawn Pak Playlist = " + DEV_SpawnsPlaylist( "", true ) )
+	settings.append( " Spawn Pak Map = " + DEV_SpawnsBaseMap( "", false, true ) )
 	settings.append( " Spawns Count = " + SpawnCount() )
-	settings.append( " Team Size = " + file.teamsize )
-	settings.append( " File Type = " + file.dev_positions_type )
-	settings.append( " Spawn set name = " + file.spawnSetName )
+	settings.append( " Teams Per Spawn Set = " + file.iTeamCount )
+	settings.append( " Saving File Type = " + file.dev_positions_type )
+	settings.append( " Current spawn set name = " + file.spawnSetName )
 	settings.append( " Panel Locations = " + file.panelsloc.origin + "," + file.panelsloc.angles )
 	settings.append( " Auto Simulate Ring ? = " + file.autoSimulateRing )
 	settings.append( " Spawn Info Panels ? = " + file.bSpawnInfoPanels )
@@ -2478,6 +2615,7 @@ array<string> function GetSpawnSettings()
 	settings.append( " Auto Delete Invalid ? = " + file.bAutoDelInvalid )
 	settings.append( " " )
 	settings.append( " === DEBUG INFO === " )
+	settings.append( " Spawns Count = " + SpawnCount() )
 	settings.append( " allBeamEntities count = " + file.allBeamEntities.len() )
 	settings.append( " bInfoPanelsAreReloading = " + file.bInfoPanelsAreReloading )
 	settings.append( " bValidatorRunning = " + file.bValidatorRunning )
@@ -2688,8 +2826,8 @@ void function DEV_SimulateRing( int spawnSet = -1, bool bLoop = false )
 	}
 	
 	int iSpawnsLen = SpawnCount()	
-	int iStartPos = ( spawnSet - 1 ) * file.teamsize 
-	int iEndPos = iStartPos + file.teamsize
+	int iStartPos = ( spawnSet - 1 ) * file.iTeamCount 
+	int iEndPos = iStartPos + file.iTeamCount
 	
 	if( iStartPos < 0 || iStartPos >= iSpawnsLen || iEndPos > iSpawnsLen )//for loop end
 	{

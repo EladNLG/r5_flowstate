@@ -541,7 +541,7 @@ void function SetHostInvetoryAttachments()
 	
 	settings.hostSetAttachments = attachments
 	
-	if( settings.bAllowWeaponsMenu )
+	if( settings.bAllowWeaponsMenu && !isScenariosMode() )
 		AddCallback_OnPlayerWeaponAttachmentChanged( OnWeaponAttachmentChanged )
 }
 

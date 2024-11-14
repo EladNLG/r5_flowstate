@@ -90,26 +90,21 @@ void function OnClientConnected( entity player )
 	// file.playerAccumulatedDamageData[player] <- damageData
 }
 
-void function NetworkedIntLatencyThingy( entity player )
+void function NetworkedIntLatencyThingy( entity player ) //(mk): 11/12/2024 - thingified it 
 {
-	int latency
-	while ( IsValid(player) )
-	{
-		latency = int( player.GetLatency() * 1000 ) - 45
+	if( !IsValid( player ) ) //was threaded off, check again.
+		return 
 		
-		if( latency >= 500 )
-		{
-			player.SetPlayerNetInt( "latency", 500 )
-		} 
-		else if( latency < 0 )
-		{
-			player.SetPlayerNetInt( "latency", -1 )
-		} 
-		else
-		{
-			player.SetPlayerNetInt( "latency", latency )
-		}
-
+	player.EndSignal( "OnDestroy" )
+	
+	int latency
+	
+	for( ; ; )
+	{
+		latency = int( player.GetLatency() * 1000 ) - 45	
+		
+		player.SetPlayerNetInt( "latency", ClampInt( latency, -1, 500 ) )
+		
 		wait 0.5
 	}
 }

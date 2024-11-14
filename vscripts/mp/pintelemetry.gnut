@@ -421,6 +421,7 @@ struct //Todo: move appropriate to tracker.var
 	bool bForceUpdatePlayerData = false
 	bool bStatsShipped = false 
 	bool stats_discord_webhook_matches_enabled
+	bool bClientCommandAdminEnabled
 	
 	bool sg_counter_msg
 	float FS_MaxHealth
@@ -1573,7 +1574,7 @@ void function PIN_Init()
 	AddCallback_OnClientConnected( PlayerConnectedCallback )
 	AddClientCommandCallback( "show", ClientCommand_mkos_return_data )
 	
-	if ( Enable_CC_Administration() )
+	if ( IsClientCommandAdminEnabled() )
 		AddClientCommandCallback( "cc", ClientCommand_mkos_admin ) 
 	
 	if ( file.LogOn )
@@ -1600,7 +1601,9 @@ void function PIN_Init()
 	//initialize array/table maps
 	INIT_CC_GameTypes()
 	INIT_CC_MapNames()
-	INIT_CC_playeradmins()
+	
+	if( IsClientCommandAdminEnabled() )
+		INIT_CC_playeradmins()
 	
 	if ( file.restricted_server ) 
 		PlayerWhitelistInit()
@@ -1667,7 +1670,8 @@ void function Tracker_SettingsInit()
 	//todo: cleanup mode related stuff
 	file.LogOn 										= GetCurrentPlaylistVarBool( "logging_enabled", false)
 	file.LogE 										= GetCurrentPlaylistVarBool( "logging_encryption", false)
-	file.bChatbotEnabled							= !IsLobby() && SQ_GetSetting__internal("settings.ENABLE_CHATBOT") == "true" ? true : false;
+	file.bChatbotEnabled							= ( !IsLobby() && SQ_GetSetting__internal( "settings.ENABLE_CHATBOT" ) == "true" ? true : false )
+	file.bClientCommandAdminEnabled					= ( GetConVarInt( "sv_onlineAuthEnable" ) == 1 && GetCurrentPlaylistVarBool( "cc_administration", false ) )
 	file.flowstateRoundtime 						= GetCurrentPlaylistVarInt( "flowstateRoundtime", 1800 )
 	file.afk_to_rest_enabled 						= GetCurrentPlaylistVarBool( "afk_to_rest_bool", false )
 	file.update_discord_player_counts 				= GetCurrentPlaylistVarBool( "stats_discord_webhook_player_count", false )
@@ -2400,6 +2404,11 @@ float function Tracker_GetMaxWaitForBatchLoad()
 	return file.maxWaitForBatchLoad
 }
 
+bool function IsClientCommandAdminEnabled()
+{
+	return file.bClientCommandAdminEnabled
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -2856,7 +2865,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			}
 		
 			logString += format("{%s}{%s} dealt:Recap: {%.2f} total damage in {%d} hits with weapon(s), headshots: {%d}, Total Jumps: {%d}, Total Shots: {%d}, Superglides: {%d};",
-								GetPlayerIdFromHandle(player_handles[i]), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i], playerTotalHeadshots[i], attackerJumps, attackerShots, attackerSuperglides);
+								statPrintUID( GetPlayerIdFromHandle( player_handles[i] ) ), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i], playerTotalHeadshots[i], attackerJumps, attackerShots, attackerSuperglides);
 								
 			//DEBUG
 			//sqprint(format("Total shots for fight: %d", attackerShots));
@@ -2929,16 +2938,16 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 					AddToPlayerDamage( victimUID, victimTotalDamage )
 			
 		//*move to gametype specific in future or set playlist bool
-		if ( Flowstate_IsLGDuels() )
-		{
-			if ( IsValid( victim ) )
-			{	
-				for ( int i = 0; i < player_handles.len(); ++i ) 
-				{
-					RecapStats( victim, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat(), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat()  )
-				}
-			}
-		}
+		// if ( Flowstate_IsLGDuels() )
+		// {
+			// if ( IsValid( victim ) )
+			// {	
+				// for ( int i = 0; i < player_handles.len(); ++i ) 
+				// {
+					// RecapStats( victim, victimTotalDamage, victimTotalHits.tofloat(), victimTotalShots.tofloat(), playerDISPLAYNAME[i], playerTotalDamages[i], playerTotalHits[i].tofloat(), playerTotalShots[i].tofloat()  )
+				// }
+			// }
+		// }
 		
 		if( file.gamemode_type_1v1 )
 		{
@@ -2958,7 +2967,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 
 
             float timeRemaining = Tracker_DecideTimeRemaining()
-            int placement = GetNumTeamsRemaining() //ty ida
+            int aliveTeams = GetNumTeamsRemaining() //ty ida
 
 			string attName = ""
 			string aController = ""
@@ -2987,7 +2996,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			if ( attacker.IsPlayer() )
 			{
 				attName = attacker.p.name;
-				pingAttacker = attacker.GetLatency() * 1000 - 40;
+				pingAttacker = attacker.GetLatency() * 1000 - 40
 				a_OID = attacker.p.UID
 				iAttackerScore = attacker.p.season_score
 				
@@ -3008,7 +3017,8 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			else 
 			{
 				int attackerID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-				a_OID = attackerID.tostring()
+				
+				a_OID = GetWorldSpawnRef( attackerID )
 				
 				if( !exclude( attackerID ) )
 					attName = DamageSourceIDToString( attackerID )			
@@ -3020,8 +3030,8 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 			string victimcontroller = victimIsPlayer ? victim.p.input.tostring() : "1"
 			int iVictimScore = victimIsPlayer ? victim.p.season_score : 0
 
-			int pA = pingAttacker.tointeger();
-			int pV = pingVictim.tointeger();
+			int pA = pingAttacker.tointeger()
+			int pV = pingVictim.tointeger()
             logString += format("\n^^,%s,1,%d,%d,%s,%s,%s,%i,%d,%s,%d,%d,%s,%s,%i,%i\n&&,%s,%d,%s,%d,%s,%s,%i,%d,%s,%d,%d,%s,%s,%s,%i,%i\n",
                 a_OID, 					//0
                 GetNumTeamsRemaining(), //2
@@ -3039,7 +3049,7 @@ void function Tracker_AddDamageEventsToDeleteQueue( int attacker_handle, int vic
 				iAttackerScore,			//14
 				iVictimScore,			//15
                 v_OID, 				//0
-                placement, 			//1
+                aliveTeams, 		//1
                 a_OID, 				//2
                 GetUnixTimestamp(), //3
                 team_of_killer, 	//4
@@ -3515,71 +3525,74 @@ DamageEvent function Tracker_GetCurrentEventByPlayerHandle_expensive( int player
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	bool function ClientCommand_mkos_ea_verify(entity player, array<string> args)
+	//this blows
+	bool function ClientCommand_mkos_ea_verify( entity player, array<string> args )
 	{	
-		thread PlayerEA_Verify( player, args )	
+		string ea_acc = player.GetPlayerName()
+		string OID = player.GetPlatformUID()
+	
+		int index = -1;
+		for (int i = 0; i < playerVerifyCounts.len(); i++) 
+		{
+			if (playerVerifyCounts[i].playerID == ea_acc) 
+			{
+				index = i;
+				break;
+			}
+		}
+
+		if (index == -1) 
+		{
+			PlayerVerifyCount newEntry
+			newEntry.playerID = ea_acc
+			newEntry.verifyCount = 0;
+			playerVerifyCounts.append( newEntry )
+			index = playerVerifyCounts.len() - 1
+		}
+
+		if ( playerVerifyCounts[index].verifyCount >= 3 ) 
+		{
+			Message(player, "Too many attempts. Try again later.")
+			return false
+		}
+	
+		thread PlayerEA_Verify( player, args, index, ea_acc, OID )	
 		return true
 	}
 	
 	
-	void function PlayerEA_Verify( entity player, array<string> args ) 
+	void function PlayerEA_Verify( entity player, array<string> args, int index, string ea_acc, string OID ) 
 	{
 		if ( !IsValid( player ) ) // || !player.p.isConnected)
 				return
 		
-			if ( file.gamemode_type_1v1 ) 
-			{
-				if( !player.p.isConnected )
-					waitthread WaitSignalOrTimeout( player, 5, "OnConnected", "OnDisconnected", "OnDestroy" )
-				
-				if( !IsValid( player ) || !player.p.isConnected )
-					return
-					
-				Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
-				mkos_Force_Rest( player )
-			}
-
-			if ( args.len() < 1  )
-			{
-				Message(player, "Token from R5R.DEV is required.");
-				return;
-			}
-
-			string ea_acc = player.GetPlayerName()
-			string OID = player.GetPlatformUID()
-		
-		
-			int index = -1;
-			for (int i = 0; i < playerVerifyCounts.len(); i++) 
-			{
-				if (playerVerifyCounts[i].playerID == ea_acc) 
-				{
-					index = i;
-					break;
-				}
-			}
-
-			if (index == -1) 
-			{
-				PlayerVerifyCount newEntry;
-				newEntry.playerID = ea_acc;
-				newEntry.verifyCount = 0;
-				playerVerifyCounts.append(newEntry)
-				index = playerVerifyCounts.len() - 1;
-			}
-
-			if (playerVerifyCounts[index].verifyCount >= 3) 
-			{
-				Message(player, "Too many attempts. Try again later.")
-				return;
-			}
-
-			playerVerifyCounts[index].verifyCount += 1
-
-			string token = args[0]
-			EA_Verify__internal( token, OID, ea_acc )
+		if ( file.gamemode_type_1v1 ) 
+		{
+			if( !player.p.isConnected )
+				waitthread WaitSignalOrTimeout( player, 5, "OnConnected", "OnDisconnected", "OnDestroy" )
 			
-			return	
+			if( !IsValid( player ) || !player.p.isConnected )
+				return
+				
+			Remote_CallFunction_ByRef( player, "ForceScoreboardLoseFocus" )
+			mkos_Force_Rest( player )
+		}
+		
+		if( !player.p.isConnected )
+			return
+
+		if ( args.len() < 1 )
+		{
+			Message( player, "Token from R5R.DEV is required." )
+			return
+		}
+
+		playerVerifyCounts[ index ].verifyCount += 1
+
+		string token = args[ 0 ]
+		EA_Verify__internal( token, OID, ea_acc )
+		
+		return
 	}
 	
 	void function CodeCallback_VerifyEaAccount( string oid, int token )
@@ -3968,6 +3981,14 @@ bool function UIDisWorldSpawn( int uid )
 		return true 
 		
 	return false
+}
+
+string function GetWorldSpawnRef( int uid )
+{
+	if( UIDisWorldSpawn( uid ) )
+		return _GetHardcodedWorldspawnRef( uid )
+	
+	return "WORLDSPAWN_NOTFOUND"
 }
 
 // This function is responsible for sending sync data to r5r.dev.

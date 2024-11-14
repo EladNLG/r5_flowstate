@@ -130,7 +130,7 @@ struct
     int nextMapIndex = 0
 	bool mapIndexChanged = true
 	array<entity> playerSpawnedProps
-	array<ItemFlavor> characters
+	//array<ItemFlavor> characters
 	int SameKillerStoredKills=0
 	array<string> blacklistedWeapons
 	array<string> blacklistedAbilities
@@ -1432,9 +1432,11 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 		Remote_CallFunction_ByRef( player, "Minimap_EnableDraw_Internal" )
 		//Remote_CallFunction_NonReplay(player, "Minimap_EnableDraw_Internal")
 
+	
+	//: always true in halo:
 	if( flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) || flowstateSettings.is_halo_gamemode )
 	{
-		CharSelect( player )
+		CharSelect( player ) //(mk): gives melee if not 1v1 mode, has conditions for halo, dummies, 
 		player.SetPlayerNetBool( "hasLockedInCharacter", true )
 	}
 
@@ -1442,33 +1444,47 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
     {
 		if( flowstateSettings.RandomCharacterOnSpawn && !flowstateSettings.ForceCharacter && !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 		{
-			GivePlayerRandomCharacter( player )
+			GivePlayerRandomCharacter( player ) //gives random tac, alt, melee
 			player.SetPlayerNetBool( "hasLockedInCharacter", true)
 		}
 
         if( Equipment_GetRespawnKitEnabled() && !FlowState_Gungame() )
         {
 			DecideRespawnPlayer( player, true )
-            player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-            player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-            array<StoredWeapon> weapons = [
+            player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+            player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+            
+			array<StoredWeapon> weapons = 
+			[
                 Equipment_GetRespawnKit_PrimaryWeapon(),
                 Equipment_GetRespawnKit_SecondaryWeapon(),
                 Equipment_GetRespawnKit_Tactical(),
                 Equipment_GetRespawnKit_Ultimate()
             ]
-            foreach (storedWeapon in weapons)
+			
+            foreach ( storedWeapon in weapons )
             {
                 if ( !storedWeapon.name.len() ) continue
                 if( storedWeapon.weaponType == eStoredWeaponType.main)
-					try{
-					entity givenWeapon = player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
-					SetupInfiniteAmmoForWeapon( player, givenWeapon )
-					}catch(e420){}
+				{
+					try
+					{
+						entity givenWeapon = player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+						SetupInfiniteAmmoForWeapon( player, givenWeapon )
+					}
+					catch(e420){}
+				}
                 else
-					try{
-                    player.GiveOffhandWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
-					}catch(e420){}
+				{
+					try
+					{
+						if( PlayerHasWeapon( player, storedWeapon.name ) )
+							printt( "Tried to give ability: ", storedWeapon.name, " but player: ", player ," already has it." )
+						else
+							player.GiveOffhandWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+					}
+					catch( e420 ){}
+				}
             }
 		}
         else
@@ -1593,19 +1609,21 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 		} catch (e420) {}
 	}
 
-	//wtf is this expression
-	if( IsValid( player ) || FlowState_GungameRandomAbilities() && IsValid( player ))
+	//(mk): wtf is this expression
+	//if( IsValid( player ) || FlowState_GungameRandomAbilities() && IsValid( player ))
+	
+	if( IsValid( player ) && FlowState_GungameRandomAbilities() )
 	{
-		if(FlowState_RandomTactical())
+		if( FlowState_RandomTactical() )
 		{
-			player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-			GiveRandomTac(player)
+			player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+			GiveRandomTac( player )
 		}
 
-		if(FlowState_RandomUltimate())
+		if( FlowState_RandomUltimate() )
 		{
-			player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-			GiveRandomUlt(player)
+			player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+			GiveRandomUlt( player )
 		}
 
 	}
@@ -1673,9 +1691,9 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			foreach(item in loot)
 			{
 				#if DEVELOPER
-				SURVIVAL_AddToPlayerInventory(player, item, 5)
+					SURVIVAL_AddToPlayerInventory(player, item, 5)
 				#else
-				SURVIVAL_AddToPlayerInventory(player, item, 2)
+					SURVIVAL_AddToPlayerInventory(player, item, 2)
 				#endif
 				SURVIVAL_EquipOrdnanceFromInventory( player, item )
 			}
@@ -2283,29 +2301,46 @@ void function GiveActualGungameWeapon(int index, entity player)
 	__GiveWeapon( player, Weapons, slot, index, true)
 }
 
+const array<string> TAC_WEAPONS = 
+[
+	"mp_ability_grapple",
+	"mp_ability_phase_walk",
+	"mp_ability_heal",
+	"mp_weapon_bubble_bunker",
+	"mp_weapon_grenade_bangalore",
+	"mp_ability_area_sonar_scan",
+	"mp_weapon_grenade_sonar",
+	"mp_weapon_deployable_cover",
+	"mp_ability_holopilot",
+	"mp_ability_cloak",
+	"mp_ability_space_elevator_tac",
+	"mp_ability_phase_rewind"
+]
+
 void function GiveRandomTac(entity player)
 {
-	//todo: init outside func..
-    array<string> Weapons = [
-		"mp_ability_grapple",
-		"mp_ability_phase_walk",
-		"mp_ability_heal",
-		"mp_weapon_bubble_bunker",
-		"mp_weapon_grenade_bangalore",
-		"mp_ability_area_sonar_scan",
-		"mp_weapon_grenade_sonar",
-		"mp_weapon_deployable_cover",
-		"mp_ability_holopilot",
-		"mp_ability_cloak",
-		"mp_ability_space_elevator_tac",
-		"mp_ability_phase_rewind"
-	]
+	array<string> Weapons = clone TAC_WEAPONS
+	
+	foreach( ability in file.blacklistedAbilities )
+		Weapons.fastremovebyvalue( ability )
 
-	foreach(ability in file.blacklistedAbilities)
-		Weapons.removebyvalue(ability)
-
-	if(IsValid(player))
-	    player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ], OFFHAND_TACTICAL)
+	if( IsValid( player ) )
+	{
+		//string weapon = Weapons[ RandomIntRange( -1, Weapons.len() ) ] //this is not inclusive
+		string weapon = Weapons.getrandom()
+		
+		if( PlayerHasWeapon( player, weapon ) )
+		{
+			#if DEVELOPER
+				DumpStack()
+				mAssert( false, format( "Player \"%s\" already has weapon(tactical) \"%s\"", string( player ), weapon ) )
+			#endif
+			
+			return
+		}
+		
+	    player.GiveOffhandWeapon( weapon, OFFHAND_TACTICAL )
+	}
 }
 
 void function GiveRandomUlt(entity player )
@@ -2873,9 +2908,10 @@ void function SimpleChampionUI()
 
 	file.FallTriggersEnabled = true
 
-	if (!file.mapIndexChanged)
+	if ( !file.mapIndexChanged )
 	{
-		file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
+		if( file.locationSettings.len() > 0 )
+			file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
 	}
 
 	int choice = file.nextMapIndex
@@ -2884,13 +2920,11 @@ void function SimpleChampionUI()
 	if( !VOTING_PHASE_ENABLE )
 	{
 		if( choice in file.locationSettings )
-		{
 			file.selectedLocation = file.locationSettings[ choice ]
-		}
 		
 		if( FlowState_LockPOI() )
 			file.selectedLocation = file.locationSettings[ FlowState_LockedPOI() ]
-	} 
+	}
 	else
 	{
 		file.selectedLocation = file.locationSettings[ FS_DM.mappicked ]
@@ -4452,19 +4486,23 @@ void function CharSelect( entity player)
 		DumpStack()
 	#endif 
 	//Char select.
-	file.characters = clone GetAllCharacters()
-	if(FlowState_ForceAdminCharacter() && IsAdmin(player))
+	//file.characters = clone GetAllCharacters()
+	
+	array<ItemFlavor> characters = clone GetAllCharacters() //(mk): does this even need to be updated every call?
+	
+	if( FlowState_ForceAdminCharacter() && IsAdmin( player ) )
 	{
-		ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenAdminCharacter()]
+		ItemFlavor PersonajeEscogido = characters[ FlowState_ChosenAdminCharacter() ]
 		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-	} else if( !flowstateSettings.is_halo_gamemode )
+	} 
+	else if( !flowstateSettings.is_halo_gamemode )
 	{
 		int chosen = FlowState_ChosenCharacter()
 		
 		if( FlowState_ChosenCharacter() > 10 )
 			chosen = 5
 		
-		ItemFlavor PersonajeEscogido = file.characters[ chosen ]
+		ItemFlavor PersonajeEscogido = characters[ chosen ]
 		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
 	}
 
@@ -5851,7 +5889,7 @@ bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-void function GivePlayerRandomCharacter(entity player)
+void function GivePlayerRandomCharacter( entity player )
 {
 	if ( !IsValid( player ) ) 
 		return
@@ -5865,7 +5903,7 @@ void function GivePlayerRandomCharacter(entity player)
 	GiveRandomSecondaryWeaponMetagame(player)
 	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-    GiveRandomTac(player)
+    GiveRandomTac(player) 
     GiveRandomUlt(player)
 }
 void function highlightKdMoreThan2(entity player)

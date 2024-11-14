@@ -85,7 +85,9 @@ void function Sh_FS_MovementRecorder_Init()
 		disableoverwrite( file._dummyMaps__Template )
 		//disableoverwrite( file._playbackDuration__Template )
 		
+		AddCallback_OnClientConnected( FS_MovementRecorder_OnPlayerConnected )
 		AddCallback_OnClientDisconnected( _HandlePlayerDisconnect )
+		AddCallback_OnPlayerRespawned( _HandleRespawn )
 		
 		AddClientCommandCallback( "recorder_toggleRecorder", ClientCommand_ToggleMovementRecorder )
 		AddClientCommandCallback( "PlayAnimInSlot", ClientCommand_PlayAnimInSlot )
@@ -94,8 +96,7 @@ void function Sh_FS_MovementRecorder_Init()
 		AddClientCommandCallback( "recorder_recorderHideHud", ClientCommand_HideHud )
 		AddClientCommandCallback( "recorder_toggleContinueLoop", ClientCommand_ToggleContinueLoop )	
 		AddClientCommandCallbackNew( "DestroyDummys", ClientCommand_DestroyDummys )
-		AddCallback_OnClientConnected( FS_MovementRecorder_OnPlayerConnected )
-		
+			
 		RegisterSignal( "EndDummyThread" )
 		RegisterSignal( "FinishedRecording" )
 		RegisterSignal( "PlayRandomAnimation" )
@@ -457,6 +458,11 @@ void function _HandlePlayerDisconnect( entity player )
 	
 	foreach ( slot, dummies in file.playerDummyMaps[playerHandle] )
 			DestroyDummyForSlot( player, slot, playerHandle )
+}
+
+void function _HandleRespawn( entity player )
+{
+	AssignCharacter( player, 8 )
 }
 
 void function FS_MovementRecorder_OnPlayerConnected( entity player )
