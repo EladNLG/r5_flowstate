@@ -518,8 +518,10 @@ void function OnWeaponActivate_Consumable( entity weapon )
 					if ( InPrediction() )
 			#endif
 			{
-				if( modName != "ultimate_battery" && !PlayerHasPassive( weaponOwner, ePassives.PAS_SUPPORT ) )
+				if( !PlayerHasPassive( weaponOwner, ePassives.PAS_SUPPORT ) )
 					useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.479 ) )
+				else
+					useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.move_slow, 0.183 ) )
 	
 				useData.statusEffectHandles.append( StatusEffect_AddEndless( weaponOwner, eStatusEffect.disable_wall_run_and_double_jump, 1.0 ) )
 			}
