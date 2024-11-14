@@ -1341,27 +1341,28 @@ void function MG_Spawn_PB_Timers()
 	//
 	// ** Info **
 	MG_CreateTextInfoPanel( "MOVEMENT HUB", "", < 690, -736, 40861.3 >, < 0, -45, 0 >, 50, 99, 3)
-	MG_CreateTextInfoPanel( "The Movement Community's Home", "", < 910, -510, 40986 >, < 0, -45, 0 >, 35, 99, 0)
+	MG_CreateTextInfoPanel( "The Movement Community's Home", "", < 915.9, -504.12, 40986 >, < 0, -45, 0 >, 35, 99, 0)
+	MG_CreateTextInfoPanel( "ESC > Server MOTD for more info", "", < 788.9411, -631.045, 40512.47 >, < 0, -45, 0 >, 15, 99, 0)
 	//
 	// ** Gym Map **
 	MG_CreateTextInfoPanel( "Gym Map", "", < 501.64, -4.1, 40368 >, < -15, 0, 0 >, 10, 99, 3)
 	MG_CreateTextInfoPanel( "Difficulty: Easy", "", < 478.54, 47.70, 40455 >, < -15, 0, 0 >, 10, 99, 1)
-	MG_CreateTextInfoPanel( "", "by: LoyTakian", < 484.74, -4.1, 40436.77 >, < -15, 0, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "", "by: LoyTakian", < 484.74, -2, 40436.77 >, < -15, 0, 0 >, 10, 99, 3)
 	//
 	// ** It Hurts Map **
 	MG_CreateTextInfoPanel( "It Hurts", "", < -74.96, 576.9, 40368 >, < -15, 90, 0 >, 10, 99, 3)
-	MG_CreateTextInfoPanel( "Difficulty: Hard", "", < -126.96, 553.9, 40455 >, < -15, 90, 0 >, 10, 99, 1)
-	MG_CreateTextInfoPanel( "","by: LoyTakian", < -74.96, 559.1, 40435.67 >, < -15, 90, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "Difficulty: Hard", "", < -126, 553.9, 40455 >, < -15, 90, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "","by: LoyTakian", < -76, 559.1, 40435.67 >, < -15, 90, 0 >, 10, 99, 3)
 	//
 	// ** Mantle Jump Map **
 	MG_CreateTextInfoPanel( "Mantle Jump Map", "", < -640.96, -3, 40368 >, < -15, -180, 0 >, 10, 99, 3)
-	MG_CreateTextInfoPanel( "Difficulty: Medium", "", < -617.96, -55, 40455 >, < -15, -180, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "Difficulty: Medium", "", < -617.96, -60, 40455 >, < -15, -180, 0 >, 10, 99, 1)
 	MG_CreateTextInfoPanel( "", "by: LoyTakian  &  Treeree", < -623.06, -3, 40435.57 >, < -15, -180, 0 >, 10, 99, 3)
 	//
 	// ** First Map **
 	MG_CreateTextInfoPanel( "First Map", "", < -75.85, -583.7, 40368 >, < -15, -90, 0 >, 10, 99, 3)
-	MG_CreateTextInfoPanel( "Difficulty: Medium", "", < -14.45, -560, 40455 >, < -15, -90, 0 >, 10, 99, 1)
-	MG_CreateTextInfoPanel( "", "by: JayTheYggDrasil  &  Treeree", < -70.7584, -565.4001, 40434.67 >, < -15, -90, 0 >, 10, 99, 3)
+	MG_CreateTextInfoPanel( "Difficulty: Medium", "", < -19, -560, 40455 >, < -15, -90, 0 >, 10, 99, 1)
+	MG_CreateTextInfoPanel( "", "by: JayTheYggDrasil  &  Treeree", < -77, -565.4001, 40434.67 >, < -15, -90, 0 >, 10, 99, 3)
 	//
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 }
