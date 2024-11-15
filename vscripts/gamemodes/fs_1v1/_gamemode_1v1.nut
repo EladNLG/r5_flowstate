@@ -4701,10 +4701,6 @@ void function GiveWeaponsToGroup( array<entity> players )
 			
 			SetPlayerInventory( player, [] ) //clear
 
-			// Clear all equipment slots
-			foreach ( slot, slotData in EquipmentSlot_GetAllEquipmentSlots() )
-				Inventory_SetPlayerEquipment( player, "", slot )
-				
 			EquipHostSetInventoryAttachments( player )
 			Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
 			
