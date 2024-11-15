@@ -1510,25 +1510,10 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 		{
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 			PlayerRestoreHPFIESTA(player, 100)
-		} 
-		else if( Playlist() != ePlaylists.fs_scenarios )
-		{
-			player.SetShieldHealth( 0 )
-			player.SetShieldHealthMax( 0 )
-			Inventory_SetPlayerEquipment(player, "", "armor")
-			
-			thread function () : ( player ) //jfc
-			{
-				EndSignal( player, "OnDestroy" )
-				EndSignal( player, "OnDeath" )
-
-				WaitFrame()
-
-				player.SetShieldHealthMax( Equipment_GetDefaultShieldHP() )
-
-				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-			}()
 		}
+		
+		if( !isScenariosMode() && !g_is1v1GameType() )
+			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 
 		try{
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
