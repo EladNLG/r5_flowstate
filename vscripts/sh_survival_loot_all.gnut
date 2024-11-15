@@ -294,7 +294,12 @@ bool function IsNewLootEnabled( string ref )
 		case "":
 		case "mp_weapon_smart_pistol":
 		case "mp_weapon_wingman_n":
+		
+		//disabled until proper porting and fix
 		case "mp_weapon_epg":
+		case "sp_weapon_arc_tool":
+		case "explosive":
+		
 		// case "mp_weapon_sentinel":
 		// case "incapshield_pickup_lv0":
 		case "mp_weapon_bow":
@@ -621,8 +626,11 @@ void function RegisterCustomWeapons()
 		
 		data.isCP = GetCurrentPlaylistVarBool(className + "_cp_weapon", false)
 		RegisterWeapon(data)
-		RegisterCustomAttachments(GetCustomHopupsForWeapon(className))
+		// RegisterCustomAttachments(GetCustomHopupsForWeapon(className))
 	}
+	
+	array<string> customHopupsClassNames = split(GetCurrentPlaylistVarString("custom_hopup_list", ""), " ")
+	RegisterCustomAttachments(customHopupsClassNames)
 	
 	array<string> customGrenadeClassNames = split(GetCurrentPlaylistVarString("custom_grenade_list", ""), " ")
 	foreach(string className in customGrenadeClassNames)
