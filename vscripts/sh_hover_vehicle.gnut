@@ -30,9 +30,9 @@ void function ShHoverVehicle_Init()
 {
 	#if SERVER
 		PrecacheModel($"mdl/vehicles_r5/land/msc_suv_partum/veh_land_msc_suv_partum_static.rmdl")
-		PrecacheModel($"mdl/flowstate_custom/warthog.rmdl")
-		PrecacheModel($"mdl/flowstate_custom/mongoose.rmdl")
-		PrecacheModel($"mdl/flowstate_custom/banshee.rmdl")
+		// PrecacheModel($"mdl/flowstate_custom/warthog.rmdl")
+		// PrecacheModel($"mdl/flowstate_custom/mongoose.rmdl")
+		// PrecacheModel($"mdl/flowstate_custom/banshee.rmdl")
 		PrecacheModel(TANK_BULLET_SMALL)
 		PrecacheModel(TANK_BULLET_LARGE)
 		PrecacheParticleSystem(TANK_FIRE_FX)

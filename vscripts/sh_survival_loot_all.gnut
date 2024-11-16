@@ -292,7 +292,7 @@ bool function IsNewLootEnabled( string ref )
 		break
 
 		case "":
-		case "mp_weapon_smart_pistol":
+		// case "mp_weapon_smart_pistol":
 		case "mp_weapon_wingman_n":
 		
 		//disabled until proper porting and fix

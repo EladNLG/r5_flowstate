@@ -267,11 +267,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/weapons_r5/loot/_master/w_loot_wep_ammo_sniper.rmdl" )
 	PrecacheModel( $"mdl/robots/marvin/marvin.rmdl" )
 
-	//Weapons
-	// PrecacheWeapon( $"mp_weapon_smart_pistol" )
-
-	PrecacheWeapon( $"mp_titanweapon_flightcore_rockets" )
-
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_melee_halo" )
 	PrecacheWeapon( $"melee_pilot_emptyhanded_halo" )
@@ -306,7 +301,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_consumable" )
 	PrecacheWeapon( $"mp_weapon_g2" )
 	PrecacheWeapon( $"mp_weapon_grenade_bangalore" )
-	// PrecacheWeapon( $"mp_weapon_car" )
 	PrecacheWeapon( $"mp_weapon_incap_shield" )
 	PrecacheWeapon( $"mp_ability_care_package" )
 	PrecacheWeapon( $"mp_ability_hunt_mode" )
@@ -330,7 +324,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"melee_shadowsquad_hands" )
 	PrecacheWeapon( $"mp_weapon_shadow_squad_hands_primary" )	
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
-	// PrecacheWeapon( $"mp_weapon_frag_drone" )
 	PrecacheWeapon( $"npc_weapon_energy_shotgun" )
 	PrecacheWeapon( $"npc_weapon_hemlok" )
 	PrecacheWeapon( $"npc_weapon_lstar" )
@@ -338,8 +331,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_weapon_vctblue_primary" )
 	PrecacheWeapon( $"melee_vctblue" )
-	PrecacheWeapon( $"mp_weapon_haloshotgun" )
-	PrecacheWeapon( $"mp_weapon_epg" )
 
 	switch( GameRules_GetGameMode() )
 	{
@@ -371,7 +362,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_cloak" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" )
-	PrecacheWeapon( $"mp_ability_revenant_shadow_pounce_free" )
 	PrecacheWeapon( $"mp_weapon_melee_boxing_ring" )
 	PrecacheWeapon( $"melee_boxing_ring" )
 
@@ -385,15 +375,11 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_rhapsody.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_ash_legacy.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_ash_legacy.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/w_cj.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/w_jackcooper.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ptpov_jackcooper.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pilot_medium_loba.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
-	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
-
-	PrecacheModel( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+	
 	PrecacheModel( $"mdl/Weapons/lightsaber/w_lightsaber.rmdl" )
 	PrecacheModel( $"mdl/Weapons/lightsaber/ptpov_lightsaber.rmdl" )
 	PrecacheModel( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
@@ -413,8 +399,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_nova_base_01.rmdl" )
 	PrecacheModel( $"mdl/techart/mshop/characters/legends/ash/ash_base_v.rmdl" )
 	PrecacheModel( $"mdl/techart/mshop/characters/legends/ash/ash_base_w.rmdl" )
-	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_rampart.rmdl" )
-	PrecacheModel( $"mdl/Weapons/arms/pov_pilot_medium_rampart.rmdl" )
 	
 	PrecacheModel( $"mdl/robots/spectre/imc_spectre.rmdl" )
 	PrecacheModel( $"mdl/robots/stalker/robot_stalker.rmdl" )
@@ -436,7 +420,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x32_01.rmdl" )
 
 	PrecacheWeapon( $"mp_weapon_turret" )
-	PrecacheWeapon( $"mp_weapon_satchel" )
+	// PrecacheWeapon( $"mp_weapon_satchel" )
 	PrecacheWeapon( $"melee_titan_sword" )
 	PrecacheWeapon( $"mp_weapon_titan_sword" )
 	PrecacheWeapon( $"npc_weapon_turret_volt" )
