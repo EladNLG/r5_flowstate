@@ -6,8 +6,6 @@
 
 Paks:
 [
-    common_flowstate_small.rpak
-    flowstate_all_loot.rpak
-    flowstate_all_loot_snd.rpak
+    common_flowstate.rpak
     fs_spawns.rpak
 ]
