@@ -32,7 +32,7 @@ global function ClientCodeCallback_MapInit
 #if SERVER
 void function CodeCallback_MapInit()
 {
-	PrecacheModel( $"mdl/fs_skybox1.rmdl" )
+	// PrecacheModel( $"mdl/fs_skybox1.rmdl" )
     AddCallback_GameStateEnter( eGameState.WaitingForPlayers, StagingArea_MoveSkybox )
 }
 
