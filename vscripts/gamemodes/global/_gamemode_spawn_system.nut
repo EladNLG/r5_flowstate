@@ -25,7 +25,7 @@ global function SpawnSystem_FindBaseMapForPak
 global function SpawnSystem_GenerateRandomSpawns
 
 global function SpawnSystem_CreateLocPairObject
-
+global function SpawnSystem_GetPakInfoForKey
 
 #if DEVELOPER
 	global function DEV_SpawnType
