@@ -80,7 +80,7 @@ void function Sh_FS_MovementRecorder_Init()
 	#endif
 	
 	#if SERVER
-		//Todo: Dynmaically create all templates from one source
+		//Todo(mk): Dynmaically create all templates from one source
 		disableoverwrite( file._playbackAmounts__Template ) //(mk): prevent modifying template
 		disableoverwrite( file._dummyMaps__Template )
 		//disableoverwrite( file._playbackDuration__Template )
@@ -454,8 +454,7 @@ void function _HandlePlayerDisconnect( entity player )
 	int playerHandle = player.p.handle 
 	
 	//(mk): might be helpful to free up open slots. ty wanderer for looking up internal mechanisms. 
-	if( player.p.isRecording )
-		ForceStopRecording( player )
+	ForceStopRecording( player )
 	
 	foreach ( slot, dummies in file.playerDummyMaps[playerHandle] )
 			DestroyDummyForSlot( player, slot, playerHandle )
@@ -468,10 +467,7 @@ void function _HandleRespawn( entity player )
 
 void function _OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if( victim.p.isRecording )
-	{
-		ForceStopRecording( victim )
-	}
+	ForceStopRecording( victim )
 }
 
 void function FS_MovementRecorder_OnPlayerConnected( entity player )
@@ -544,6 +540,7 @@ bool function ClientCommand_ToggleMovementRecorder( entity player, array<string>
 		if( !IsAlive( player ) )
 			DecideRespawnPlayer( player, true )
 
+		player.p.isRecording = true //(mk): prevent thread leak, set here.
 		thread StartRecordingAnimation( player )
 	}
 	
@@ -690,6 +687,12 @@ int function PlayerSavedCharacter_To_ItemFlavorIndex( int switchcase )
 
 void function StartRecordingAnimation( entity player )
 {
+	if( !IsValid( player ) )//(mk):threaded off
+		return
+		
+	if( !player.p.isRecording )
+		mAssert( false, "Tried to spawn recording thread without setting state." )
+		
 	player.p.currentOrigin = player.GetOrigin()
 	player.p.currentAngles = player.GetAngles()
 	
@@ -733,7 +736,6 @@ void function StartRecordingAnimation( entity player )
 	
 	//MovementRecorder_SetStartRecordingTime( player, Time() )
 	player.StartRecordingAnimation( player.p.currentOrigin, player.p.currentAngles )
-	player.p.isRecording = true
 	
 	OnThreadEnd
 	(
@@ -751,8 +753,11 @@ void function StartRecordingAnimation( entity player )
 	waitthread WaitSignalOrTimeout( player, 148, "OnDestroy", "OnDisconnected", "FinishedRecording" )
 }
 
-void function ForceStopRecording( entity player ) //caller must check
+void function ForceStopRecording( entity player ) //(mk):caller must check
 {
+	if( !player.p.isRecording )
+		return 
+		
 	player.StopRecordingAnimation()
 	player.p.isRecording = false
 	
@@ -801,18 +806,17 @@ void function StopRecordingAnimation( entity player )
 	animData.origin = player.p.currentOrigin
 	animData.angles = player.p.currentAngles
 
-	player.p.recordingAnims[ slot ] = player.StopRecordingAnimation()
+	player.p.recordingAnims[ slot ] = player.StopRecordingAnimation(); player.p.isRecording = false
 	player.p.recordingAnimsCoordinates[ slot ] = animData
 	player.p.recordingAnimsChosenCharacters[ slot ] = player.p.movementRecorderCharacter
+	player.Signal( "FinishedRecording" ) //(mk): cleanup watcher thread.
+	
 	
 	// float endTime = Time()
 	// float startTime = MovementRecorder_GetStartRecordingTime( player )
 	// float slotDuration = endTime - startTime
 	
 	// MovementRecorder_SetSlotDuration( player, slot, slotDuration )
-
-	player.p.isRecording = false
-	player.Signal( "FinishedRecording" )
 
 	if( !player.p.recorderHideHud )
 	{
@@ -1066,7 +1070,7 @@ void function PlayAnimInSlot( entity player, int slot, bool remove = false, bool
 				RemoveDummyForPlayer( player, dummy, slot )			
 			})
 			
-			MovementRecorder_WaitForAnimToFinish( anim ) //this can be long
+			MovementRecorder_WaitForAnimToFinish( anim ) //(mk):this can be long
 			 
 			//wait MovementRecorder_GetSlotDuration( player, slot ) / ( file.adminSetPlaybackRate )
 		}()

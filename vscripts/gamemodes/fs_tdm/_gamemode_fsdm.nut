@@ -575,7 +575,14 @@ void function DM__OnEntitiesDidLoad()
 		break
 		case eMaps.mp_rr_party_crasher:
 
-			Patch_Partycrasher_Restarea()
+			if( flowstateSettings.patch_waiting_area )
+				Patch_Partycrasher_Restarea()
+		break
+		
+		case eMaps.mp_rr_arena_skygarden:
+			
+			if( flowstateSettings.patch_waiting_area )
+				Patch_SkyGardenRest()
 		break
     }
 }

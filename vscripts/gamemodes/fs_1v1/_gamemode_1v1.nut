@@ -86,7 +86,7 @@ global struct soloLocStruct
 	array<LocPair> respawnLocations
 	vector Center
 	entity Panel //keep current opponent panel //(mk):not used
-	string name
+	string info //(mk): game behavior defining meta data.
 	string ids
 }
 
@@ -197,9 +197,15 @@ struct
 	
 	array< string > custom_weapons_primary
 	array< string > custom_weapons_secondary
+	array< string > custom_longrange_primary
+	array< string > custom_longrange_secondary
 	array< bool > realmSlots
+	
+	//needs reworked for modular modding xD
 	array< string > Weapons
 	array< string > WeaponsSecondary
+	array< string > LongRangeWeapons
+	array< string > LongRangeWeaponsSecondary
 
 	LocPair WaitingRoom
 	float restGrace
@@ -635,6 +641,8 @@ void function INIT_1v1_sbmm()
 	#endif
 	
 	//(mk):convert strings from playlist into array and add to script
+	//todo: modularize into one func based on one piece of data: "the_list_string". Lookup with "_continue" etc.. 
+	
 	if ( Playlist_1v1_Primary_Array() != "" )
 	{		
 		string concatenate = Concatenate( Playlist_1v1_Primary_Array(), Playlist_1v1_Primary_Array_continue() )
@@ -653,15 +661,11 @@ void function INIT_1v1_sbmm()
 				
 				file.custom_weapons_primary[i] = ParseWeapon( trim( file.custom_weapons_primary[i] ) )
 				
-				if ( trim(file.custom_weapons_primary[i]) != before )
-				{				
+				if ( trim(file.custom_weapons_primary[i]) != before )			
 					sqerror(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\" \n\n", i, before, trim( file.custom_weapons_primary[i] ) ))
-				}
 				
 				if ( file.custom_weapons_primary[i] == "" )
-				{
 					file.custom_weapons_primary.remove(i)
-				}
 			}
 		} 
 		catch ( error ) 
@@ -688,15 +692,45 @@ void function INIT_1v1_sbmm()
 				
 				file.custom_weapons_secondary[i] = ParseWeapon( trim( file.custom_weapons_secondary[i] ) )
 				
-				if ( trim(file.custom_weapons_secondary[i]) != sbefore )
-				{				
+				if ( trim(file.custom_weapons_secondary[i]) != sbefore )				
 					sqerror(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\"\n\n", i, sbefore, trim( file.custom_weapons_secondary[i] ) ))
-				}
 				
 				if ( file.custom_weapons_secondary[i] == "" )
-				{
 					file.custom_weapons_secondary.remove(i)
-				}
+			}
+		} 
+		catch ( error ) 
+		{
+			sqerror( "" + error )
+		}	
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	string custom_longrange_primary = GetCurrentPlaylistVarString( "custom_longrange_primary", "" )
+	if ( custom_longrange_primary != "" )
+	{		
+		string concatenate = Concatenate( custom_longrange_primary, GetCurrentPlaylistVarString( "custom_longrange_primary_continue", "" ) )
+	
+		try 
+		{	
+			#if DEVELOPER 
+				sqprint("Checking: file.custom_longrange_primary")
+			#endif
+			
+			file.custom_longrange_primary = StringToArray( concatenate )
+			
+			for( int i = file.custom_longrange_primary.len() - 1 ; i >= 0 ; --i ) 
+			{
+				string before = trim( file.custom_longrange_primary[i] )
+				
+				file.custom_longrange_primary[i] = ParseWeapon( trim( file.custom_longrange_primary[i] ) )
+				
+				if ( trim(file.custom_longrange_primary[i]) != before )			
+					sqerror(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\" \n\n", i, before, trim( file.custom_longrange_primary[i] ) ))
+				
+				if ( file.custom_longrange_primary[i] == "" )
+					file.custom_longrange_primary.remove(i)
 			}
 		} 
 		catch ( error ) 
@@ -705,6 +739,38 @@ void function INIT_1v1_sbmm()
 		}
 	
 	}
+	
+	string custom_longrange_secondary = GetCurrentPlaylistVarString( "custom_longrange_secondary", "" )
+	if( custom_longrange_secondary != "" )
+	{
+		string concatenate = Concatenate( custom_longrange_secondary, GetCurrentPlaylistVarString( "custom_longrange_secondary_continue", "" ) )
+	
+		try
+		{	
+			#if DEVELOPER 
+				sqprint("Checking: file.custom_longrange_secondary")
+			#endif
+			file.custom_longrange_secondary = StringToArray( concatenate )
+			
+			for( int i = file.custom_longrange_secondary.len() - 1 ; i >= 0 ; --i ) 
+			{
+				string sbefore = trim( file.custom_longrange_secondary[i] )
+				
+				file.custom_longrange_secondary[i] = ParseWeapon( trim( file.custom_longrange_secondary[i] ) )
+				
+				if ( trim(file.custom_longrange_secondary[i]) != sbefore )				
+					sqerror(format("Weapon %d was invalid and corrected. \n Old:\n \"%s\" \n New: \n \"%s\"\n\n", i, sbefore, trim( file.custom_longrange_secondary[i] ) ))
+				
+				if ( file.custom_longrange_secondary[i] == "" )
+					file.custom_longrange_secondary.remove(i)
+			}
+		}
+		catch ( error ) 
+		{
+			sqerror( "" + error )
+		}	
+	}
+	
 	
 	//initialize defaults for SBMM
 	if ( bGlobalStats() )
@@ -3364,13 +3430,16 @@ void function Gamemode1v1_Init( int eMap )
 	characterslist = [0,1,2,3,4,5,6,7,8,9,10,11,12,13]
 	Init_ValidLegendRange()
 	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//INIT PRIMARY WEAPON SELECTION
 	if ( Flowstate_IsLGDuels() ) //todo fire a SetCallback to set
 		file.Weapons = [ "mp_weapon_lightninggun" ]	
 	else 
 		file.Weapons = file.custom_weapons_primary
+	
+	file.Weapons = ValidateBlacklistedWeapons( file.Weapons )
 			
-	if ( file.Weapons.len() <= 0 )
+	if ( file.Weapons.len() == 0 )
 	{		
 		file.Weapons = 
 		[
@@ -3383,25 +3452,20 @@ void function Gamemode1v1_Init( int eMap )
 		]
 	
 	}
-
-	//R5RDEV-1
 	
-	// foreach( weapon in file.Weapons)
-	// {
-		// array<string> weaponfullstring = split( weapon , " ")
-		// string weaponName = weaponfullstring[0]
-		
-		// if(GetBlackListedWeapons().find(weaponName) != -1)
-				// Weapons.removebyvalue(weapon)
-	// }
+	//longrange
+	file.LongRangeWeapons = ValidateBlacklistedWeapons( file.custom_longrange_primary )	
+	if( file.LongRangeWeapons.len() == 0 ){ file.LongRangeWeapons = [ "mp_weapon_g2" ] }
 	
-	file.Weapons = ValidateBlacklistedWeapons( file.Weapons )
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//INIT SECONDARY WEAPON SELECTION	
 	if ( Flowstate_IsLGDuels() ) 
 		file.WeaponsSecondary = [ "mp_weapon_lightninggun" ] //Lg_Duel beta		
 	else	
 		file.WeaponsSecondary = file.custom_weapons_secondary
+	
+	file.WeaponsSecondary = ValidateBlacklistedWeapons( file.WeaponsSecondary )
 	
 	if ( file.WeaponsSecondary.len() <= 0 )
 	{
@@ -3414,20 +3478,12 @@ void function Gamemode1v1_Init( int eMap )
 			"mp_weapon_doubletake energy_mag_l3 stock_sniper_l3"	
 		]
 	}
-
-	//R5RDEV-1
 	
-	// foreach(weapon in file.WeaponsSecondary)
-	// {
-		// array<string> weaponfullstring = split( weapon , " ")
-		// string weaponName = weaponfullstring[0]
-		
-		// if(GetBlackListedWeapons().find(weaponName) != -1)
-				// file.WeaponsSecondary.removebyvalue(weapon)
-	// }
+	//longrange
+	file.LongRangeWeaponsSecondary = ValidateBlacklistedWeapons( file.custom_longrange_secondary )
+	if( file.LongRangeWeaponsSecondary.len() == 0 ){ file.LongRangeWeaponsSecondary = [ "mp_weapon_g2" ] }
 	
-	file.WeaponsSecondary = ValidateBlacklistedWeapons( file.WeaponsSecondary )
-	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//FlagWait( "EntitiesDidLoad" ) //creates timing issues to wait here
 	
 	if( Playlist() == ePlaylists.fs_vamp_1v1 ) //Todo: This should be handled by the mode's script file using AddCallback_FlowstateSpawnsSettings
@@ -3476,12 +3532,12 @@ void function Gamemode1v1_Init( int eMap )
 
 			p.Center = GetCenterOfCircle( p.respawnLocations )
 			
-			if( allSoloLocations[i].name != "" )
-				p.name = allSoloLocations[i].name
+			if( allSoloLocations[i].info != "" )
+				p.info = allSoloLocations[i].info
 				
 			p.ids = " " + i + "," + (i+1) + "," + (i+2)
 				
-			soloLocations.append(p)
+			soloLocations.append( p )
 		}
 	}
 	else //1v1 legacy mode
@@ -3489,16 +3545,16 @@ void function Gamemode1v1_Init( int eMap )
 		for ( int i = 0; i < allSoloLocations.len(); i=i+2 )
 		{
 			soloLocStruct p
+		
+			p.respawnLocations.append( allSoloLocations[ i ].spawn )
+			p.respawnLocations.append( allSoloLocations[ i + 1 ].spawn )
 
-			p.respawnLocations.append( allSoloLocations[i].spawn )
-			p.respawnLocations.append( allSoloLocations[i+1].spawn )
+			p.Center = ( allSoloLocations[ i ].spawn.origin + allSoloLocations[ i + 1 ].spawn.origin ) / 2
 
-			p.Center = ( allSoloLocations[i].spawn.origin + allSoloLocations[i+1].spawn.origin ) / 2
-
-			if( allSoloLocations[i].name != "" )
-				p.name = allSoloLocations[i].name
+			if( allSoloLocations[ i ].info != "" )
+				p.info = allSoloLocations[ i ].info
 				
-			p.ids = " " + i + "," + (i+1)
+			p.ids = " " + i + "," + ( i + 1 )
 
 			soloLocations.append(p)
 		}
@@ -4026,9 +4082,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 						int p2 = 1
 						
 						if( group.cycle )
-						{
 							group.groupLocStruct = soloLocations.getrandom()	
-						}
 						
 						if( group.swap )
 						{
@@ -4060,10 +4114,8 @@ void function soloModeThread( LocPair waitingRoomLocation )
 							thread respawnInSoloMode( group.player2, p2 )
 						}
 						
-						if( !nowep )
-						{					
-							GiveWeaponsToGroup( [ group.player1, group.player2 ] )						
-						}	
+						if( !nowep )				
+							GiveWeaponsToGroup( [ group.player1, group.player2 ], group )						
 					}//keep
 				}
 				
@@ -4472,7 +4524,7 @@ void function soloModeThread( LocPair waitingRoomLocation )
 				thread respawnInSoloMode( eachPlayer, index )
 			}
 			
-			GiveWeaponsToGroup( players )
+			GiveWeaponsToGroup( players, newGroup )
 
 			FS_SetRealmForPlayer( newGroup.player1, newGroup.slotIndex )
 			FS_SetRealmForPlayer( newGroup.player2, newGroup.slotIndex )		
@@ -4641,27 +4693,39 @@ void function InputWatchdog( entity player, entity opponent, soloGroupStruct gro
 	WaitForever()
 }
 
-void function GiveWeaponsToGroup( array<entity> players )
+void function GiveWeaponsToGroup( array<entity> players, soloGroupStruct groupRef )
 {
 	//printw( "giving weapons for players: ", players[0], players[1] )
-	thread function () : ( players )
-	{
-		
+	thread function () : ( players, groupRef )
+	{	
 		foreach( player in players )
 		{
 			if( !IsValid( player ) )
 				continue
 
 			TakeAllWeapons( player )
-			
 			Gamemode1v1_SetPlayerGamestate( player, e1v1State.MATCHING )
 		}
 
 		//could set up end signals on players for OnDestroy. 
 		wait 0.2
-
-		string primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
-		string secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+		
+		string primaryWeaponWithAttachments
+		string secondaryWeaponWithAttachments
+		string spawnClass = groupRef.groupLocStruct.info
+		
+		switch( spawnClass )
+		{
+			case "longrange":
+				primaryWeaponWithAttachments = file.LongRangeWeapons.getrandom()
+				secondaryWeaponWithAttachments = file.LongRangeWeaponsSecondary.getrandom() 		
+			break
+			
+			default:
+				primaryWeaponWithAttachments = ReturnRandomPrimaryMetagame_1v1()
+				secondaryWeaponWithAttachments = ReturnRandomSecondaryMetagame_1v1()
+			break
+		}
 		
 		int random_character_index 
 		ItemFlavor random_character
@@ -4671,9 +4735,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 			random_character_index = RandomIntRangeInclusive(0,characterslist.len()-1)
 			
 			if( random_character_index <= 10 )
-			{
 				random_character = file.characters[characterslist[random_character_index]]
-			}
 		}
 
 		ArrayRemoveInvalid( players ) //(mk): we waited above
@@ -4690,9 +4752,7 @@ void function GiveWeaponsToGroup( array<entity> players )
 		foreach( player in players )
 		{		
 			if ( settings.bGiveSameRandomLegendToBothPlayers && random_character_index <= 10 )
-			{	
 				CharacterSelect_AssignCharacter( ToEHI( player ), random_character )
-			}
 			
 			DeployAndEnableWeapons( player )
 			

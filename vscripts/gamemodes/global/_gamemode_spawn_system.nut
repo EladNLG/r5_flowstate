@@ -15,6 +15,7 @@ global function SpawnSystem_SetCustomPlaylist
 global function SpawnSystem_SetPreferredPak
 global function SpawnSystem_SetRunCallbacks
 global function SpawnSystem_SetPanelLocation
+global function SpawnSystem_SetMetaDataHandler
 
 global function SpawnSystem_GetCurrentSpawnSet
 global function SpawnSystem_GetCurrentSpawnAsset
@@ -42,7 +43,7 @@ global function SpawnSystem_CreateLocPairObject
 	global function DEV_HighlightAll
 	global function DEV_Highlight
 	global function DEV_KeepHighlight
-	global function DEV_SpawnInfo
+	global function DEV_PanelInfo
 	global function DEV_ReloadInfo
 	global function DEV_InfoPanelOffset
 	global function DEV_RotateInfoPanels
@@ -58,8 +59,8 @@ global function SpawnSystem_CreateLocPairObject
 	global function DEV_AutoSimulateRing
 	global function DEV_SetAutoSave
 	global function DEV_PrintSettings
-	global function DEV_AutoSetName
-	global function DEV_RenameSpawn
+	global function DEV_AutoSetInfo
+	global function DEV_SetSpawnInfo
 	global function DEV_SpawnsPlaylist
 	global function DEV_SpawnsBaseMap
 	
@@ -67,7 +68,7 @@ global function SpawnSystem_CreateLocPairObject
 	const int SPAWN_POSITIONS_BUDGET 	= 210
 	const float DOOR_SCAN_RADIUS		= 100
 	const bool DEBUG_SPAWN_TRACE		= true
-	const int MAX_SPAWN_NAME_LENGTH	= 255
+	const int MAX_SPAWN_INFO_LENGTH	= 255
 	const string FILE_NAME_REGEX		= "^[A-Za-z0-9._\\-]+$"
 	
 	const bool REMOVE 	= true 
@@ -86,18 +87,22 @@ global function SpawnSystem_CreateLocPairObject
 	global struct SpawnData
 	{
 		LocPair& 		spawn
-		string 			name
+		string 			info
 		int				id = -1
 	}
 	
 	const int MASTER_PANEL_ORIGIN_OFFSET = 400
 	const int MAX_GENERATE_RANDOM_ATTEMPTS = 2000
+	const bool VERIFY_SPAWNS = true //set this to skip hullcheck fails for all spawns not just ones marked as "OOB"
 	
 	struct
 	{
 		array<LocPairData functionref()> onSpawnInitCallbacks
 		array<void functionref()> spawnSettingsCallbacks
 		LocPair functionref() mapGamemodeBasedOffsetFunc = null
+		void functionref( SpawnData ) PakMetaDataHandler = null
+		
+		table<string,string> pakData = {}
 		int preferredSpawnPak 	= 1
 		string currentSpawnPak 	= ""
 		string customSpawnpak 	= ""
@@ -143,23 +148,23 @@ global function SpawnSystem_CreateLocPairObject
 					["...."] = "",
 					[" ==== SETTINGS ===="] = "",
 					["....."] = "",
+					[" script DEV_SpawnsPlaylist( string playlist = \"\" ) "] = "Sets the playlist this spawn pak should load for",
 					[" script DEV_SetAutoSave( bool value = true )"] = "Disabled by default. Make sure folder 'output' in r5reloaded/platform exists",
 					[" script DEV_LoadPak( string pak = \"\", string playlist = \"\" )"] = "Loads spawn pak specifying rpak asset and playlist. If none provided, loads current pak. If custom spawns are wrote into the script test function, it loads those instead.",
 					[" script DEV_SpawnType( string setToType = \"\" )"] = "Params: \"csv\" or \"sq\" Sets/Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided. ( call with printt() )",
 					[" script DEV_SetTeamCount( int size )"] = "Sets the count of teams per spawn set formatting the PrintSpawns() array",
-					[" script DEV_SpawnInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
+					[" script DEV_PanelInfo( bool setting = true )"] = "true/false, sets whether info panels show or not. On by default.",
 					[" script DEV_InfoPanelOffset( vector offset = <0, 0, 600>, vector anglesOffset = <0, 0, 0> )"] = "Modify the offset of info panels. Call with no parameters to raise into sky by 600. Reloads all info panels.",
 					[" script DEV_AutoDeleteInvalid( bool setting = true )"] = "Set spawn tool to auto delete bad spawns on creation. Disavled by default",
-					[" script DEV_AutoSetName( string name = \"\" )"] = "Defines a custom spawn set name to auto use when creating spawns if not specified during DEV_AddSpawn(). Call with nothing to empty/disable. System automatically names spawns based on index otherwise.",
+					[" script DEV_AutoSetInfo( string info = \"\" )"] = "Defines a custom spawn set name or info to automatically use when creating spawns if not specified during DEV_AddSpawn(). Call with nothing to empty/disable. System automatically names spawns based on index otherwise.",
 					[" script DEV_KeepHighlight( bool setting = true )"] = "Sets whether spawn highlight stays after adding spawn.",
 					[" script DEV_SpawnsBaseMap( string baseMap = \"\", bool bIgnoreInvalid = false )"] = "Sets the base map the spawn system will use for coordinate data",
-					[" script DEV_SpawnsPlaylist( string playlist = \"\" ) "] = "Sets the playlist this spawn pak should load for",
 					["......"] = "",
 					["......."] = "",
 					[" ==== MAIN SPAWN FUNCTIONS ===="] = "",
 					["........"] = "",
-					[" script DEV_AddSpawn( string pid, string spawnName = \"\", int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. Name the spawn, uses provided DEV_AutoSetName() if none specified. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
-					[" script DEV_RenameSpawn( int index, string name = \"\" )"] = "Rename an already present spawn by index.",
+					[" script DEV_AddSpawn( string pid, string info = \"\", int replace = -1 )"] = "Pass a player name/uid to have the current origin/angles of player appended to spawns array. Give spawn meta data, uses provided DEV_AutoSetInfo() if none specified. If replace is specified, replaces the given index with new spawn, otherwise, the operation is append.",
+					[" script DEV_SetSpawnInfo( int index, string info = \"\" )"] = "Set spawn info on an already present spawn by index.",
 					[" script DEV_DeleteSpawn( int index )"] = "Deletes a spawn from array by index",
 					[" script DEV_DeleteLast()"] = "Deletes last placed spawn",
 					[" script DEV_ClearSpawns( bool clearHighlights = true )"] = "Deletes all saved spawns. If passed false, does not remove highlights on map",
@@ -683,33 +688,53 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 		int originCol 		= GetDataTableColumnByName( datatable, "origin" )
 		int anglesCol 		= GetDataTableColumnByName( datatable, "angles" )
 		int nameCol			= GetDataTableColumnByName( datatable, "name" )
+		int infoCol			= GetDataTableColumnByName( datatable, "info" )
+		
 		
 		bool verify = 
 		(
 			originCol != -1 && 
-			anglesCol != -1 &&
-			nameCol != -1
+			anglesCol != -1
 		)
 		
-		mAssert( verify, "Loaded spawn rpak is an invalid format. Check updates?" )
+		mAssert( verify, "Loaded spawn rpak is an invalid format." )
 		
 		#if DEVELOPER
 			string print_data = "\n\n spawnset: " + spawnset + "\n--- LOCATIONS ---\n\n"
 		#endif
-		for ( int i = 0; i < spawnsCount; i++ )//change to row 1, add map / count info. add meta deta to spawns. 
+		
+		int classCol = infoCol != -1 ? infoCol : nameCol	
+		for ( int i = 0; i < spawnsCount; i++ )
 		{		
+			string info   = GetDataTableString( datatable, i, classCol )
+			
+			if( info.find( "pakData." ) != -1 )
+			{
+				if( info.find( ":" ) != -1 )
+				{
+					__ResolveAndSetPakData( info )
+					continue
+				}
+			}
+			
 			vector origin = GetDataTableVector( datatable, i, originCol ) + originOffset
 			vector angles = GetDataTableVector( datatable, i, anglesCol ) + anglesOffset
-			string name   = GetDataTableString( datatable, i, nameCol )
 			
 			#if DEVELOPER
-				print_data += "Found origin: " + VectorToString( origin ) + " angles: " + VectorToString( angles ) + " SpawnName: " + name + "\n"	
+				print_data += "Found origin: " + VectorToString( origin ) + " angles: " + VectorToString( angles ) + " SpawnInfo: " + info + "\n"	
 			#endif
 			
-			SpawnData spawnInfo = SpawnSystem_CreateSpawnObject( NewLocPair( origin, angles ), name, i )
-
+			
+			if( !CheckSpawn( origin ) && VERIFY_SPAWNS && info != "OOB" )
+				mAssert( false, "OOB spawn at origin " + VectorToString( origin ) )
+			
+			SpawnData spawnInfo = SpawnSystem_CreateSpawnObject( NewLocPair( origin, angles ), info, i )
 			allSoloLocations.append( spawnInfo )
-		}	
+			
+			//gamemode sets with SpawnSystem_SetMetaDataHandler
+			if( file.PakMetaDataHandler != null )
+				file.PakMetaDataHandler( spawnInfo )
+		}
 		#if DEVELOPER 
 			printt( print_data )
 			printt("Unpacked [",allSoloLocations.len()," ] spawn locations from locations asset.")
@@ -740,7 +765,7 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 			string print_sdata = ""
 				foreach( spawnInfo in extraSpawnLocations )
 				{
-					print_sdata += "Found origin: " + VectorToString( spawnInfo.spawn.origin ) + " angles: " + VectorToString( spawnInfo.spawn.angles ) + " Name: " + spawnInfo.name + "\n"	
+					print_sdata += "Found origin: " + VectorToString( spawnInfo.spawn.origin ) + " angles: " + VectorToString( spawnInfo.spawn.angles ) + " Info: " + spawnInfo.info + "\n"	
 				}
 			printt( "\n\n" + print_sdata )
 		#endif
@@ -751,12 +776,12 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 
 //util
 
-SpawnData function SpawnSystem_CreateSpawnObject( LocPair spawn, string spawnName, int id = -1 )
+SpawnData function SpawnSystem_CreateSpawnObject( LocPair spawn, string info, int id = -1 )
 {
 	SpawnData spawnInfo
 	
 	spawnInfo.spawn = spawn
-	spawnInfo.name 	= spawnName
+	spawnInfo.info 	= info
 	
 	if( id != -1 )
 		spawnInfo.id = id
@@ -801,12 +826,16 @@ array<SpawnData> function SpawnSystem_CreateSpawnObjectArray( array<LocPair> spa
 		spawnInfo.spawn = spawns[ iter ]
 		spawnInfo.id	= bStartFromCoreLength ? coreSpawnsLen + iter : iter
 		
-		//this can be expanded in the future
-		if( "name" in tableData )
+		if( "info" in tableData ) //before "name" for backwards compat.
 		{
-			if( tableData["name"] != null )
-				spawnInfo.name = expect string( tableData["name"] )
-		}
+			if( tableData[ "info" ] != null )
+				spawnInfo.info = expect string( tableData[ "info" ] )
+		} 
+		else if( "name" in tableData )
+		{
+			if( tableData[ "name" ] != null )
+				spawnInfo.info = expect string( tableData[ "name" ] )
+		}	
 		
 		spawnInfoArray.append( spawnInfo )
 		
@@ -871,7 +900,7 @@ void function SpawnSystem_SetCustomPlaylist( string playlistref )
 	if( AllPlaylistsArray().contains( playlistref ) )
 	{
 		file.customPlaylist = playlistref
-		settings.spawnOptions[ "use_custom_playlist" ] = true
+		settings.spawnOptions[ "use_custom_playlist" ] <- true
 	}
 	else 
 	{
@@ -1003,6 +1032,26 @@ void function SpawnSystem_SetPanelLocation( vector origin, vector angles )
 		}
 	)
 
+}
+
+void function __ResolveAndSetPakData( string info )
+{
+	array<string> kvFrac = split( info, "." )
+	array<string> keyValue = split( kvFrac[ 1 ], ":" )	
+	file.pakData[ keyValue[ 0 ] ] <- keyValue[ 1 ]	
+}
+
+string function SpawnSystem_GetPakInfoForKey( string key )
+{
+	if( key in file.pakData )
+		return file.pakData[ key ]
+		
+	return ""
+}
+
+void function SpawnSystem_SetMetaDataHandler( void functionref( SpawnData ) processFunc )
+{
+	file.PakMetaDataHandler = processFunc
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1258,14 +1307,14 @@ string function GetIdentifier( int index, int teamsize )
     return letters[letterIndex] + ( cycle > 0 ? cycle.tostring() : "" )
 }
 
-string function DEV_append_pos_array_squirrel( vector origin, vector angles, string name )
+string function DEV_append_pos_array_squirrel( vector origin, vector angles, string info )
 {	
-	return "NewLocPair( < " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " > ), //\"" + name + "\"";	
+	return "NewLocPair( < " + origin.x + ", " + origin.y + ", " + origin.z + " >, < " + angles.x + ", " + angles.y + ", " + angles.z + " > ), //\"" + info + "\"";	
 }
 
-string function DEV_append_pos_array_csv( vector origin, vector angles, string name )
+string function DEV_append_pos_array_csv( vector origin, vector angles, string info )
 {
-	return "\"< " + origin.x + ", " + origin.y + ", " + origin.z + " >\",\"< " + angles.x + ", " + angles.y + ", " + angles.z + ">\" ,   \"" + name + "\"";
+	return "\"< " + origin.x + ", " + origin.y + ", " + origin.z + " >\",\"< " + angles.x + ", " + angles.y + ", " + angles.z + ">\" ,   \"" + info + "\"";
 }
 
 void function DEV_convert_array_to_csv_from_squirrel()
@@ -1337,7 +1386,7 @@ string function DEV_SpawnType( string setToType = "", bool bIgnorePrints = false
 	return file.dev_positions_type
 }
 
-void function DEV_AddSpawn( string ornull checkpid, string name = "", int replace = -1, LocPair ornull spawnPointOrNull = null )
+void function DEV_AddSpawn( string ornull checkpid, string info = "", int replace = -1, LocPair ornull spawnPointOrNull = null )
 {	
 	entity player
 	
@@ -1363,7 +1412,7 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 	}
 	
 	bool bUsePlayer = IsValid( player )
-	string info = CheckFirstUse()
+	string contextInfo = CheckFirstUse()
 	
 	if( empty( DEV_SpawnType() ) )
 	{
@@ -1390,21 +1439,21 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 		return
 	}
 	
-	if( empty( name ) )
+	if( empty( info ) )
 	{
-		string spawnSetName = _SpawnSetName()
+		string spawnSetName = _SpawnSetInfo()
 		
 		if( !empty( spawnSetName ) )
-			name = spawnSetName
+			info = spawnSetName //auto set
 		else
-			name = "spawn_" + currentSpawnCount
+			info = "spawn_" + currentSpawnCount
 	}
 	else 
 	{
-		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
+		if( !IsSafeString( info, MAX_SPAWN_INFO_LENGTH ) )
 		{
-			msg = IssueNameWarning( name.len() )
-			name = ""
+			msg = IssueInfoWarning( info.len() )
+			info = ""
 			
 			Warning( msg )
 			printm( msg )
@@ -1443,14 +1492,14 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 			if( DEV_SpawnType() == "sq" )
 				DEV_convert_array_to_csv_from_squirrel()
 				
-			str = DEV_append_pos_array_csv( origin, <angles.x, angles.y, angles.z>, name )
+			str = DEV_append_pos_array_csv( origin, <angles.x, angles.y, angles.z>, info )
 			
 		break
 		case "sq":
 			if ( DEV_SpawnType() == "csv" )
 				DEV_convert_array_to_squirrel_from_csv()
 				
-			str = DEV_append_pos_array_squirrel( origin, <angles.x, angles.y, angles.z>, name )
+			str = DEV_append_pos_array_squirrel( origin, <angles.x, angles.y, angles.z>, info )
 			
 		break
 		
@@ -1481,7 +1530,7 @@ void function DEV_AddSpawn( string ornull checkpid, string name = "", int replac
 	}
 	
 	if( bUsePlayer )
-		LocalEventMsg( player, "", " SPAWN ADDED \n\n " + " " + str + info + " " )
+		LocalEventMsg( player, "", " SPAWN ADDED \n\n " + " " + str + contextInfo + " " )
 	
 	#if TRACKER && HAS_TRACKER_DLL
 		SendServerMessage( "Spawn added: " + str )
@@ -1619,6 +1668,51 @@ void function DEV_SpawnHelp()
 	printt( helpinfo )
 }
 
+string function GenerateSpawnPakMetaData( bool bConsoleForm = false )
+{
+	array<string> settings
+	string data		
+	
+	settings.append( 	format( "playlist:%s",		DEV_SpawnsPlaylist( "", true ) ) 	)
+	settings.append( 	format( "map:%s",			GetMapName() )						)
+	settings.append( 	format( "spawnsCount:%d",	SpawnCount() )						)
+	settings.append( 	format( "teamCount:%d", 	file.iTeamCount ) 					)
+	settings.append( 	format( "devAutoSave:%s", 	string( file.bAutoSave ) ) 			)//for dev debug
+	
+	if( bConsoleForm )
+	{
+		foreach( keyValue in settings )
+		{
+			printt( keyValue )
+			printm( keyValue )
+		}
+		
+		return ""
+	}
+	
+	string prefix = "pakData."
+	foreach( setting in settings )
+		data += __WritePakInfoKV( prefix + setting ) + "\n"	
+		
+	return data
+}
+
+string function __WritePakInfoKV( string keyValue )
+{
+	switch( DEV_SpawnType() )
+	{
+		case "sq":
+			return "// " + keyValue
+			break 
+			
+		case "csv":
+			return rPakCorrection( DEV_append_pos_array_csv( ZERO_VECTOR, ZERO_VECTOR, keyValue ) )
+			break
+	}
+	
+	unreachable //this should not happen.
+}
+
 void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 {
 	if( file.dev_positions.len() <= 0 )
@@ -1653,7 +1747,10 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 	// 	 OPEN	//
 	//////////////
 	if( DEV_SpawnType() == "csv" )
-		DevTextBufferWrite( "origin,angles,name\n" )
+		DevTextBufferWrite( "origin,angles,info\n" )		
+		
+	string pakData = GenerateSpawnPakMetaData()
+	DevTextBufferWrite( pakData )
 		
 	if( DEV_SpawnType() == "sq" )
 		DevTextBufferWrite( "array<LocPair> spawns = \n[ \n" )
@@ -1661,9 +1758,7 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 	string spacing = DEV_SpawnType() == "sq" ? TableIndent(15) : "";
 	
 	foreach( position in file.dev_positions )
-	{
-		DevTextBufferWrite( spacing + position + "\n" )
-	}
+		DevTextBufferWrite( rPakCorrection( spacing + position + "\n" ) )
 	
 	//////////////
 	//	CLOSURE	//
@@ -1714,11 +1809,23 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 				printw( "SpawnCount:", SpawnCount(), " Teams Per Spawn Set:", maxTeamsPerArenaRound )
 			}
 		}
+		
+		string consolePrint = GenerateSpawnPakMetaData( true )
+		printt( consolePrint )
+		printm( consolePrint )
 	}
 	else if( bReconvert )
 	{
 		DEV_SpawnType( "csv", true )	
 	}
+}
+
+string function rPakCorrection( string checkString )
+{
+	if( DEV_SpawnType() == "csv" )
+		return StringReplace( checkString, ",   \"", ",\"" ) 
+	
+	return checkString
 }
 
 string function DEV_SpawnsPlaylist( string playlist = "", bool bDisablePrints = false )
@@ -1997,9 +2104,16 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	
 	if( empty( pak ) )
 	{
-		printt( "Pak was empty, using current." )
-		printm( "Pak was empty, using current." )
-		pak = file.currentSpawnPak
+		pak = file.currentSpawnPak		
+		if( empty( pak ) )
+		{
+			string msg = "Cannot set an empty pak (none loaded)"
+			printt( msg )
+			printm( msg )
+		}
+		
+		printt( "Custom Pak was empty, using current based on DEV_SpawnPlaylist()." )
+		printm( "Custom Pak was empty, using current based on DEV_SpawnPlaylist()." )
 	}
 	else 
 	{
@@ -2010,6 +2124,11 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 	if( !empty( playlist ) )
 	{
 		SpawnSystem_SetCustomPlaylist( playlist )
+		usePlaylist = true
+	}
+	else if( !empty( DEV_SpawnsPlaylist() ) )
+	{
+		SpawnSystem_SetCustomPlaylist( DEV_SpawnsPlaylist() )
 		usePlaylist = true
 	}
 
@@ -2031,14 +2150,14 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 		DEV_ClearSpawns()
 		
 		string str 
-		string name
-		string dataName
+		string info
+		string dataInfo
 		
 		int iter = 0
 		foreach( spawnInfo in devLocations )
 		{
-			dataName = spawnInfo.name
-			name = !empty( dataName ) ? dataName : "spawn_" + iter
+			dataInfo = spawnInfo.info
+			info = !empty( dataInfo ) ? dataInfo : "spawn_" + iter
 			
 			switch( DEV_SpawnType() )
 			{
@@ -2046,14 +2165,14 @@ void function DEV_LoadPak( string pak = "", string playlist = "" )
 					if( DEV_SpawnType() == "sq" )
 						DEV_convert_array_to_csv_from_squirrel()
 						
-					str = DEV_append_pos_array_csv( spawnInfo.spawn.origin, spawnInfo.spawn.angles, name )
+					str = DEV_append_pos_array_csv( spawnInfo.spawn.origin, spawnInfo.spawn.angles, info )
 					
 				break
 				case "sq":
 					if ( DEV_SpawnType() == "csv" )
 						DEV_convert_array_to_squirrel_from_csv()
 						
-					str = DEV_append_pos_array_squirrel( spawnInfo.spawn.origin, spawnInfo.spawn.angles, name )
+					str = DEV_append_pos_array_squirrel( spawnInfo.spawn.origin, spawnInfo.spawn.angles, info )
 					
 				break
 				
@@ -2101,7 +2220,7 @@ void function __CreateInfoPanelForSpawn( int set, int index, string identifier )
 	}
 }
 
-void function DEV_SpawnInfo( bool setting = true )
+void function DEV_PanelInfo( bool setting = true )
 {
 	file.bSpawnInfoPanels = setting
 	string msg = "Set info panels to " + ( setting ? "show (true)" : "not show (false)" )
@@ -2600,11 +2719,11 @@ array<string> function GetSpawnSettings()
 	settings.append( " === CURRENT SETTINGS === " )
 	settings.append( " Auto Save = " + file.bAutoSave )
 	settings.append( " Spawn Pak Playlist = " + DEV_SpawnsPlaylist( "", true ) )
-	settings.append( " Spawn Pak Map = " + DEV_SpawnsBaseMap( "", false, true ) )
+	settings.append( " Spawn Pak BaseMap = " + DEV_SpawnsBaseMap( "", false, true ) )
 	settings.append( " Spawns Count = " + SpawnCount() )
 	settings.append( " Teams Per Spawn Set = " + file.iTeamCount )
 	settings.append( " Saving File Type = " + file.dev_positions_type )
-	settings.append( " Current spawn set name = " + file.spawnSetName )
+	settings.append( " Current spawn set info = " + file.spawnSetName )
 	settings.append( " Panel Locations = " + file.panelsloc.origin + "," + file.panelsloc.angles )
 	settings.append( " Auto Simulate Ring ? = " + file.autoSimulateRing )
 	settings.append( " Spawn Info Panels ? = " + file.bSpawnInfoPanels )
@@ -2615,7 +2734,6 @@ array<string> function GetSpawnSettings()
 	settings.append( " Auto Delete Invalid ? = " + file.bAutoDelInvalid )
 	settings.append( " " )
 	settings.append( " === DEBUG INFO === " )
-	settings.append( " Spawns Count = " + SpawnCount() )
 	settings.append( " allBeamEntities count = " + file.allBeamEntities.len() )
 	settings.append( " bInfoPanelsAreReloading = " + file.bInfoPanelsAreReloading )
 	settings.append( " bValidatorRunning = " + file.bValidatorRunning )
@@ -2690,18 +2808,18 @@ void function DEV_PrintSettings()
 	PrintSpawnSettings()
 }
 
-void function _CreateSpawnWithInfoAtPoint( int index, LocPair spawn, string name )
+void function _CreateSpawnWithInfoAtPoint( int index, LocPair spawn, string info )
 {
-	DEV_AddSpawn( null, name, index, spawn )
+	DEV_AddSpawn( null, info, index, spawn )
 }
 
-void function DEV_RenameSpawn( int index, string name = "" )
+void function DEV_SetSpawnInfo( int index, string info = "" )
 {
 	string msg
 	
 	if( !IsValidSpawnIndex( index ) )
 	{
-		msg = "Can't rename an invalid spawn."
+		msg = "Can't add info to an invalid spawn."
 		
 		printt( msg )
 		printm( msg )
@@ -2709,12 +2827,12 @@ void function DEV_RenameSpawn( int index, string name = "" )
 		return
 	}
 	
-	if( !empty( name ) )
+	if( !empty( info ) )
 	{
-		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
+		if( !IsSafeString( info, MAX_SPAWN_INFO_LENGTH ) )
 		{
-			msg = IssueNameWarning( name.len() )
-			name = ""
+			msg = IssueInfoWarning( info.len() )
+			info = ""
 			
 			Warning( msg )
 			printm( msg )
@@ -2722,24 +2840,24 @@ void function DEV_RenameSpawn( int index, string name = "" )
 	}
 	
 	LocPair spawn = clone GetSpawns()[ index ]
-	_CreateSpawnWithInfoAtPoint( index, spawn, name )
+	_CreateSpawnWithInfoAtPoint( index, spawn, info )
 }
 
-void function DEV_AutoSetName( string name = "" )
+void function DEV_AutoSetInfo( string info = "" )
 {
 	string msg
 	
-	if( !empty( name ) )
+	if( !empty( info ) )
 	{
-		if( !IsSafeString( name, MAX_SPAWN_NAME_LENGTH ) )
+		if( !IsSafeString( info, MAX_SPAWN_INFO_LENGTH ) )
 		{
-			msg = IssueNameWarning( name.len() )
+			msg = IssueInfoWarning( info.len() )
 			Warning( msg )
-			name = ""
+			info = ""
 		}
 		else 
 		{
-			msg = "Set auto SpawnSetName to \"" + name + "\""
+			msg = "Set auto SpawnSetName to \"" + info + "\""
 		}
 	}
 	else 
@@ -2747,39 +2865,37 @@ void function DEV_AutoSetName( string name = "" )
 		msg = "Cleared SpawnSetName."
 	}
 
-	_SpawnSetName( name )
+	_SpawnSetInfo( info )
 	
 	printt( msg )
 	printm( msg )
 }
 
-string function IssueNameWarning( int strLen )
+string function IssueInfoWarning( int strLen )
 {
 	bool bOverLimit
 	string tooLong 
 	
-	if( strLen > MAX_SPAWN_NAME_LENGTH )
-	{
-		tooLong = "name was " + strLen + " characters long. " + ( strLen - MAX_SPAWN_NAME_LENGTH ) + " chars too many. Max length: " + MAX_SPAWN_NAME_LENGTH
-	}
+	if( strLen > MAX_SPAWN_INFO_LENGTH )
+		tooLong = "info was " + strLen + " characters long. " + ( strLen - MAX_SPAWN_INFO_LENGTH ) + " chars too many. Max length: " + MAX_SPAWN_INFO_LENGTH
 	
 	if( !empty( tooLong ) )
 		return tooLong 
 	else	
-		return "Provided name contained invalid characters"
+		return "Provided info contained invalid characters"
 		
 	unreachable
 }
 
-string function _SpawnSetName( string ornull name = null )
+string function _SpawnSetInfo( string ornull info = null )
 {
-	if( name == null )
+	if( info == null )
 		return file.spawnSetName
 		
-	string setname = expect string( name )
-	file.spawnSetName = setname 
+	string setinfo = expect string( info )
+	file.spawnSetName = setinfo 
 	
-	return setname
+	return setinfo
 }
 
 bool function DEV_AutoSimulateRing( bool ornull bSetting = null )

@@ -1,6 +1,8 @@
-//untyped
+//untyped																			
 globalize_all_functions
-#if TRACKER && HAS_TRACKER_DLL
+#if TRACKER && HAS_TRACKER_DLL																	//~mkos
+
+const bool STORE_STAT = true 
 
 struct {
 
@@ -20,6 +22,8 @@ void function Tracker_Init()
 	
 	bool bRegisterCoreStats = !GetCurrentPlaylistVarBool( "disable_core_stats", false )
 	SetRegisterCoreStats( bRegisterCoreStats )
+	
+	Stats__InternalInit()
 }
 
 //////////////////////////////////////////////////
@@ -40,18 +44,24 @@ void function Tracker_Init()
 //////////////////////////////////////////////////
 void function Script_RegisterAllStats()
 {
-	// void function Tracker_RegisterStat( string statname, void functionref( entity ) inboundCallbackFunc, var functionref( string ) outboundCallbackFunc )
-	//
-	// Tracker_RegisterStat( "backend-name", data_in_callback, data_out_callback)
+	// It is not necessary to add stats for core stats to a gamemode (kills,deaths,etc), as r5r.dev is capable
+	// of sorting by various factors(todo). However, it is usful if you want to do it for display purposes.
+	// Generally, stats are registered here to add new stats specific to that gamemode.
+
+	// void function Tracker_RegisterStat( string statname, void functionref( entity ) ornull inboundCallbackFunc = null, var functionref( string ) ornull outboundCallbackFunc = null, bool bLocalAllowed = false )
+	// EXAMPLE: Tracker_RegisterStat( "backend_stat_name", data_in_callback, data_out_callback, USE_LOCAL )
+	
 	// null can be used as substitutes if specific in/out is not needed.
-	// Stats don't need an in function to be fetched with the getter functions.
-	// They can all be fetched when stats for a player loads,
-	// see: AddCallback_PlayerDataFullyLoaded below.
-	//
+	// Stats don't need an in function to be fetched from server cache with the getter functions:
 	// GetPlayerStat%TYPE%( playerUID, "statname" )  %TYPE% = [Int,Bool,Float,String]
-	// Each stat will only load in if they get registered here.
-	// AddCallback_PlayerDataFullyLoaded callbackFunc will get called when 
-	// stats finish loading for a player.
+
+	// They can also, all be fetched at once, when stats for a player loads.
+	// see: AddCallback_PlayerDataFullyLoaded below.
+
+	// Each stat will only load in if they get registered here. 
+	// After stats load in for a player,
+	// your AddCallback_PlayerDataFullyLoaded callbackFunc will get called
+	// 
 	//
 	// Additionally, an api constant REGISTER_ALL will trigger the return of the entire 
 	// script-registered live-table stats.
@@ -68,11 +78,32 @@ void function Script_RegisterAllStats()
 	//	These stats should be prefixed with 'previous_' for clarity.
 	
 	
+	// IF USING: STORE_STAT
+	// {
+			// Purpose:
+			
+			// if using any stat value that will be garbage cleaned on disconnect etc
+			// ( player net int, player struct var, structs cleared on round end, etc )
+			
+			// WARNING:	Do not set the same var in an inbound stat func, that the outbound stat func returns. 
+			// This will result in player stat data aggregation inflation on next disconnect. 		
+			
+			// If RegisterStat is passed with fourth parameter of true, 
+			// a local copy is maintained of accumulated stats for the round, regardless of disconnects/rejoins.  
+			// This means you can use getters based on player entity 
+			
+			
+			// For base stats, the gamemode will have a record associated automatically by uid 
+			// Tracker_ReturnKills
+			// Tracker_ReturnDeaths
+			// Tracker_ReturnDamage    etc... 
+	//	}
+	
 	//Script required stats
 	Tracker_RegisterStat( "settings" )
 	Tracker_RegisterStat( "isDev" )
 	
-	//Global mute ( helper controlled set via web panel/mod api only & actions logged )
+	//Global mute ( helper controlled set via web panel/mod api only )
 	if( Chat_GlobalMuteEnabled() )
 		Tracker_RegisterStat( "globally_muted", Chat_CheckGlobalMute )
 
@@ -86,60 +117,60 @@ void function Script_RegisterAllStats()
 		Tracker_RegisterStat( "total_matches" )
 		Tracker_RegisterStat( "score" )
 		Tracker_RegisterStat( "previous_champion", null, Tracker_ReturnChampion )
-		Tracker_RegisterStat( "previous_kills", null, Tracker_RecentKills )
-		Tracker_RegisterStat( "previous_damage", null, Tracker_RecentDamage )
+		Tracker_RegisterStat( "previous_kills", null, Tracker_ReturnKills )
+		Tracker_RegisterStat( "previous_damage", null, Tracker_ReturnDamage )
 		//Tracker_RegisterStat( "previous_survival_time", null,  )
 		
 		AddCallback_PlayerDataFullyLoaded( Callback_CoreStatInit )
 	}
 	
-	if( Playlist() == ePlaylists.fs_scenarios )
+	switch( Playlist() )
 	{
-		Tracker_RegisterStat( "scenarios_kills", null, TrackerStats_ScenariosKills )
-		Tracker_RegisterStat( "scenarios_deaths", null, TrackerStats_ScenariosDeaths )
-		Tracker_RegisterStat( "scenarios_score", null, TrackerStats_ScenariosScore )
-		Tracker_RegisterStat( "scenarios_downs", null, TrackerStats_ScenariosDowns )
-		Tracker_RegisterStat( "scenarios_team_wipe", null, TrackerStats_ScenariosTeamWipe )
-		Tracker_RegisterStat( "scenarios_team_wins", null, TrackerStats_ScenariosTeamWins )
-		Tracker_RegisterStat( "scenarios_solo_wins", null, TrackerStats_ScenariosSoloWins )
-		Tracker_RegisterStat( "previous_score", null, TrackerStats_ScenariosRecentScore )
+		case ePlaylists.fs_scenarios:
+			Tracker_RegisterStat( "scenarios_kills", null, TrackerStats_ScenariosKills )
+			Tracker_RegisterStat( "scenarios_deaths", null, TrackerStats_ScenariosDeaths )
+			Tracker_RegisterStat( "scenarios_score", null, TrackerStats_ScenariosScore )
+			Tracker_RegisterStat( "scenarios_downs", null, TrackerStats_ScenariosDowns )
+			Tracker_RegisterStat( "scenarios_team_wipe", null, TrackerStats_ScenariosTeamWipe )
+			Tracker_RegisterStat( "scenarios_team_wins", null, TrackerStats_ScenariosTeamWins )
+			Tracker_RegisterStat( "scenarios_solo_wins", null, TrackerStats_ScenariosSoloWins )
+			Tracker_RegisterStat( "previous_score", null, TrackerStats_ScenariosRecentScore )
+			AddCallback_PlayerDataFullyLoaded( Callback_HandleScenariosStats )
+		break 
 
-		AddCallback_PlayerDataFullyLoaded( Callback_HandleScenariosStats )
+		case ePlaylists.fs_dm_fast_instagib:
+			//Tracker_RegisterStat( "shots_hit", null, Tracker_ReturnHits )
+			Tracker_RegisterStat( "shots_fired", null, Tracker_ReturnShots )
+			Tracker_RegisterStat( "instagib_deaths", null, Tracker_ReturnDeaths )
+			Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_FSDMRailjumps, STORE_STAT )
+			Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+			Tracker_RegisterStat( "instagib_wins", null, TrackerStats_FSDMWins )	
+		break
+
+		case ePlaylists.fs_haloMod:
+			Tracker_RegisterStat( "halo_dm_kills", null, Tracker_ReturnKills )
+			Tracker_RegisterStat( "halo_dm_deaths", null, Tracker_ReturnDeaths )
+			Tracker_RegisterStat( "halo_dm_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+			Tracker_RegisterStat( "halo_dm_wins", null, TrackerStats_FSDMWins )
+		break
+		
+		case ePlaylists.fs_haloMod_oddball:
+			Tracker_RegisterStat( "halo_oddball_kills", null, Tracker_ReturnKills )
+			Tracker_RegisterStat( "halo_oddball_deaths", null, Tracker_ReturnDeaths )
+			Tracker_RegisterStat( "halo_oddball_heldtime", null, TrackerStats_OddballHeldTime, STORE_STAT )
+			Tracker_RegisterStat( "halo_oddball_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+		break
+
+		case ePlaylists.fs_haloMod_ctf:
+
+			Tracker_RegisterStat( "halo_ctf_flags_captured", null, TrackerStats_CtfFlagsCaptured, STORE_STAT )
+			Tracker_RegisterStat( "halo_ctf_flags_returned", null, TrackerStats_CtfFlagsReturned, STORE_STAT )
+			Tracker_RegisterStat( "halo_ctf_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
+			Tracker_RegisterStat( "halo_ctf_wins", null, TrackerStats_CtfWins, STORE_STAT )
+		break 
+		
+		//case :
 	}
-
-	// if( Playlist() == ePlaylists.fs_dm_fast_instagib )
-	// {
-		// Tracker_RegisterStat( "shots_hit", null, TrackerStats_FSDMKills )
-		// Tracker_RegisterStat( "shots_fired", null, TrackerStats_FSDMShots )
-		// Tracker_RegisterStat( "instagib_deaths", null, TrackerStats_FSDMDeaths )
-		// Tracker_RegisterStat( "instagib_railjumptimes", null, TrackerStats_FSDMRailjumps )
-		// Tracker_RegisterStat( "instagib_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-		// Tracker_RegisterStat( "instagib_wins", null, TrackerStats_FSDMWins )
-	// }
-
-	// if( Playlist() == ePlaylists.fs_haloMod )
-	// {
-		// Tracker_RegisterStat( "halo_dm_kills", null, TrackerStats_FSDMKills )
-		// Tracker_RegisterStat( "halo_dm_deaths", null, TrackerStats_FSDMDeaths )
-		// Tracker_RegisterStat( "halo_dm_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-		// Tracker_RegisterStat( "halo_dm_wins", null, TrackerStats_FSDMWins )
-	// }
-
-	// if( Playlist() == ePlaylists.fs_haloMod_oddball )
-	// {
-		// Tracker_RegisterStat( "halo_oddball_kills", null, TrackerStats_FSDMKills )
-		// Tracker_RegisterStat( "halo_oddball_deaths", null, TrackerStats_FSDMDeaths )
-		// Tracker_RegisterStat( "halo_oddball_heldtime", null, TrackerStats_OddballHeldTime )
-		// Tracker_RegisterStat( "halo_oddball_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-	// }
-
-	// if( Playlist() == ePlaylists.fs_haloMod_ctf )
-	// {
-		// Tracker_RegisterStat( "halo_ctf_flags_captured", null, TrackerStats_CtfFlagsCaptured )
-		// Tracker_RegisterStat( "halo_ctf_flags_returned", null, TrackerStats_CtfFlagsReturned )
-		// Tracker_RegisterStat( "halo_ctf_gamesplayed", null, TrackerStats_FSDMGamesPlayed )
-		// Tracker_RegisterStat( "halo_ctf_wins", null, TrackerStats_CtfWins )
-	// }
 }
 
 ////////////////////
@@ -182,7 +213,7 @@ void function Callback_HandleScenariosStats( entity player )
 	string uid = player.p.UID
 		
 	const string strSlice = "scenarios_"
-	foreach( string statKey, var statValue in Stats__GetPlayerStatsTable( uid ) ) //Todo: register by script name group
+	foreach( string statKey, var statValue in Stats__GetPlayerStatsTable( uid ) ) //Todo: register by script name group ( set in backend )
 	{
 		#if DEVELOPER
 			printw( "found statKey =", statKey, "statValue =", statValue )
@@ -193,60 +224,29 @@ void function Callback_HandleScenariosStats( entity player )
 	}
 }
 
-var function Tracker_ReturnChampion( string uid )
-{
-	return Tracker_StatsMetricsByUID( uid ).previous_champion
-}
-
-var function Tracker_RecentKills( string uid )
-{
-	return Tracker_StatsMetricsByUID( uid ).kills
-}
-
-var function Tracker_RecentDamage( string uid )
-{
-	return Tracker_StatsMetricsByUID( uid ).damage
-}
-
-//(mk): The following need replaced before release, as the player may have already left.
-
-//FSDM 
-var function TrackerStats_FSDMKills( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	
-	return player.GetPlayerNetInt( "kills" )
-}
-
 var function TrackerStats_FSDMShots( string uid )
 {
-	entity player = GetPlayerEntityByUID( uid )
-	
+	entity player = GetPlayerEntityByUID( uid )	
 	return player.p.shotsfired
-}
-
-var function TrackerStats_FSDMDeaths( string uid )
-{
-	entity player = GetPlayerEntityByUID( uid )
-	
-	return player.GetPlayerNetInt( "deaths" )
 }
 
 var function TrackerStats_FSDMRailjumps( string uid )
 {
 	entity player = GetPlayerEntityByUID( uid )
-	
 	return player.p.railjumptimes 
 }
 
-var function TrackerStats_FSDMGamesPlayed( string uid )
+var function TrackerStats_FSDMGamesPlayed( string uid ) //for leaderboard visuals?
 {
 	return 1
 }
 
 var function TrackerStats_FSDMWins( string uid )
-{
+{	
 	entity player = GetPlayerEntityByUID( uid )
+	if( !IsValid( player ) )
+		return 0
+		
 	return player == GetBestPlayer() ? 1 : 0
 }
 
@@ -270,7 +270,7 @@ var function TrackerStats_CtfFlagsReturned( string uid )
 
 var function TrackerStats_CtfWins( string uid )
 {
-	return 0 //todo
+	return 0 //Cafe: todo
 }
 
 //////////////////////////////////////////////////////////

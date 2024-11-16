@@ -806,3 +806,27 @@ void function Patch_mp_rr_party_crasher()
     prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < 1755.278, -3840.448, 669.9891 >, < 0, 15, 90 >, false, 0.0001, -1, 1 )
     prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
 }
+
+void function Patch_SkyGardenRest()
+{
+    // Props
+    entity prop
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -561, -1337.905, 3119 >, < -90, 0, 0 >, true, 50000, -1, 1 )
+    prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+	prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < 326, -1337.905, 2716 >, < -90, -180, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -561, -1337.905, 2769 >, < -90, 0, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < 326, -1337.905, 3119 >, < -90, -180, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -84, -900, 2707 >, < -90, -90, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -141, -1495, 3450 >, < 0, -90, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -141, -1177, 3409 >, < 0, -90, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -93, -1801, 3102 >, < -90, -90, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+    prop = MapEditor_CreateProp( $"mdl/desertlands/highrise_rectangle_top_01.rmdl", < -84, -900, 3102 >, < -90, -90, 0 >, true, 50000, -1, 1 )
+	prop.kv.contents = CONTENTS_PLAYERCLIP | CONTENTS_BULLETCLIP | CONTENTS_MONSTERCLIP | CONTENTS_SOLID | CONTENTS_PHYSICSCLIP | CONTENTS_BLOCKLOS; prop.MakeInvisible()
+}
