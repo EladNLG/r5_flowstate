@@ -172,7 +172,7 @@ void function Commands_Register( string cmd, CommandCallback ornull handlerFunct
 		file.commandHandlers[ cmd ] <- data	
 		
 		#if DEVELOPER && PRINT_REGISTERED
-			printw( "== Registered command:", cmd, " handler: " + string( handlerFunction ) + "() ==" )
+			printt( "== Registered command:", cmd, " handler: " + string( handlerFunction ) + "() ==" )
 		#endif
 		
 		__InsertCmdAliasLookupTable( cmd, aliases )	
@@ -269,7 +269,7 @@ void function __CmdAliasTable_CheckSlot( string alias, string cmd )
 		file.cmdAliasLookupTable[ alias ] <- cmd
 
 		#if DEVELOPER && PRINT_REGISTERED
-			printw( "Registered command alias \"" + alias + "\" for [", cmd, "]" )
+			printt( "Registered command alias \"" + alias + "\" for [", cmd, "]" )
 		#endif
 	}
 	#if DEVELOPER
@@ -304,7 +304,7 @@ void function Commands_SetupArg( string arg, array<string> aliases = [] )
 		file.argTable[ arg ] <- data
 
 		#if DEVELOPER && PRINT_REGISTERED
-			printw( "== Registered arg \"" + arg + "\"" )
+			printt( "== Registered arg \"" + arg + "\"" )
 		#endif
 		
 		__InsertArgAliasLookupTable( arg, aliases )
@@ -374,7 +374,7 @@ void function __ArgAliasTable_CheckAndCreateSlot( string alias, string arg )
 		file.argAliasLookupTable[ alias ] <- arg
 		
 		#if DEVELOPER && PRINT_REGISTERED
-			printw( "Registered arg alias: \"" + alias + "\" for arg [", arg, "]" )
+			printt( "Registered arg alias: \"" + alias + "\" for arg [", arg, "]" )
 		#endif
 	}
 	#if DEVELOPER
