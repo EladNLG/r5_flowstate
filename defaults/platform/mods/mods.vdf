@@ -1,7 +1,4 @@
 "ModList"
 {
-	"ModList"
-	{
-		"Flowstate.Localization"		"1"
-	}
+	"Flowstate.Localization"		"1"
 }
