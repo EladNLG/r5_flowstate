@@ -40,8 +40,12 @@ WeaponData
 	"stat_rof"										"45"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/p2011sp/ptpov_p2011sp.rmdl"
-	"playermodel" 									"mdl/weapons/p2011sp/w_p2011sp.rmdl"
+	//"viewmodel"   									"mdl/weapons/p2011sp/ptpov_p2011sp.rmdl"
+	//"playermodel" 									"mdl/weapons/p2011sp/w_p2011sp.rmdl"
+
+	"viewmodel"   									"mdl/weapons/p2011/ptpov_p2011.rmdl"
+	"playermodel" 									"mdl/weapons/p2011/w_p2011.rmdl"
+	
 	"activitymodifier"								"pistol"
 	"holster_type"									"pistol"
 
