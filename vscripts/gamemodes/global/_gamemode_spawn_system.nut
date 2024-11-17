@@ -24,8 +24,10 @@ global function SpawnSystem_CreateSpawnObjectArray
 global function SpawnSystem_FindBaseMapForPak
 global function SpawnSystem_GenerateRandomSpawns
 
+global function SpawnSystem_SetValidateSpawnsOnLoad
 global function SpawnSystem_CreateLocPairObject
 global function SpawnSystem_GetPakInfoForKey
+
 
 #if DEVELOPER
 	global function DEV_SpawnType
@@ -93,7 +95,7 @@ global function SpawnSystem_GetPakInfoForKey
 	
 	const int MASTER_PANEL_ORIGIN_OFFSET = 400
 	const int MAX_GENERATE_RANDOM_ATTEMPTS = 2000
-	const bool VERIFY_SPAWNS = true //set this to skip hullcheck fails for all spawns not just ones marked as "OOB"
+	const bool OVERIDE_VERIFY_SPAWNS = false //set this to always skip hullcheck fails for all spawns not just ones marked as "OOB"
 	
 	struct
 	{
@@ -111,6 +113,7 @@ global function SpawnSystem_GetPakInfoForKey
 		bool bOverrideSpawns 	= false	
 		bool bSpawnsInitialized = false
 		bool bRunCallbacks 		= true
+		bool bValidateSpawns	= true
 		
 		#if DEVELOPER
 			LocPair &panelsloc
@@ -138,6 +141,7 @@ global function SpawnSystem_GetPakInfoForKey
 			string spawnSetName = ""
 			string spawnsPlaylist = ""
 			string spawnsMap = ""
+			array<int> deleteEventsQueue
 			
 			table<string,string> DEV_POS_COMMANDS = 
 			{
@@ -148,7 +152,7 @@ global function SpawnSystem_GetPakInfoForKey
 					["...."] = "",
 					[" ==== SETTINGS ===="] = "",
 					["....."] = "",
-					[" script DEV_SpawnsPlaylist( string playlist = \"\" ) "] = "Sets the playlist this spawn pak should load for",
+					[" script DEV_SpawnsPlaylist( string playlist = \"\" ) "] = "Sets the playlist this spawn pak should load for. This will also automatically apply the values saved in the playlists_r5_patch.txt for the specified playlisst.",
 					[" script DEV_SetAutoSave( bool value = true )"] = "Disabled by default. Make sure folder 'output' in r5reloaded/platform exists",
 					[" script DEV_LoadPak( string pak = \"\", string playlist = \"\" )"] = "Loads spawn pak specifying rpak asset and playlist. If none provided, loads current pak. If custom spawns are wrote into the script test function, it loads those instead.",
 					[" script DEV_SpawnType( string setToType = \"\" )"] = "Params: \"csv\" or \"sq\" Sets/Converts the current array of print outs to specified type, and further additions are added as the specified type. Returns the current type if no parameters are provided. ( call with printt() )",
@@ -158,7 +162,7 @@ global function SpawnSystem_GetPakInfoForKey
 					[" script DEV_AutoDeleteInvalid( bool setting = true )"] = "Set spawn tool to auto delete bad spawns on creation. Disavled by default",
 					[" script DEV_AutoSetInfo( string info = \"\" )"] = "Defines a custom spawn set name or info to automatically use when creating spawns if not specified during DEV_AddSpawn(). Call with nothing to empty/disable. System automatically names spawns based on index otherwise.",
 					[" script DEV_KeepHighlight( bool setting = true )"] = "Sets whether spawn highlight stays after adding spawn.",
-					[" script DEV_SpawnsBaseMap( string baseMap = \"\", bool bIgnoreInvalid = false )"] = "Sets the base map the spawn system will use for coordinate data",
+					[" script DEV_SpawnsBaseMap( string baseMap = \"\", bool bIgnoreInvalid = false )"] = "Sets the base map the spawn system will use for coordinate data ( is set automatically based on loaded map )",
 					["......"] = "",
 					["......."] = "",
 					[" ==== MAIN SPAWN FUNCTIONS ===="] = "",
@@ -228,10 +232,14 @@ void function Flowstate_SpawnSystem_Init()
 		RegisterSignal( "DelayedHighlightActivate" )
 		RegisterSignal( "RunValidatorIfWaiting" )
 		RegisterSignal( "IsSpawnValidStatus" )
+		RegisterSignal( "EventDeleteQueued" )
 		
 		CalculateMaxIndent()
 		InitClonedSettings()
 		AutoSetupSettings()
+		thread __DeleteThread()
+		
+		SpawnSystem_SetValidateSpawnsOnLoad( false )
 	#endif
 }
 
@@ -725,8 +733,8 @@ array<SpawnData> function FetchReturnAllLocations( int eMap, string set = "_set_
 			#endif
 			
 			
-			if( !CheckSpawn( origin ) && VERIFY_SPAWNS && info != "OOB" )
-				mAssert( false, "OOB spawn at origin " + VectorToString( origin ) )
+			if( OVERIDE_VERIFY_SPAWNS || file.bValidateSpawns && info != "OOB" && !CheckSpawn( origin ) )
+				mAssert( false, "OOB spawn at origin " + VectorToString( origin ) + " index: " + ( allSoloLocations.len() - 1 ) )
 			
 			SpawnData spawnInfo = SpawnSystem_CreateSpawnObject( NewLocPair( origin, angles ), info, i )
 			allSoloLocations.append( spawnInfo )
@@ -1054,6 +1062,11 @@ void function SpawnSystem_SetMetaDataHandler( void functionref( SpawnData ) proc
 	file.PakMetaDataHandler = processFunc
 }
 
+void function SpawnSystem_SetValidateSpawnsOnLoad( bool setting )
+{
+	file.bValidateSpawns = setting
+}
+
 //////////////////////////////////////////////////////////////////////
 //						  DEVELOPER FUNCTIONS						//
 //////////////////////////////////////////////////////////////////////
@@ -1148,7 +1161,10 @@ void function DEV_DeleteSpawn( int index )
 	if( IsValidSpawnIndex( index ) )
 	{
 		if( !__bCheckReload() )
+		{
+			__DispatchDeleteEvent( index )
 			return
+		}
 		
 		__RemoveAllPanels()
 		
@@ -1169,6 +1185,31 @@ void function DEV_DeleteSpawn( int index )
 		printt( "Index", index, "was invalid and could not be removed." )
 		printm( "Index", index, "was invalid and could not be removed." )
 	}
+}
+
+void function __DeleteThread()
+{
+	for( ; ; )
+	{
+		WaitSignal( file.dummyEnt, "EventDeleteQueued" )
+		
+		{
+			while( file.deleteEventsQueue.len() > 0 )
+			{
+				while( !__bCheckReload() )
+					WaitFrame()
+					
+				int removeSpawnIndex = file.deleteEventsQueue.remove( 0 )
+				DEV_DeleteSpawn( removeSpawnIndex )
+			}
+		}
+	}
+}
+
+void function __DispatchDeleteEvent( int index )
+{
+	file.deleteEventsQueue.append( index )
+	file.dummyEnt.Signal( "EventDeleteQueued" )
 }
 
 void function DEV_DeleteLast()
@@ -1647,6 +1688,16 @@ void function DEV_TeleportToSpawn( string pid = "", int posIndex = 0 )
 
 void function DEV_SpawnHelp()
 {
+	string context = CheckFirstUse()
+	
+	if( !empty( context ) )
+	{
+		foreach( player in GetPlayerArray() )
+			LocalEventMsg( player, context )
+			
+		file.bFirstTimeUse = false
+	}
+	
 	string helpinfo = "\n\n ---- SPAWN TOOL COMMANDS ----- \n\n"
 	
 	foreach( command, helpstring in file.DEV_POS_COMMANDS )
@@ -1813,6 +1864,31 @@ void function DEV_WriteSpawnFile( string type = "", bool bAutoSave = false )
 		string consolePrint = GenerateSpawnPakMetaData( true )
 		printt( consolePrint )
 		printm( consolePrint )
+		
+		array<string> errors = []
+		foreach ( int index, LocPair spawn in GetSpawns() )
+		{
+			if( !CheckSpawn( spawn.origin ) )
+			{
+				string originString = VectorToString( spawn.origin )
+				string anglesString = VectorToString( spawn.angles )
+				errors.append( "INVALID: index[ " + index + " ]" + "Loc: " + originString + anglesString )
+			}
+		}
+		
+		if( errors.len() > 0 )
+		{
+			string header = "=== The following spawns did not pass player hull checks (OOB) ==="
+			{
+				printw( header )		
+				foreach( string errorMsg in errors )
+					printw( errorMsg )
+					
+				printm( header )				
+				foreach( string errorMsg in errors )
+					printm( errorMsg )
+			}
+		}
 	}
 	else if( bReconvert )
 	{
@@ -2756,6 +2832,12 @@ void function PrintSpawnSettings()
 	#endif 
 }
 
+const array<int> DEV_PLAYLISTS =
+[
+	ePlaylists.survival_dev,
+	ePlaylists.dev_default
+]
+
 string function CheckFirstUse()
 {
 	if( !file.bFirstTimeUse )
@@ -2779,8 +2861,12 @@ string function CheckFirstUse()
     msg.append( "---------------------------------------------------" )
     msg.append( " " )
 	msg.append( "NOTICE: Make sure to have a folder called 'output' in r5reloaded/platform directory" )
-	msg.append( "NOTICE: AutoSave is disabled by default. To turn on run 'script DEV_SetAutoSave()'" )
-	msg.append( " " )
+	msg.append( "NOTICE: AutoSave is disabled by default. To turn on run 'script DEV_SetAutoSave()'" )	
+	msg.append( "NOTICE: You should run DEV_SpawnsPlaylist( \"fs_playlistname_here\" ) with the intended playlist for spawns." )
+	
+	if( !DEV_PLAYLISTS.contains( Playlist() ) )
+		msg.append( "NOTICE: It is reccomended to load dev_default if creating spawns." )
+	
 	msg.append( " " )
 	msg.append( " " )
 	msg.append( "       run:  script DEV_SpawnHelp()    to see the help documentation." )

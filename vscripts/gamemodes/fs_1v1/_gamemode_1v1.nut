@@ -3455,7 +3455,7 @@ void function Gamemode1v1_Init( int eMap )
 	
 	//longrange
 	file.LongRangeWeapons = ValidateBlacklistedWeapons( file.custom_longrange_primary )	
-	if( file.LongRangeWeapons.len() == 0 ){ file.LongRangeWeapons = [ "mp_weapon_g2" ] }
+	if( file.LongRangeWeapons.len() == 0 ){ file.LongRangeWeapons = [ "mp_weapon_g2 optic_cq_hcog_bruiser" ] }
 	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3481,7 +3481,7 @@ void function Gamemode1v1_Init( int eMap )
 	
 	//longrange
 	file.LongRangeWeaponsSecondary = ValidateBlacklistedWeapons( file.custom_longrange_secondary )
-	if( file.LongRangeWeaponsSecondary.len() == 0 ){ file.LongRangeWeaponsSecondary = [ "mp_weapon_g2" ] }
+	if( file.LongRangeWeaponsSecondary.len() == 0 ){ file.LongRangeWeaponsSecondary = [ "mp_weapon_sniper" ] }
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//FlagWait( "EntitiesDidLoad" ) //creates timing issues to wait here
