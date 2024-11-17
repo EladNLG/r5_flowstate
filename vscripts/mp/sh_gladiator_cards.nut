@@ -1889,7 +1889,7 @@ var function UpdateGladiatorCardNestedWidget( NestedGladiatorCardHandle handle, 
 	{
 		if ( nws.rui != null )
 		{
-			RuiDestroyNestedIfAlive( handle.cardRui, argName )
+			RuiDestroyNested( handle.cardRui, argName )
 			nws.rui = null
 			nws.ruiAsset = $""
 		}
