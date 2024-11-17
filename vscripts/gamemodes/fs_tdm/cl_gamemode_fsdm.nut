@@ -136,6 +136,7 @@ void function Cl_CustomTDM_Init()
     AddCallback_EntitiesDidLoad( NotifyRingTimer )
 	AddClientCallback_OnResolutionChanged( Cl_OnResolutionChanged )
 
+	RegisterButtonPressedCallback(KEY_ENTER, ClientReportChat)
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue")
 	PrecacheParticleSystem($"P_training_teleport_FP")
 
@@ -779,6 +780,16 @@ void function Flowstate_PlayStartRoundSounds()
 void function Cl_RegisterLocation(LocationSettings locationSettings)
 {
     file.locationSettings.append(locationSettings)
+}
+
+void function ClientReportChat(var button)
+{
+	if( CHAT_TEXT == "" || file.muted )
+		return
+	
+	string text = "say " + CHAT_TEXT
+	text = IsSafeString( text, 255 ) ? text : "?" //(mk):prevent being kicked
+	GetLocalClientPlayer().ClientCommand( text )
 }
 
 void function ServerCallback_FSDM_CoolCamera()

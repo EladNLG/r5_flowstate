@@ -2095,3 +2095,17 @@ bool function IsSpectatorSpectatingPlayer( entity player )
 {
 	return IsSpectator( GetLocalClientPlayer() ) && GetLocalViewPlayer() == player
 }
+
+bool function IsSafeString( string str, int strlen = -1, string pattern = "" ) 
+{
+	if( empty( str ) )
+		return true
+		
+	if( strlen != -1 && str.len() > strlen )
+		return false
+	
+	if( pattern == "" )
+		pattern = "^[A-Za-z0-9_ \\\\[/\\]\\(\\):;\\-*&^%$#@!+=?.|~`\"'<>\\{\\},]*$"
+	
+	return ( RegexpFindAll( str, pattern ).len() != 0 )
+}
