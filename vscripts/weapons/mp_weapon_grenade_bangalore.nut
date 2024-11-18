@@ -10,6 +10,8 @@ global function OnClientAnimEvent_weapon_grenade_bangalore
 #endif
 
 global function BangSmoke_IsPlayerHighlighted //Shared version by Cafe
+global function BangSmokeHighlightsEnabled
+global function BangSmoke_GetPlayersToHighlight
 
 const float WEAPON_GAS_GRENADE_DURATION = 15.0
 const vector WEAPON_GAS_GRENADE_OFFSET = <0,0,16>
@@ -398,12 +400,6 @@ void function BangaloreSmokeGrenadeTriggerTouchingThread( entity trigger, entity
 	float radiusSqr = radius * radius
 	int lastStatusEffectId = -1
 
-	//Cafe was here. Server side implementation for bangs highlight
-	if ( BangSmokeHighlightsEnabled() )
-	{
-		thread SmokeHighlight_Thread( ent )
-	}	//SERVER
-
 	while( trigger.IsTouching( ent ) )
 	{
 		float distance = DistanceSqr( trigger.GetOrigin(), ent.GetOrigin() )
@@ -424,53 +420,34 @@ bool function BangSmokeHighlightsEnabled()
 	return GetCurrentPlaylistVarBool( "bangalore_smoke_highlight", true )
 }
 
-void function SmokeHighlight_Thread( entity player )
+#if CLIENT
+void function Cafe_SmokesHighlights( entity player )
 {
-	EndSignal( player, "OnDestroy", "OnDeath", "stop_smokescreen_screen_fx" )
+	EndSignal( player, "stop_smokescreen_screen_fx" )
 
 	table< entity, bool > highlightedPlayers
 	file.highlightedPlayersInSmoke[player] <- highlightedPlayers
-
+	
 	OnThreadEnd(
 		function() : ( player, highlightedPlayers )
 		{
 			if( player in file.highlightedPlayersInSmoke )
 				delete file.highlightedPlayersInSmoke[player]
-
-			#if SERVER
-				if( player.Highlight_GetCurrentContext() > 0 )
-					player.Highlight_SetCurrentContext( -1 )
-				// else 
-					// Warning( "goteeem" )
-			#endif
-
-			#if CLIENT
-				foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
-				{
-					ManageHighlightEntity( otherPlayer )
-				}
-			#endif
+			
+			foreach ( entity otherPlayer, bool isHightlighted in highlightedPlayers )
+			{
+				ManageHighlightEntity( otherPlayer )
+			}
 		}
 	)
 
-	const float effectMin = 0.6
-	const float effectMax = 0.2
-	int contextId = HIGHLIGHT_CHARACTER_SPECIAL_HIGHLIGHT // :nerd:
-
-	for( ; ; )
+	while(true)
 	{
 		array< entity > playersToHighlight
 		array< entity > playersToNotHighlight
-
-		float effectStrength = StatusEffect_GetSeverity( player, eStatusEffect.smokescreen )
-		float alphaFromStatusEffect = GraphCapped( effectStrength, effectMin, effectMax, 1.0, 0.0 )
-
-		#if SERVER
-		player.Highlight_SetCurrentContext( contextId )
-		#endif
-	
+		
 		BangSmoke_GetPlayersToHighlight( player, playersToHighlight, playersToNotHighlight )
-
+		
 		foreach( entity otherPlayer in playersToHighlight )
 		{
 			if ( !( otherPlayer in highlightedPlayers ) )
@@ -485,14 +462,7 @@ void function SmokeHighlight_Thread( entity player )
 
 			highlightedPlayers[otherPlayer] = true
 
-			// printt( "smoke highlight should start", otherPlayer, "for player", player )// Cafe
-			#if SERVER
-			Highlight_SetSpecialHighlight( otherPlayer, "smoke_highlight_blockscan" )
-			#endif
-
-			#if CLIENT
 			ManageHighlightEntity( otherPlayer )
-			#endif
 		}
 
 		foreach( entity otherPlayer in playersToNotHighlight )
@@ -503,23 +473,15 @@ void function SmokeHighlight_Thread( entity player )
 					continue
 
 				highlightedPlayers[otherPlayer] = false
-
-				#if SERVER
-				// printt( "highlight should remove" )
-				otherPlayer.Highlight_SetFunctions( contextId, 0, true, 0, 2, 0, false ) //remove special highlight. Cafe
-				#endif
-
-				#if CLIENT
+				
 				ManageHighlightEntity( otherPlayer )
-				#endif
 			}
 		}
 
 		WaitFrame()
-	}
-
+	}	
 }
-
+#endif
 
 void function BangSmoke_GetPlayersToHighlight( entity player, array<entity> outPlayersToHighlight, array<entity> outPlayersToNotHighlight )
 {
@@ -618,7 +580,7 @@ void function BangaloreSmokescreenEffectEnabled( entity ent, int statusEffect, b
 	//Cafe was here. This is chad part of my implementation
 	if ( BangSmokeHighlightsEnabled() )
 	{
-		thread SmokeHighlight_Thread( ent )
+		thread Cafe_SmokesHighlights( ent )
 	}	//CLIENT
 
 	if ( !viewPlayer.IsTitan() )

@@ -1939,13 +1939,16 @@ void function RedishHighlight_Thread( entity player )
 	{
 		array< entity > playersToHighlight
 		array< entity > playersToNotHighlight
-
+		array< entity > playersToHighlightBang
+		array< entity > playersToNotHighlightBang
+		
 		#if SERVER
 		player.Highlight_SetCurrentContext( contextId )
 		#endif
 	
 		RedishThingo_GetPlayersToHighlight( player, playersToHighlight, playersToNotHighlight )
-
+		BangSmoke_GetPlayersToHighlight( player, playersToHighlightBang, playersToNotHighlightBang )
+		
 		foreach( entity otherPlayer in playersToHighlight )
 		{
 			if ( !( otherPlayer in highlightedPlayers ) )
@@ -1988,6 +1991,28 @@ void function RedishHighlight_Thread( entity player )
 			}
 		}
 
+		#if SERVER
+		if( BangSmokeHighlightsEnabled() )
+		{
+			foreach( entity otherPlayer in playersToHighlightBang )
+			{
+				if ( !( otherPlayer in highlightedPlayers ) )
+				{
+					highlightedPlayers[ otherPlayer ] <- false
+				}
+
+				if ( highlightedPlayers[otherPlayer] )
+				{
+					continue
+				}
+
+				highlightedPlayers[otherPlayer] = true
+
+				Highlight_SetSpecialHighlight( otherPlayer, "smoke_highlight_blockscan" )
+			}
+		}
+		#endif
+		
 		WaitFrame()
 	}
 
@@ -2031,13 +2056,8 @@ void function RedishThingo_GetPlayersToHighlight( entity player, array<entity> o
 
 		if ( DistanceSqr( visibilityCheckPoint, otherPlayerEyePos ) < maxSqrDist )
 		{
-			// results = TraceLine( visibilityCheckPoint, otherPlayerEyePos, allTargets, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
-			// if ( results.fraction == 1.0 )
-			// {
-				outPlayersToHighlight.append( otherPlayer )
-				continue
-			// }
-			// continue
+			outPlayersToHighlight.append( otherPlayer )
+			continue
 		}
 
 		outPlayersToNotHighlight.append( otherPlayer )
