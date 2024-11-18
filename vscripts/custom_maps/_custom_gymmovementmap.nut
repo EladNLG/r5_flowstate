@@ -656,7 +656,7 @@ function Gymmovementmap_load() {
             }
         })
     DispatchSpawn(trigger_5)
-    entity trigger_6 = MapEditor_CreateTrigger( < 3277.999, -11001, 15340 > , < 0, -90.0001, 0 > , 3000, 50, false)
+    entity trigger_6 = MapEditor_CreateTrigger( < 3277.999, -11001, 15040 > , < 0, -90.0001, 0 > , 3000, 50, false)
     trigger_6.SetEnterCallback(void
         function(entity trigger, entity ent) {
             if (IsValidPlayer(ent) && ent.GetPhysics() != MOVETYPE_NOCLIP) {
