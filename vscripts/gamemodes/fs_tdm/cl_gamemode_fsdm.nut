@@ -2295,6 +2295,8 @@ void function FS_Scenarios_TogglePlayersCardsVisibility( bool show, bool reset )
 
 	if( show ) 
 	{
+		FS_DestroyCompass()
+
 		//hide the player cards that are not going to be used
 		for( int i = 0; i < file.allyTeamCards.len(); i++ )
 		{
