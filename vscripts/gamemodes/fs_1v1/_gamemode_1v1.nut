@@ -5847,9 +5847,6 @@ void function SetupPlayerReserveAmmo( entity player, entity weapon )
 	//Clean up ammo. Cafe
 	foreach ( ammo, type in eAmmoPoolType )
 	{
-		if( type == eAmmoPoolType.explosive )
-			continue //(mk): temp hack until kral fixes explosives
-		
 		if( !IsAmmoInUse( player, ammo ) )
 		{
 			int count = SURVIVAL_CountItemsInInventory( player, ammo )

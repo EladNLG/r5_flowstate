@@ -298,7 +298,7 @@ bool function IsNewLootEnabled( string ref )
 		//disabled until proper porting and fix
 		case "mp_weapon_epg":
 		case "sp_weapon_arc_tool":
-		case "explosive":
+		//case "explosive":
 		
 		// case "mp_weapon_sentinel":
 		// case "incapshield_pickup_lv0":
