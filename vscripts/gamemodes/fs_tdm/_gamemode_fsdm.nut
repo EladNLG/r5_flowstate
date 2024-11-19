@@ -487,7 +487,8 @@ void function _CustomTDM_Init()
 		thread Gamemode1v1_Init( MapName() )
 	}
 	
-	AddSpawnCallback( "prop_survival", Common_DissolveDropable )
+	if( !isScenariosMode() )
+		AddSpawnCallback( "prop_survival", Common_DissolveDropable )
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -7203,9 +7204,6 @@ void function WaitForChampionToFinish()
 
 void function Common_DissolveDropable( entity prop )
 {
-	if( isScenariosMode() )
-		return
-	
 	if( prop.GetScriptName() == "flowstate_halo_mod_weapon" || prop.GetScriptName() == "fs_ball" ) //Don't remove weapons from halo mod weapon racks, or oddball item
 		return
 
