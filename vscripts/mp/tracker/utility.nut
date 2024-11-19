@@ -2448,5 +2448,6 @@ string function Tracker_DetermineNextMap()
 void function Tracker_GotoNextMap()
 {
 	string to_map = Tracker_DetermineNextMap()
+	sqprint( "Changing map to: " + to_map + " - Mode: " + GameRules_GetGameMode() )
 	GameRules_ChangeMap( to_map , GameRules_GetGameMode() )	
 }

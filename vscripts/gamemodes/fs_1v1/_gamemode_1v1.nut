@@ -3503,6 +3503,10 @@ void function Gamemode1v1_Init( int eMap )
 		//mAssert( ValidateSpawns( allSoloLocations ), "No valid spawns were defined" )
 		if( !ValidateSpawns( allSoloLocations ) )
 		{
+			while( GetTDMState() != eTDMState.IN_PROGRESS )
+				WaitFrame()
+				
+			wait 8
 			printw( "No valid spawns defined" )
 			
 			foreach( player in GetPlayerArray() )
@@ -3512,7 +3516,8 @@ void function Gamemode1v1_Init( int eMap )
 				mAssert( false, "No valid spawns defined; Release behavior: Tracker_GotoNextMap.  Current Map: " + GetMapName()  )
 				return
 			#endif
-
+			
+			wait 5
 			Tracker_GotoNextMap()
 		}
 	}

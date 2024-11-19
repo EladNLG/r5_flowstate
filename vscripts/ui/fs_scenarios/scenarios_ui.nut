@@ -159,7 +159,7 @@ void function Scenarios_ClearUiData()
 
 void function ReTransmitStandingsIfConnected()
 {
-	if( Playlist() != ePlaylists.fs_scenarios ) //Todo(dw): manage ui callbacks better for mode
+	if( Playlist() != ePlaylists.fs_scenarios ) //Todo(mk): manage ui callbacks better for mode
 		return
 	
 	if( !CheckSafeClientRun() )

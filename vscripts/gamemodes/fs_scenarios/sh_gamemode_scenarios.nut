@@ -520,10 +520,9 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 	}
 	
 	const bool PRINT_ONLINE_STAT_LOAD = true
+	const string STAT_TYPE_INT = "int"
 	void function ScenariosPersistence_SetUpOnlineData( entity player, string statKey, var statValue )
-	{
-		const string STAT_TYPE_INT = "int"
-		
+	{	
 		string type = typeof( statValue )
 		if( type != STAT_TYPE_INT )
 		{
