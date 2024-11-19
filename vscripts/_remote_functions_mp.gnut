@@ -88,7 +88,9 @@ void function SetupRemoteFuncAliases()
 			ForceScoreboardFocus
 			UpdateDpadHud_Copy,
 			ServerCallback_Scenarios_MatchEndAnnouncement,
-			Tracker_StatRequestFailed
+			Tracker_StatRequestFailed,
+			FS_ForceCompass,
+			FS_DestroyCompass
 		]
 	#endif
 	
@@ -144,7 +146,9 @@ void function SetupRemoteFuncAliases()
 			"ForceScoreboardFocus",
 			"UpdateDpadHud_Copy",
 			"ServerCallback_Scenarios_MatchEndAnnouncement",
-			"Tracker_StatRequestFailed"
+			"Tracker_StatRequestFailed",
+			"FS_ForceCompass",
+			"FS_DestroyCompass"
 		]
 	#endif
 	

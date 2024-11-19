@@ -1913,6 +1913,15 @@ void function FS_Scenarios_Main_Thread()
 						Remote_CallFunction_NonReplay( player, "FS_Scenarios_AddAllyHandle", splayer.GetEncodedEHandle() )
 				}
 			}
+		} else //Show compass if cards won't show
+		{
+			foreach ( entity player in players )
+			{
+				if( !IsValidPlayer( player ) )
+					continue
+					
+				Remote_CallFunction_ByRef( player, "FS_ForceCompass" )
+			}
 		}
 
 		thread function () : ( newGroup, players )

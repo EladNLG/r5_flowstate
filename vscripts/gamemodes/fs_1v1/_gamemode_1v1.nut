@@ -2602,6 +2602,7 @@ void function soloModePlayerToWaitingList( entity player )
 		Signal(player, "InterruptSyncedMelee")
 		
 		player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
+		Remote_CallFunction_ByRef( player, "FS_DestroyCompass" )
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.

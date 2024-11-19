@@ -115,6 +115,8 @@ global function Survival_SetVictorySoundPackageFunction
 global function UpdateDpadHud_Copy
 
 global function ServerCallback_Scenarios_MatchEndAnnouncement
+global function FS_ForceCompass
+global function FS_DestroyCompass
 
 global struct NextCircleDisplayCustomData
 {
@@ -812,7 +814,6 @@ void function Cl_Survival_AddClient( entity player )
 
 	WaitingForPlayersOverlay_Setup( player )
 
-	//if( GetCurrentPlaylistName() == "fs_scenarios" || GetCurrentPlaylistName() == "fs_1v1" || GetCurrentPlaylistName() == "fs_lgduels_1v1" )
 	if( nonCompassModes.contains( Playlist() ) )
 	{	
 		#if DEVELOPER 
@@ -836,6 +837,21 @@ void function Cl_Survival_AddClient( entity player )
 	}
 }
 
+void function FS_ForceCompass( )
+{
+	if ( file.compassRui != null )
+		RuiDestroyIfAlive( file.compassRui )
+
+	file.compassRui = CreatePermanentCockpitRui( $"ui/compass_flat.rpak", HUD_Z_BASE )
+	RuiTrackFloat3( file.compassRui, "playerAngles", GetLocalViewPlayer(), RUI_TRACK_CAMANGLES_FOLLOW )
+	RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "gameState" ) )
+}
+
+void function FS_DestroyCompass()
+{
+	if ( file.compassRui != null )
+		RuiDestroyIfAlive( file.compassRui )
+}
 
 void function InitSurvivalHealthBar()
 {
