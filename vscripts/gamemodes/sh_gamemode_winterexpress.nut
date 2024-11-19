@@ -436,6 +436,12 @@ void function WinterExpress_Init()
 	settings.winter_express_wave_respawn = GetCurrentPlaylistVarBool( "winter_express_wave_respawn", false )
 	settings.winter_express_wave_respawn_interval = GetCurrentPlaylistVarFloat( "winter_express_wave_respawn_interval", 10.0 )
 	settings.winter_express_round_based_respawn = GetCurrentPlaylistVarBool( "winter_express_round_based_respawn", true )
+	
+	#if SERVER
+		//(mk):Gamemode uses 1v1 features for weapons/ammo 
+		Gamemode1v1_SetWeaponAmmoStackAmount( GetCurrentPlaylistVarInt( "give_weapon_stack_count_amount", 0 ) )
+	#endif
+	
 	//Flowstate custom
 	settings.winter_express_show_player_cards = GetCurrentPlaylistVarBool( "winter_express_show_player_cards", true )
 
@@ -2035,6 +2041,7 @@ void function OnPlayerMatchStateChanged( entity player, int oldValue, int newVal
 		// LoadoutSelection_GivePlayerInventoryAndLoadout( player, false, true, false )
 	}
 }
+
 const array<string> STANDARD_INV_LOOT = [ "health_pickup_combo_small", "health_pickup_health_small" ] //"health_pickup_combo_large", "health_pickup_health_large"
 
 void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool fromRespawning )
@@ -2120,6 +2127,15 @@ void function Flowstate_GivePlayerLoadoutOnGameStart_Copy( entity player, bool f
 		GiveRandomPrimaryWeaponMetagame( player )
 		GiveRandomSecondaryWeaponMetagame( player )
 	}
+	
+	Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")	
+	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
+
+	foreach( item in STANDARD_INV_LOOT )
+		SURVIVAL_AddToPlayerInventory( player, item, 1 )
+
+	foreach( mainhand in GetPrimaryWeapons( player ) )
+		SetupPlayerReserveAmmo( player, mainhand )
 
 	if ( IsValid( player ) && !file.playersThatHaveHeardRespawnLine.contains( player ) && fromRespawning )
 	{
@@ -2170,7 +2186,7 @@ void function GivePlayerLoadoutOnGameStart( entity player )
 
 void function ResetPlayerInventoryAndLoadoutOnRespawn( entity player, bool shouldOnlyGiveEquipmentLoadout = false )
 {
-	if ( !IsValid( player ) || !IsAlive(player))
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return
 
 	ResetPlayerInventory( player )
@@ -2182,19 +2198,17 @@ void function ResetPlayerInventoryAndLoadoutOnRespawn( entity player, bool shoul
 		player.SetNameVisibleToEnemy( true )
 	}
 
-	//Setup starting loadout
-	PlayerRestoreHP_1v1(player, 100, Equipment_GetDefaultShieldHP() )
+	PlayerRestoreHP_1v1( player, 100, Equipment_GetDefaultShieldHP() )
+	DeployAndEnableWeapons( player )	
+	CheckAutoHealPassive( player )
+}
 
-	if ( GetCurrentPlaylistVarBool( "infinite_heal_items", true ) )
+void function CheckAutoHealPassive( entity player )
+{
+	if ( settings.infinite_heal_items )
 		GivePassive( player, ePassives.PAS_INFINITE_HEAL )
-
-	Inventory_SetPlayerEquipment( player, "incapshield_pickup_lv3", "incapshield")	
-	Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack")
-
-	foreach( item in STANDARD_INV_LOOT )
-		SURVIVAL_AddToPlayerInventory(player, item, 1)
-
-	DeployAndEnableWeapons( player )
+	else
+		GivePassive( player, ePassives.PAS_PILOT_BLOOD )
 }
 
 // Loadout info has been updated for Clients, make sure weapon icons are updated on screens that use them
@@ -2216,6 +2230,8 @@ void function OnPlayerClassChanged( entity player )
 {
 	if ( IsValid( player ) && !player.IsBot() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_CL_UpdateCurrentLoadoutHUD" )
+		
+	CheckAutoHealPassive( player )
 }
 
 void function OnPlayerKilled_Inventory( entity victim, entity attacker, var attackerDamageInfo )
@@ -2559,6 +2575,7 @@ void function WinterExpress_OnPlayerRespawnedThread( entity player, bool startin
 	}
 
 	Flowstate_GivePlayerLoadoutOnGameStart_Copy( player, startingGame )
+	CheckAutoHealPassive( player ) //^ gets reset above
 	
 	if( settings.winter_express_show_player_cards && !startingGame )
 	{
@@ -2634,9 +2651,9 @@ bool function WinterExpress_RespawnOnTrain( entity player, bool isGameStartLerp 
 				thread WinterExpress_AdjustEyesAfterDelay( lerpAdjustmentTime, player, false )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_CL_CameraLerpTrain", player, pointAhead, file.trainRef, isGameStartLerp )
 				thread ScreenFadeThread( player, lerpAdjustmentTime - 1 )
-				ResetPlayerInventoryAndLoadoutOnRespawn( player )
-
 				player.SetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange", false )
+				
+				ResetPlayerInventoryAndLoadoutOnRespawn( player )
 
 				return true
 			}
@@ -3020,8 +3037,9 @@ bool function WinterExpress_RespawnAroundStation( entity player )
 	player.SnapToAbsOrigin( spawnPoints[ spawnIndex ].origin + <0, 0, 2> )
 	player.SnapEyeAngles( spawnPoints[ spawnIndex ].angles )
 	player.SnapFeetToEyes()
-	ResetPlayerInventoryAndLoadoutOnRespawn( player )
 	player.SetPlayerNetBool( "WinterExpress_IsPlayerAllowedLegendChange", false )
+
+	ResetPlayerInventoryAndLoadoutOnRespawn( player )
 
 	return true
 }

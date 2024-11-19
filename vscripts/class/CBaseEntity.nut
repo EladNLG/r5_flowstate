@@ -34,6 +34,8 @@ function CodeCallback_RegisterClass_CBaseEntity()
 	CBaseEntity.__KeyValueFromString <- CBaseEntity.SetValueForKey
 	CBaseEntity.__KeyValueFromInt <- CBaseEntity.SetValueForKey
 
+	RegisterSignal( "TookDamage" )
+		
 	function CBaseEntity::constructor()
 	{
 		#if DEVELOPER

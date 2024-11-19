@@ -558,6 +558,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	#endif
 
 	attacker.Signal( "DamagedPlayerOrNPC" )
+	ent.Signal( "TookDamage", { damageInfo = damageInfo } )
 }
 
 void function EarnMeterDamageConversion( var damageInfo, entity attacker, entity ent, float savedDamage )

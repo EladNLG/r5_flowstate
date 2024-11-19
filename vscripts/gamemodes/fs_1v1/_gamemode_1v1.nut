@@ -63,6 +63,7 @@ global function Gamemode1v1_SetPlayerGamestate
 global function Gamemode1v1_SetRestEnabled
 global function Gamemode1v1_CreatePanels
 global function Gamemode1v1_GetRestEnabled
+global function Gamemode1v1_SetWeaponAmmoStackAmount
 global function IsCurrentState
 global function ValidateBlacklistedWeapons
 
@@ -5863,6 +5864,9 @@ void function SetupPlayerReserveAmmo( entity player, entity weapon )
 	//Clean up ammo. Cafe
 	foreach ( ammo, type in eAmmoPoolType )
 	{
+		if( type == eAmmoPoolType.explosive )
+			continue //(mk): temp hack until kral fixes explosives
+		
 		if( !IsAmmoInUse( player, ammo ) )
 		{
 			int count = SURVIVAL_CountItemsInInventory( player, ammo )
@@ -5881,4 +5885,9 @@ void function SetupPlayerReserveAmmo( entity player, entity weapon )
 	#if DEVELOPER
 		printw( "added", amountToAdd, "for ref", ammoRef, "to player", string( player ) )
 	#endif
+}
+
+void function Gamemode1v1_SetWeaponAmmoStackAmount( int amount )
+{
+	settings.give_weapon_stack_count_amount = amount
 }

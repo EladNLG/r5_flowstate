@@ -668,39 +668,75 @@ void function PilotBlood_Passive( entity player, int passive, bool didHave, bool
 	}
 }
 
-void function PilotBlood_Passive_Body( entity player )
+//spawns threads to heal after regen delay
+void function PilotBlood_Passive_Body( entity player ) //monitor for passive ability
 {
 	float healthRegenStartDelay = 5.0
 	float healthRegenRate = 1.0
 	float tickTime = HEALTH_REGEN_TICK_TIME
 
-	EndSignal( player, "EndPilotBloodThread" )
+	EndSignal( player, "EndPilotBloodThread", "OnDestroy" )
 	
-	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Flowstate_IsHaloMode() || Playlist() == ePlaylists.fs_movementgym || Gamemode() == eGamemodes.WINTEREXPRESS )
+	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Flowstate_IsHaloMode() || Playlist() == ePlaylists.fs_movementgym )//|| Gamemode() == eGamemodes.WINTEREXPRESS )
 		tickTime = 0.05
 	
 	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Playlist() == ePlaylists.fs_movementgym )
 		healthRegenRate = 2.0
+	
+	//(mk):
+	// when a player's passive is removed with the global function TakePassive,
+	// it leads to callback PilotBlood_Passive firing which ends this thread if player had passive. (we want this)
+	// if a scripter is manually removing the passive with a native function,
+	// they are now responsible for cleanup/callbacks, as these threads will leak.
+	
+	// Notice: During damage rework, "OnDamaged" was setup to fire for client, 
+	// however "TookDamage" was never setup for server. Now this is done.
+	
+	for( ; ; )//while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
+	{
+		player.WaitSignal( "TookDamage" ) //sleep until damaged
+		
+		for( ; ; )
+		{
+			if( Time() - player.p.lastDamageTime < healthRegenStartDelay )
+			{
+				WaitFrame()
+				continue //wait until player has not been damaged in some time before spawning heal thread
+			}
+			
+			break
+		}
+		
+		waitthread DispatchHeal( player, tickTime, healthRegenStartDelay, healthRegenRate )
+	}
+}
 
-	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
+void function DispatchHeal( entity player, float tickTime, float healthRegenStartDelay, float healthRegenRate )
+{
+	player.EndSignal( "TookDamage", "OnDestroy", "OnDeath" )
+	
+	bool bHealthFull = false 
+	bool bShieldsFull = false
+	
+	while( !bHealthFull || !bShieldsFull )
 	{
 		wait tickTime
 		
-		if ( !IsAlive( player ) || Bleedout_IsBleedingOut(player) || Time() - player.p.lastDamageTime < healthRegenStartDelay || player.IsPhaseShifted())
+		if ( Bleedout_IsBleedingOut( player ) || player.IsPhaseShifted() )
 		{
 			WaitFrame()
 			continue
 		}
 
 		if ( player.GetHealth() != player.GetMaxHealth() )
-		{
-			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
-
-		}
-		else if( player.GetShieldHealth() != player.GetShieldHealthMax() && Gamemode() != eGamemodes.WINTEREXPRESS )
-		{
+			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )	
+		else 
+			bHealthFull = true
+		
+		if( player.GetShieldHealth() != player.GetShieldHealthMax() )
 			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate * 5 ) )
-		}
+		else 
+			bShieldsFull = true
 	}
 }
 

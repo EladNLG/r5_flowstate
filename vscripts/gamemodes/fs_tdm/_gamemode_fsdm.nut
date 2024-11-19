@@ -1992,7 +1992,8 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 		    Mods.append( strip(mod) )
 	}
 	
-	try{
+	try
+	{
 		entity weaponNew
 		if(IsValid(player))
 		{
@@ -2031,8 +2032,10 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 			player.ClearFirstDeployForAllWeapons()			
 		}
-	}catch(e420){
-		printt("Invalid weapon name for tgive command.")
+	}
+	catch(e420)
+	{
+		printt( "Invalid weapon name for tgive command?: " + e420 )
 	}
 }
 

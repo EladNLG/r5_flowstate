@@ -163,7 +163,7 @@ const array<int> gamemode1v1Types = [
 
 ]
 
-const PRINT_GAMEMODE_DEBUGS = false
+const PRINT_GAMEMODE_DEBUGS = true
 //////////////////////////////////////////
 // 			internal functions			//
 //////////////////////////////////////////
@@ -233,8 +233,17 @@ void function PlayLists_Mapnames_Gamemodes_Init()
 			{
 		#endif
 			
-			SH_globals.currentPlaylist = getPlaylistEnumFromName( GetCurrentPlaylistName() )
-			mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", GetCurrentPlaylistName() ) )
+			string currentPlaylistName = GetCurrentPlaylistName()
+			{
+				if( currentPlaylistName == "can_launch" )
+				{
+					mAssert( false, "Please specify a playlist file when launching. You \"can_launch\", but chose not to." )
+					return
+				}
+			}
+			
+			SH_globals.currentPlaylist = getPlaylistEnumFromName( currentPlaylistName )
+			mAssert( SH_globals.currentPlaylist != -1, format( "Current playlist \"%s\" is not registered in sh_mapname_playlist_gamemode_enums.nut", currentPlaylistName ) )
 		
 		#if UI 
 			}
