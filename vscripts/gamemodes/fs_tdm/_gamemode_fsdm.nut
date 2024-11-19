@@ -122,6 +122,7 @@ global function CheckForObservedTarget
 global function FS_Hack_CreateBulletsCollisionVolume
 
 const float STATIC_WAIT_TIME = 1.0
+const float MODE1V1_ITEM_DISSOLVE_TIME = 4.0
 
 struct 
 {
@@ -486,8 +487,7 @@ void function _CustomTDM_Init()
 		thread Gamemode1v1_Init( MapName() )
 	}
 	
-	if( Flowstate_ModeDissolveItems() && Flowstate_GetDissolveTime() > 0.0 )
-		AddSpawnCallback( "prop_survival", Common_DissolveDropable )
+	AddSpawnCallback( "prop_survival", Common_DissolveDropable )
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -7203,6 +7203,9 @@ void function WaitForChampionToFinish()
 
 void function Common_DissolveDropable( entity prop )
 {
+	if( isScenariosMode() )
+		return
+	
 	if( prop.GetScriptName() == "flowstate_halo_mod_weapon" || prop.GetScriptName() == "fs_ball" ) //Don't remove weapons from halo mod weapon racks, or oddball item
 		return
 
@@ -7210,7 +7213,10 @@ void function Common_DissolveDropable( entity prop )
 	(
 		void function() : ( prop )
 		{
-			wait Flowstate_GetDissolveTime()
+			if( is1v1EnabledAndAllowed() )
+				wait MODE1V1_ITEM_DISSOLVE_TIME
+			else
+				wait Flowstate_GetDissolveTime()
 			
 			if( IsValid( prop ) )
 				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )

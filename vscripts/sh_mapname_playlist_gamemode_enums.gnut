@@ -19,7 +19,6 @@ global function Flowstate_PassivesAllowedForMode
 global function Flowstate_IsTrackerSupportedMode
 global function Flowstate_PlayerDoesRespawn
 global function Flowstate_MapHasTrain
-global function Flowstate_ModeDissolveItems
 global function Flowstate_IsHaloMode
 global function Flowstate_ModeDisablesRagdolls
 
@@ -375,7 +374,6 @@ void function AllModeConditionals_Init()
 	PlayerRespawnModes_Init()
 	MapHasTrain_Init()
 	GamemodeHasSinglePlayerChampion()
-	ModeDissolvesDrops_Init()
 	IsHaloGamemode_Init()
 	RagdollsDisabled_Init() //must be after IsHaloGamemode_Init()
 }
@@ -528,29 +526,6 @@ void function GamemodeHasSinglePlayerChampion()
 	modeSettings.bSinglePlayerChampion = singlePlayerChampionPlaylists.contains( Playlist() )
 }
 
-//
-void function ModeDissolvesDrops_Init()
-{
-	const array<int> dissolveDropsPlaylists = 
-	[
-		ePlaylists.fs_1v1,
-		ePlaylists.fs_dm,
-		ePlaylists.fs_haloMod,
-		ePlaylists.fs_haloMod_ctf,
-		ePlaylists.fs_haloMod_oddball
-	]
-
-	const array<int> dissolveDropsGamemodes = 
-	[
-		eGamemodes.fs_dm,
-		eGamemodes.SURVIVAL
-	]
-		
-	bool result = ( dissolveDropsGamemodes.contains( Gamemode() ) 
-	&& dissolveDropsPlaylists.contains( Playlist() ) )
-	
-	modeSettings.dissolveDrops = result
-}
 
 void function IsHaloGamemode_Init()
 {
@@ -616,11 +591,6 @@ bool function Flowstate_MapHasTrain()
 bool function g_bSinglePlayerChampion()
 {
 	return modeSettings.bSinglePlayerChampion
-}
-
-bool function Flowstate_ModeDissolveItems()
-{
-	return modeSettings.dissolveDrops
 }
 
 bool function Flowstate_IsHaloMode()

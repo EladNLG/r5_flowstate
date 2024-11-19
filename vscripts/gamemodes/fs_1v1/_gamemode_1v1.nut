@@ -248,7 +248,6 @@ struct
 global bool mGroupMutexLock
 global array<LocPair> g_randomWaitingSpawns
 const int MAX_CHALLENGERS = 12
-const float MODE1V1_ITEM_DISSOLVE_TIME = 4.0
 
 //TODO: unite this in a singular modular framework
 const array<string> LEGEND_INDEX_ARRAY = [
@@ -3419,8 +3418,6 @@ void function Gamemode1v1_Init( int eMap )
 
 	if( settings.isScenariosMode )
 		Init_FS_Scenarios()
-	else
-		AddSpawnCallback( "prop_survival", Gamemode1v1_DissolveDropable )
 	
 	file.restGrace = GetCurrentPlaylistVarFloat( "rest_grace", 0.0 )
 	
@@ -5804,20 +5801,6 @@ void function Gamemode1v1_OnSpawned( entity player )
 	
 	maki_tp_player( player, waitingRoomLocation )
 	player.UnfreezeControlsOnServer()
-}
-
-void function Gamemode1v1_DissolveDropable( entity prop )
-{
-	thread
-	(
-		void function() : ( prop )
-		{
-			wait MODE1V1_ITEM_DISSOLVE_TIME
-			
-			if( IsValid( prop ) )
-				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
-		}
-	)()
 }
 
 array<string> function ValidateBlacklistedWeapons( array<string> Weapons )
