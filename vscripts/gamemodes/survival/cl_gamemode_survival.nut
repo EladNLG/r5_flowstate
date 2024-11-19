@@ -2958,13 +2958,12 @@ void function PROTO_OpenInventoryOrSpecifiedMenu( entity player )
 {
 	HideScoreboard()
 	
-	if( Playlist() == ePlaylists.fs_scenarios && player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) != -1 )
+	if( Playlist() == ePlaylists.fs_scenarios && player.GetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby" ) != -1 && IsAlive( GetLocalClientPlayer() ) )
 	{
-		if( IsAlive( GetLocalClientPlayer() ) )
-			ScoreboardToggleFocus( GetLocalClientPlayer() )
-		
+		RunUIScript( "UI_OpenScenariosStandingsMenu" )
 		return
 	}
+	
 	OpenSurvivalInventory( player )
 }
 
