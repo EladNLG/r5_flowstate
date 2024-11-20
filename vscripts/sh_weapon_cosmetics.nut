@@ -612,7 +612,7 @@ asset function WeaponSkin_GetVideo( ItemFlavor flavor )
 	return GetGlobalSettingsStringAsAsset( ItemFlavor_GetAsset( flavor ), "video" )
 }
 
-const bool CHARM_DEBUG = true
+const bool CHARM_DEBUG = false
 #if SERVER || CLIENT
 void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, ItemFlavor ornull charmOrNull )
 {
@@ -642,9 +642,10 @@ void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, I
 		#if SERVER
 			if ( ent.GetNetworkedClassName() == "weaponx" )
 			{
-				if ( CHARM_DEBUG )
+				#if CHARM_DEBUG
 					printt( "CHARM_DEBUG: Setting weapon charm " + string(ItemFlavor_GetAsset( charm )) + " for weapon " + ent + "( " + ent.GetModelName() + ") owned by player " + ent.GetWeaponOwner() + "(server)" )
-
+				#endif
+				
 				//ent.SetWeaponCharmOrArtifactBladeGUID( ent.e.charmItemFlavorGUID )
 				if ( charmModel != "" )
 					ent.SetWeaponCharm( charmModel, attachmentName )
@@ -659,9 +660,10 @@ void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, I
 			Assert( ent.IsClientOnly(), ent + " isn't client only" )
 			Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
 
-		if ( CHARM_DEBUG )
+		#if CHARM_DEBUG
 			printt( "CHARM_DEBUG: Setting weapon charm " + ItemFlavor_GetHumanReadableRef( charm ) + " for weapon " + ent + " ( " + ent.GetModelName() + " ) (client)" )
-
+		#endif 
+		
 			DestroyCharmForWeaponEntity( ent )
 			if ( charmModel != $"" )
 			{
