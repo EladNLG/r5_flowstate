@@ -5,6 +5,7 @@ global function OnWeaponPrimaryAttack_Vinson
 global function OnWeaponActivate_HaloAR
 global function OnWeaponDeactivate_HaloAR
 global function OnWeaponPrimaryAttack_HaloAR
+global function OnWeaponReadyToFire_HaloAR
 global function OnWeaponReload_HaloAR
 global function OnWeaponReload_HaloShotgun
 global function OnWeaponPrimaryAttack_weapon_haloshotgun
@@ -52,7 +53,7 @@ void function OnWeaponActivate_HaloAR( entity weapon )
 {
 	OnWeaponActivate_weapon_basic_bolt( weapon )
 	
-	HaloAR_UpdateAmmoWeaponHUD( weapon, false, true )
+	HaloAR_UpdateAmmoWeaponHUD( weapon )
 }
 
 void function OnWeaponDeactivate_HaloAR( entity weapon )
@@ -66,21 +67,26 @@ void function OnWeaponDeactivate_HaloAR( entity weapon )
 	#endif
 }
 
+void function OnWeaponReadyToFire_HaloAR( entity weapon )
+{
+	HaloAR_UpdateAmmoWeaponHUD( weapon )
+}
+
 void function OnWeaponReload_HaloAR( entity weapon, int milestoneIndex )
 {
-    HaloAR_UpdateAmmoWeaponHUD( weapon, true )
+    HaloAR_UpdateAmmoWeaponHUD( weapon )
 }
 
 var function OnWeaponPrimaryAttack_HaloAR( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	weapon.FireWeapon_Default( attackParams.pos, attackParams.dir, 1.0, 1.0, false )
 
-	thread HaloAR_UpdateAmmoWeaponHUD( weapon )
+	thread HaloAR_UpdateAmmoWeaponHUD( weapon, true )
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
 
-void function HaloAR_UpdateAmmoWeaponHUD( entity weapon, bool fromReload = false, bool fromActivate = false )
+void function HaloAR_UpdateAmmoWeaponHUD( entity weapon, bool fromFire = false )
 {
 	if( !IsValid( weapon ) )
 		return
@@ -88,13 +94,10 @@ void function HaloAR_UpdateAmmoWeaponHUD( entity weapon, bool fromReload = false
 	#if SERVER
 	int currentAmmo
 	
-	if( fromActivate )
-		currentAmmo = weapon.GetWeaponPrimaryClipCount()
-	else
+	if( fromFire )
 		currentAmmo = int( max( 0, weapon.GetWeaponPrimaryClipCount() - 1 ) )
-	
-	if( fromReload )
-		currentAmmo = weapon.GetWeaponPrimaryClipCountMax()
+	else
+		currentAmmo = weapon.GetWeaponPrimaryClipCount()
 
 	//printt( weapon, " current ammo: ", currentAmmo )
 

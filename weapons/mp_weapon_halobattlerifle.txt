@@ -23,6 +23,7 @@ WeaponData
     "OnWeaponDeactivate"                            "OnWeaponDeactivate_HaloAR"
     "OnWeaponPrimaryAttack"                         "OnWeaponPrimaryAttack_HaloAR"
 	"OnWeaponReload"								"OnWeaponReload_HaloAR"
+	"OnWeaponReadyToFire"							"OnWeaponReadyToFire_HaloAR"
 	"OnWeaponStartZoomIn"                    		"OnWeaponZoomIn_HaloModBattleRifle"
 	"OnWeaponStartZoomOut"                   		"OnWeaponZoomOut_HaloModBattleRifle"
 
