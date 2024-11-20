@@ -494,6 +494,8 @@ function Gymmovementmap_load() {
                 }
                 file.last_cp[ent] <- false
                 ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
                 ent.TakeOffhandWeapon(OFFHAND_ULTIMATE)
             }
         })
@@ -917,6 +919,11 @@ function Gymmovementmap_load() {
         function(entity trigger, entity ent) {
             if (IsValidPlayer(ent)) {
                 int gen = ent.GetPersistentVarAsInt("gen")
+                ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
+                StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+                StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
 
                 if (gen != 0) {
                     float final_time = Time() - gen
@@ -933,7 +940,7 @@ function Gymmovementmap_load() {
             }
         })
     DispatchSpawn(trigger_21)
-    entity trigger_22 = MapEditor_CreateTrigger( < 7796.658, -10738.98, 15537.65 > , < 0, 179.9999, 0 > , 62.5, 50, false)
+    entity trigger_22 = MapEditor_CreateTrigger( < 7650, -10739, 15550 > , < 0, 180, 0 > , 200, 50, false)
     trigger_22.SetEnterCallback(void
         function(entity trigger, entity ent) {
             if (IsValidPlayer(ent)) {
@@ -965,6 +972,8 @@ function Gymmovementmap_load() {
                 file.cp_table[ent] <-  < 6215.494, -10739.38, 15537.65 >
                     file.cp_angle[ent] <-  < 0, 179.9999, 0 >
                     int gen = ent.GetPersistentVarAsInt("gen")
+                    StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
+                    StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
 
                 if (gen != 0) {
                     float final_time = Time() - gen
@@ -977,6 +986,8 @@ function Gymmovementmap_load() {
                 }
 
                 ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                  if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
             }
         })
     DispatchSpawn(trigger_23)
@@ -1025,6 +1036,9 @@ function Gymmovementmap_load() {
                 }
 
                 ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                  if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
+                
             }
 
         })
@@ -1188,6 +1202,8 @@ function Gymmovementmap_load() {
                 StatusEffect_StopAllOfType(ent, eStatusEffect.speed_boost)
                 StatusEffect_StopAllOfType(ent, eStatusEffect.stim_visual_effect)
                 ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                  if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
             }
         })
     DispatchSpawn(trigger_33)
@@ -1199,6 +1215,8 @@ function Gymmovementmap_load() {
                     file.cp_angle[ent] <-  < 0, 135.0003, 0 >
 
                     ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                    if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                        GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
 
                 if (file.last_cp[ent]) {
                     int gen = ent.GetPersistentVarAsInt("gen")
@@ -1227,6 +1245,8 @@ function Gymmovementmap_load() {
         function(entity trigger, entity ent) {
             if (IsValidPlayer(ent)) {
                 ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                  if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
             }
         })
     DispatchSpawn(trigger_35)
@@ -1235,6 +1255,8 @@ function Gymmovementmap_load() {
         function(entity trigger, entity ent) {
             if (IsValidPlayer(ent)) {
                 ent.TakeOffhandWeapon(OFFHAND_TACTICAL)
+                  if( !ent.HasPassive( ePassives.PAS_PILOT_BLOOD ) )
+                    GivePassive(ent, ePassives.PAS_PILOT_BLOOD)
             }
         })
     DispatchSpawn(trigger_36)
