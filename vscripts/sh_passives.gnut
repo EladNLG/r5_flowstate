@@ -675,7 +675,7 @@ void function PilotBlood_Passive_Body( entity player ) //monitor for passive abi
 	float healthRegenRate = 1.0
 	float tickTime = HEALTH_REGEN_TICK_TIME
 
-	EndSignal( player, "EndPilotBloodThread", "OnDestroy" )
+	EndSignal( player, "EndPilotBloodThread", "OnDestroy", "OnDeath" )
 	
 	if( Gamemode() == eGamemodes.fs_duckhunt || Gamemode() == eGamemodes.fs_infected || Flowstate_IsHaloMode() || Playlist() == ePlaylists.fs_movementgym )//|| Gamemode() == eGamemodes.WINTEREXPRESS )
 		tickTime = 0.05
