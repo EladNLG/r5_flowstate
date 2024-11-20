@@ -2838,9 +2838,11 @@ playlists
 				pin_match_type					 				survival
 				
 				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
-				max_team_size									1
+				max_team_size									60
+				max_teams                                       1
 				max_players										60
 				min_players										0
+				redish_highlight_los                            0
 				
 				default_shield_hp				  				0
 				survival_shields				   				0
