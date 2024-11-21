@@ -395,7 +395,7 @@ LocPairData function SpawnSystem_CreateLocPairObject( array<LocPair> spawns, boo
 	data.spawns = spawns
 	data.bOverrideSpawns = bOverrideSpawns
 	
-	if( spawns.len() == 0 && bOverrideSpawns )
+	if( bOverrideSpawns && spawns.len() == 0 )
 		mAssert( false, "Cannot override spawns with empty array of spawns" )
 	
 	if( propertiesOrNull != null )

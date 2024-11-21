@@ -2434,7 +2434,7 @@ string function Tracker_DetermineNextMap()
 	{
 		string foundMap = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, i )
 		
-		if ( GetMapName() == foundMap ) 
+		if ( to_map == foundMap ) 
 		{
 			int index = (i + 1) % countmaps
 			to_map = GetCurrentPlaylistGamemodeByIndexMapByIndex( 0, index )
