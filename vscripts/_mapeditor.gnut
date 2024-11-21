@@ -267,25 +267,6 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
 {
     //
     int actualRealm = realm
-    if (Flowstate_Is4DMode() && realm != -99)
-    {
-        switch (realm)
-        {
-            case -1:
-                // create 2 props - one for each dimension
-                MapEditor_CreateProp( a, pos - <12000,12000,0>, ang, mantle, fade, -99, scale, addToArray )
-                pos += <12000,12000,0>
-                break
-            case 0:
-                pos -= <12000,12000,0>
-                realm = -1
-                break
-            case 1:
-                pos += <12000,12000,0>
-                realm = -1
-                break
-        }
-    }
 	// printt( a )
 	// return null
     entity e = CreatePropDynamic( a, pos, ang, SOLID_VPHYSICS, fade )
@@ -297,19 +278,26 @@ entity function MapEditor_CreateProp( asset a, vector pos, vector ang, bool mant
 
     if( mantle ) e.AllowMantle()
     
+    if (Flowstate_Is4DMode())
+    {
+        switch (realm)
+        {
+            case 0:
+                Highlight_SetNeutralHighlight( e, "survival_item_rare" )
+                realm = -1
+                break
+            case 1:
+                Highlight_SetNeutralHighlight( e, "survival_item_heirloom" )
+                realm = -1
+                break
+        }
+    }
     if (realm > -1)
     {
         e.RemoveFromAllRealms()
         e.AddToRealm( realm )
     }
-    if (actualRealm > -1 && Flowstate_Is4DMode())
-    {
-        if (actualRealm == 1)
-            Highlight_SetNeutralHighlight( e, "survival_item_rare" )
-        else
-            Highlight_SetNeutralHighlight( e, "survival_item_heirloom" )
-    }
-    
+
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
     e.SetModelScale( scale )
@@ -456,25 +444,6 @@ void function OpenPlainDoorAtSpawn( entity door )
 
 entity function MapEditor_CreateTrigger( vector origin, vector angles, float radius, float totalheight, bool debugdraw = false, bool addToArray = false, int realm = -1 )
 {
-    if (Flowstate_Is4DMode() && realm != -99)
-    {
-        switch (realm)
-        {
-            case -1:
-                // create 2 props - one for each dimension
-                MapEditor_CreateTrigger( origin - <12000,12000,0>, angles, radius, totalheight, debugdraw, addToArray, -99 )
-                origin += <12000,12000,0>
-                break
-            case 0:
-                origin -= <12000,12000,0>
-                realm = -1
-                break
-            case 1:
-                origin += <12000,12000,0>
-                realm = -1
-                break
-        }
-    }
     // Set up the trigger
     entity trigger = CreateEntity( "trigger_cylinder" )
     if (realm > -1)

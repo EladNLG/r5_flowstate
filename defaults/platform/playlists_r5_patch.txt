@@ -90,6 +90,8 @@ playlists
 				wait_for_players_forever						0
 				charselect_intro_countdown_duration				5
 				idleKickTime_minutes							0
+
+				// 4d gameplay. splits prop maps into two. make sure your map's origin is near <0,0,0>.
 				4d_enable										0
 				
 
@@ -1461,7 +1463,7 @@ playlists
 				flowstateBattleLogEnable 						0
 				flowstateChatLogEnable 							0
 				
-				default_shield_hp				  				75
+				default_shield_hp				  				50 // low health cuz dodging happens a lot
 				survival_shields				   				1
 				skydive_ziplines_enabled		   				1
 				ground_loot_enable 				   				0
@@ -1481,7 +1483,7 @@ playlists
 				respawn_kit_primary_weapon 						"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 barrel_stabilizer_l4_flash_hider stock_tactical_l3"
 				respawn_kit_secondary_weapon 					"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3 hopup_headshot_dmg"
 				respawn_kit_tactical 							"mp_ability_3dash" // DO NOT MODIFY! This will disable switching dimensions, breaking the gamemode
-				respawn_kit_ultimate 							"mp_ability_phase_rewind"
+				respawn_kit_ultimate 							"mp_ability_sniper 4d_ult"
 				
 				//random weapons and abilities settings
 				flowstateRandomGuns 							0 	//round, big weapons list
@@ -1497,7 +1499,7 @@ playlists
 				
 				flowstateEndlessFFAorTDM						0 //location won't change, no champion will be defined
 				Admins											"r5r_CafeFPS"
-				respawn_delay 									5
+				respawn_delay 									0 // no respawn delay
 				flowstateRoundtime 								800
 				flowstateResetKills 							1
 				flowstateTimer 									1

@@ -2376,7 +2376,8 @@ void function GiveRandomUlt_4D( entity player )
 {
     array<string> Weapons = [
 		"mp_weapon_mastiff",
-		"mp_weapon_sniper"
+		"mp_weapon_sniper",
+		"mp_weapon_lstar"
 	]
 
 	foreach(ability in file.blacklistedAbilities)
@@ -2388,7 +2389,18 @@ void function GiveRandomUlt_4D( entity player )
 	if(IsValid(player.GetOffhandWeapon(OFFHAND_ULTIMATE)))
 		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 
-	player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ],  OFFHAND_ULTIMATE, [ "4d_ult" ])
+	switch (Weapons.getrandom())
+	{
+		case "mp_weapon_mastiff":
+			player.GiveOffhandWeapon("mp_weapon_mastiff",  OFFHAND_ULTIMATE, [ "4d_ult" ])
+			break
+		case "mp_weapon_sniper":
+			player.GiveOffhandWeapon("mp_weapon_sniper",  OFFHAND_ULTIMATE, [ "4d_ult", "optic_ranged_aog_variable" ])
+			break
+		case "mp_weapon_lstar":
+			player.GiveOffhandWeapon("mp_weapon_lstar",  OFFHAND_ULTIMATE, [ "4d_ult", "optic_ranged_aog_variable" ])
+			break
+	}
 		
 	printt("ayo?")
 	printt("curremt weapon", player.GetOffhandWeapon(OFFHAND_ULTIMATE))

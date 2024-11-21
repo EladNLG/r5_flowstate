@@ -101,20 +101,34 @@ void function Sh_CustomTDM_Init()
 				NewLocationSettings(
 				"4D4Room",
 					[
-						NewLocPair( < -1424, -2096, 384 >, < 0, -179.9997, 0 > )
-						NewLocPair( < -1680, -1840, 384 >, < 0, 0, 0 > )
-						NewLocPair( < -2192, -1568, 128 >, < 0, -89.9998, 0 > )
-						NewLocPair( < -2192, -2608, 128 >, < 0, 89.9998, 0 > )
-						NewLocPair( < 368, -1072, 384 >, < 0, 135, 0 > )
-						NewLocPair( < 128, -816, 384 >, < 0, 135, 0 > )
-						NewLocPair( < -400, -816, 384 >, < 0, 45, 0 > )
-						NewLocPair( < -656, -1072, 384 >, < 0, 45, 0 > )
-						NewLocPair( < 368, -48, 384 >, < 0, -135, 0 > )
-						NewLocPair( < 128, -304, 384 >, < 0, -135, 0 > )
-						NewLocPair( < -656, -48, 384 >, < 0, -44.9999, 0 > )
-						NewLocPair( < -1936, -560, 384 >, < 0, 0, 0 > )
-						NewLocPair( < -1664, -304, 384 >, < 0, -89.9998, 0 > )
-						NewLocPair( < -400, -304, 384 >, < 0, -44.9999, 0 > )
+						NewLocPair( < -11632, -13072, 384 >, < 0, 135, 0 > )
+						NewLocPair( < 12368, 10928, 384 >, < 0, 135, 0 > )
+						NewLocPair( < -14192, -13568, 128 >, < 0, -89.9998, 0 > )
+						NewLocPair( < 9808, 10432, 128 >, < 0, -89.9998, 0 > )
+						NewLocPair( < -12400, -12304, 384 >, < 0, -44.9999, 0 > )
+						NewLocPair( < 11600, 11696, 384 >, < 0, -44.9999, 0 > )
+						NewLocPair( < -14192, -14608, 128 >, < 0, 89.9998, 0 > )
+						NewLocPair( < 9808, 9392, 128 >, < 0, 89.9998, 0 > )
+						NewLocPair( < -11632, -12048, 384 >, < 0, -135, 0 > )
+						NewLocPair( < 12368, 11952, 384 >, < 0, -135, 0 > )
+						NewLocPair( < -11872, -12304, 384 >, < 0, -135, 0 > )
+						NewLocPair( < 12128, 11696, 384 >, < 0, -135, 0 > )
+						NewLocPair( < -11872, -12816, 384 >, < 0, 135, 0 > )
+						NewLocPair( < 12128, 11184, 384 >, < 0, 135, 0 > )
+						NewLocPair( < -12656, -13072, 384 >, < 0, 45, 0 > )
+						NewLocPair( < 11344, 10928, 384 >, < 0, 45, 0 > )
+						NewLocPair( < -12656, -12048, 384 >, < 0, -44.9999, 0 > )
+						NewLocPair( < 11344, 11952, 384 >, < 0, -44.9999, 0 > )
+						NewLocPair( < -13936, -12560, 384 >, < 0, 0, 0 > )
+						NewLocPair( < 10064, 11440, 384 >, < 0, 0, 0 > )
+						NewLocPair( < -13664, -12304, 384 >, < 0, -89.9998, 0 > )
+						NewLocPair( < 10336, 11696, 384 >, < 0, -89.9998, 0 > )
+						NewLocPair( < -13680, -13840, 384 >, < 0, 0, 0 > )
+						NewLocPair( < 10320, 10160, 384 >, < 0, 0, 0 > )
+						NewLocPair( < -13424, -14096, 384 >, < 0, -179.9997, 0 > )
+						NewLocPair( < 10576, 9904, 384 >, < 0, -179.9997, 0 > )
+						NewLocPair( < -12400, -12816, 384 >, < 0, 45, 0 > )
+						NewLocPair( < 11600, 11184, 384 >, < 0, 45, 0 > )
 					],
 					<0, 0, 3000>
 				)
@@ -1839,21 +1853,6 @@ LocationSettings function NewLocationSettings(string name, array<LocPair> spawns
 
 void function Shared_RegisterLocation(LocationSettings locationSettings)
 {
-	// for each spawn, create one in both realms. 
-	if (Flowstate_Is4DMode())
-	{
-		array<LocPair> newSpawnArray;
-
-		foreach (LocPair loc in locationSettings.spawns)
-		{
-			vector offset = <12000,12000,0>
-			newSpawnArray.append(NewLocPair(loc.origin + offset, loc.angles))
-			newSpawnArray.append(NewLocPair(loc.origin - offset, loc.angles))
-		}
-
-		locationSettings.spawns.clear()
-		locationSettings.spawns = newSpawnArray
-	}
     #if SERVER
     _RegisterLocation(locationSettings)
     #endif
