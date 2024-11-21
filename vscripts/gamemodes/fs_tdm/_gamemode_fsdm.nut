@@ -1542,15 +1542,6 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 		}catch(e420){
 		//AttachEdict rare crash
 		}
-
-		if( flowstateSettings.GiveAllOpticsToPlayer )
-		{
-			SetPlayerInventory( player, [] )
-			Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
-			array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
-			foreach(optic in optics)
-				SURVIVAL_AddToPlayerInventory(player, optic)
-		}
 	}
 
 	if( flowstateSettings.is_halo_gamemode && IsValid( player ))
@@ -1677,6 +1668,15 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 	
 	Survival_SetInventoryEnabled( player, true )
 	SetPlayerInventory( player, [] )
+	
+	if( flowstateSettings.GiveAllOpticsToPlayer )
+	{
+		SetPlayerInventory( player, [] )
+		Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
+		array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
+		foreach(optic in optics)
+			SURVIVAL_AddToPlayerInventory(player, optic)
+	}
 
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 	{
