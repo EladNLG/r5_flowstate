@@ -2134,13 +2134,8 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 	//todo: init outside func
 
     array<string> Weapons = [
-		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
-		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
 		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
-		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
-		"mp_weapon_mastiff optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
-		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2"
 	]
 
 	//R5RDEV-1
@@ -2163,13 +2158,15 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 
 	//todo: init outside func..
     array<string> Weapons = [
-		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
 		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
 		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
 		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
-		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
+		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
+		"mp_weapon_mastiff shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_energy_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2",
+		"mp_weapon_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2",
+		"mp_weapon_hemlok barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2"
 	]
 
 	//R5RDEV-1
