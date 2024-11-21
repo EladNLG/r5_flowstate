@@ -1021,6 +1021,7 @@ function mantlemap_load() { // Props Array
                     user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
                     user.SetPersistentVar("gen", Time())
                     mantlemap_reset_doors()
+                    user.SetVelocity(<0,0,0>)
                     LocalMsg(user, "#FS_STRING_VAR", "", 4, 1.0, "Timer Started", "", "", false)
                 } else {
                     user.SetPersistentVar("gen", 0)
