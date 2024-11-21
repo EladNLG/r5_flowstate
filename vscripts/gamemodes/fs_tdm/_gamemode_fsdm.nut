@@ -344,6 +344,11 @@ void function _CustomTDM_Init()
 	if ( !Flowstate_IsMovementGym() )
 		SurvivalFreefall_Init() //Enables freefall/skydive
 	
+	if (Flowstate_Is4DMode())
+	{
+		Precache4D4Room()
+	}
+	
 	if( !is1v1EnabledAndAllowed() && Playlist() != ePlaylists.fs_scenarios )
 	{
 		PrecacheCustomMapsProps()
@@ -622,6 +627,7 @@ LocPair function _GetVotingLocation()
 		case eMaps.mp_rr_party_crasher:
 			return NewLocPair(<1729.17407, -3585.65137, 581.736206>, <0, 103.168709, 0>)
 		case eMaps.mp_flowstate:
+		case eMaps.mp_rr_arena_empty:
 			return NewLocPair(<0,0,0>, <0, -179.447098, 0>)
 		case eMaps.mp_rr_olympus_mu1:
 			return NewLocPair( <7008.73047, 7627.40234, -4623.99805>, <0,63,0> )
@@ -1621,6 +1627,13 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 
 	}
 
+	if (Flowstate_Is4DMode())
+	{
+		// 4d weapon balance
+		GiveExtraWeaponMod( player, "4d" )
+		GiveRandomUlt_4D( player )
+	}
+
 	if(FlowState_RandomGunsEverydie() && !FlowState_Gungame() && IsValid( player )) //fiesta
     {
 		try{
@@ -2359,6 +2372,28 @@ void function GiveRandomUlt(entity player )
 	    player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ],  OFFHAND_ULTIMATE)
 }
 
+void function GiveRandomUlt_4D( entity player )
+{
+    array<string> Weapons = [
+		"mp_weapon_mastiff",
+		"mp_weapon_sniper"
+	]
+
+	foreach(ability in file.blacklistedAbilities)
+		Weapons.removebyvalue(ability)
+
+	if(!IsValid(player))
+		return
+		
+	if(IsValid(player.GetOffhandWeapon(OFFHAND_ULTIMATE)))
+		player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+
+	player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ],  OFFHAND_ULTIMATE, [ "4d_ult" ])
+		
+	printt("ayo?")
+	printt("curremt weapon", player.GetOffhandWeapon(OFFHAND_ULTIMATE))
+}
+
 void function OnShipButtonUsed( entity panel, entity player, int useInputFlags )
 {
 	player.MakeInvisible()
@@ -3056,6 +3091,10 @@ void function SimpleChampionUI()
 
 			case "Beaver Creek":
 			thread SpawnBeavercreek()
+			break
+
+			case "4D4Room":
+			thread Load4D4Room()
 			break
 		}
 		
@@ -4254,6 +4293,9 @@ entity function CreateRingBoundary(LocationSettings location)
 	
 	if( file.selectedLocation.name == "Beaver Creek" )
 		ringRadius += 5000
+
+	if (Flowstate_Is4DMode())
+		ringRadius = 99999
 
     if( is1v1EnabledAndAllowed() ) //we dont need rings in 1v1 mode
     	ringRadius = 99999

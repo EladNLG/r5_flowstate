@@ -94,6 +94,33 @@ void function Sh_CustomTDM_Init()
     // Map locations
     switch( MapName() )
     {
+	case eMaps.mp_rr_arena_empty:
+		if (Flowstate_Is4DMode())
+		{
+			Shared_RegisterLocation(
+				NewLocationSettings(
+				"4D4Room",
+					[
+						NewLocPair( < -1424, -2096, 384 >, < 0, -179.9997, 0 > )
+						NewLocPair( < -1680, -1840, 384 >, < 0, 0, 0 > )
+						NewLocPair( < -2192, -1568, 128 >, < 0, -89.9998, 0 > )
+						NewLocPair( < -2192, -2608, 128 >, < 0, 89.9998, 0 > )
+						NewLocPair( < 368, -1072, 384 >, < 0, 135, 0 > )
+						NewLocPair( < 128, -816, 384 >, < 0, 135, 0 > )
+						NewLocPair( < -400, -816, 384 >, < 0, 45, 0 > )
+						NewLocPair( < -656, -1072, 384 >, < 0, 45, 0 > )
+						NewLocPair( < 368, -48, 384 >, < 0, -135, 0 > )
+						NewLocPair( < 128, -304, 384 >, < 0, -135, 0 > )
+						NewLocPair( < -656, -48, 384 >, < 0, -44.9999, 0 > )
+						NewLocPair( < -1936, -560, 384 >, < 0, 0, 0 > )
+						NewLocPair( < -1664, -304, 384 >, < 0, -89.9998, 0 > )
+						NewLocPair( < -400, -304, 384 >, < 0, -44.9999, 0 > )
+					],
+					<0, 0, 3000>
+				)
+			)
+		}
+		break
 	case eMaps.mp_rr_olympus_mu1:
         Shared_RegisterLocation(
             NewLocationSettings(
@@ -1812,6 +1839,21 @@ LocationSettings function NewLocationSettings(string name, array<LocPair> spawns
 
 void function Shared_RegisterLocation(LocationSettings locationSettings)
 {
+	// for each spawn, create one in both realms. 
+	if (Flowstate_Is4DMode())
+	{
+		array<LocPair> newSpawnArray;
+
+		foreach (LocPair loc in locationSettings.spawns)
+		{
+			vector offset = <12000,12000,0>
+			newSpawnArray.append(NewLocPair(loc.origin + offset, loc.angles))
+			newSpawnArray.append(NewLocPair(loc.origin - offset, loc.angles))
+		}
+
+		locationSettings.spawns.clear()
+		locationSettings.spawns = newSpawnArray
+	}
     #if SERVER
     _RegisterLocation(locationSettings)
     #endif
