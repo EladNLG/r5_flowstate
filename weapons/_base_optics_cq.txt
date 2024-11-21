@@ -333,7 +333,6 @@ WeaponData
 	// optic_cq_hcog_bruiser
 	"bodygroup7_name"	"sight_hcog"
 	"bodygroup7_set"	"0"
-	
 
 	"ui7_enable"		"0"
 	"ui7_draw_cloaked"	"1"

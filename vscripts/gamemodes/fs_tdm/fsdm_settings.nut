@@ -443,10 +443,3 @@ global const table HAVEFUN_PLAYER_SETTINGS =
 	["wallrunAccelerateVertical"] = 360.0,
 	["wallrunAccelerateHorizontal"] = 1500.0
 }
-
-global const table PLAYER_SETTINGS_4D =
-{
-	["skip_speed_reduce"] = 0.0,
-	["skip_time"] = 0.0,
-	["antiMultiJumpHeightFrac"] = 1.0,
-}

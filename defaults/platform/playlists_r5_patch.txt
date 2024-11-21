@@ -1424,7 +1424,7 @@ playlists
 				visible											1
 				
 				name							   				"4D FFA"
-				description										"4D FFA."
+				description										"4D FFA. Switch between dimensions using your tactical and be careful as anyone could be anywhere."
 				abbreviation					  				"4DFFA"
 				lobbytitle						 				"4DFFA"
 			
@@ -1489,7 +1489,7 @@ playlists
 				flowstateRandomGuns 							0 	//round, big weapons list
 				flowstateRandomGunsMetagame						1 	//Metagame small weapon list primary:(r99,r301,flatline) secondary:(wingman,pk,eva,mastiff) every round
 				flowstateRandomTactical 						0 	//grapple,phase walk,stim,bubble, bang smokes, hound q, tf2 cloak
-				flowstateRandomUltimate							1 	//4D SPECIFIC - Mastiff/Kraber as ult. no reload - cooldown per shot.
+				flowstateRandomUltimate							1 	//4D SPECIFIC - Mastiff/Kraber/L-Star as ults.
 
 				//whitelisted_weapon_0 							"mp_weapon_mastiff"
 				//whitelisted_weapon_1 							""				
@@ -1514,17 +1514,7 @@ playlists
 				flowstateReloadTacticalOnRespawn  				0
 				flowstateReloadUltimateOnRespawn 				1
 				
-				//custom maps by community
-				flowstate_Enable_Shipment_By_AyeZee				1
-				flowstate_Enable_Killhouse_By_AyeZee			1
-				flowstate_Enable_Nuketown_By_AyeZee				1
-				flowstate_Enable_Encore							0 //if disabled, it will try to load Rust first
-				flowstate_Enable_Killyard_By_DEAFPS				1
-				flowstate_Enable_Dustment_By_DEAFPS				1
-				flowstate_Enable_Shoothouse_By_DEAFPS			1
-				flowstate_Enable_Rust_By_DEAFPS					1
-				flowstate_Enable_NCanals_By_DEAFPS				1				
-				flowstate_Enable_Encore_Nuketown_By_AyeZee		1
+				// 4D has only one map at this time, so no map customization is available. Sorry!
 				
 				//disabled atm
 				flowstate_Enable_BRIGHWATER_By_Zero				0
