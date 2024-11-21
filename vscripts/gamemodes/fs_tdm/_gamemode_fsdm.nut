@@ -1196,7 +1196,7 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 
 				if( flowstateSettings.is_halo_gamemode )
 				{
-					SURVIVAL_Death_DropLoot( victim, damageInfo )
+					thread SURVIVAL_Death_DropLoot( victim, damageInfo ) //(mk):this wait threads inside.
 					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 				}
 
