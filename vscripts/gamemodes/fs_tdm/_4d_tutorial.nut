@@ -174,6 +174,9 @@ void function _4DTutorial_Dummy( entity player, bool is2ndDummy )
         if (IsAlive(otherDummy))
         {
 	        player.s[dummyIndex] = _4DTutorial_CreateDummy( player, dummy.GetOrigin(), dummy.GetAngles() )
+            // reset cooldown so player doesnt have to wait 15 seconds
+            entity ult = player.GetOffhandWeapon(OFFHAND_ULTIMATE)
+            ult.SetWeaponPrimaryClipCount(ult.GetWeaponPrimaryClipCountMax())
         }
         else
         {
