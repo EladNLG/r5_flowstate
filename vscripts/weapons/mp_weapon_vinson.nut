@@ -52,11 +52,11 @@ var function OnWeaponPrimaryAttack_Vinson( entity weapon, WeaponPrimaryAttackPar
 		vector offset = <0,0,0>
 		if (prevOrigin.x > 0)
 		{
-			offset -= <24000,24000,0>
+			offset -= <30000,0,0>
 		}
 		else
 		{
-			offset += <24000,24000,0>
+			offset += <30000,0,0>
 		}
 
 		owner.SetOrigin(prevOrigin + offset) // prevents los check from attack position

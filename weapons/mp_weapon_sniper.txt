@@ -357,11 +357,13 @@
 		{
 			"fire_mode"						"offhandHybrid"
 			"reload_enabled"				"0" // fixes cd not working when empty
-			"ammo_per_shot"					"200"
-			"ammo_min_to_fire"					"200"
-			"ammo_clip_size"				"400"
-			"regen_ammo_refill_rate"		"10" // 8s
-			"fire_rate"						"4"
+			"ammo_per_shot"					"300"
+			"ammo_min_to_fire"					"300"
+			"ammo_clip_size"				"600"
+			"regen_ammo_refill_rate"		"20" // 8s
+			"disable_zoomed_rechamber"		"0"
+			"fire_rate"						"0.75"
+			"rechamber_time"				"0.0"
 			"offhand_default_inventory_slot"						"4"
 			"damage_near_value"				"200"
 			"damage_far_value"				"200"

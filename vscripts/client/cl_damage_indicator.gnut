@@ -764,11 +764,11 @@ void function ShowDamageArrow( entity player, vector damageOrigin, int arrowType
 		{
 			if (victimDimension == 01)
 			{
-				damageOrigin -= <24000,24000,0>
+				damageOrigin -= <30000,0,0>
 			}
 			else
 			{
-				damageOrigin += <24000,24000,0>
+				damageOrigin += <30000,0,0>
 			}
 		}
 	}

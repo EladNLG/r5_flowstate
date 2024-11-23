@@ -90,7 +90,8 @@ void function SetupRemoteFuncAliases()
 			ServerCallback_Scenarios_MatchEndAnnouncement,
 			Tracker_StatRequestFailed,
 			FS_ForceCompass,
-			FS_DestroyCompass
+			FS_DestroyCompass,
+			FS4DIntroSequence
 		]
 	#endif
 	
@@ -148,7 +149,8 @@ void function SetupRemoteFuncAliases()
 			"ServerCallback_Scenarios_MatchEndAnnouncement",
 			"Tracker_StatRequestFailed",
 			"FS_ForceCompass",
-			"FS_DestroyCompass"
+			"FS_DestroyCompass",
+			"FS4DIntroSequence"
 		]
 	#endif
 	

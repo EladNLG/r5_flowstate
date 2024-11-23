@@ -54,11 +54,11 @@ void function DashPlayer(entity player, float chargeTime)
 	{
 		if (player.GetOrigin().x > 0)
 		{
-			player.SetOrigin(player.GetOrigin() - <24000,24000,0>)
+			player.SetOrigin(player.GetOrigin() - <30000,0,0>)
 		}
 		else
 		{
-			player.SetOrigin(player.GetOrigin() + <24000,24000,0>)
+			player.SetOrigin(player.GetOrigin() + <30000,0,0>)
 		}
 		return
 	}

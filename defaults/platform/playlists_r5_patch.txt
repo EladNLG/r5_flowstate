@@ -1469,6 +1469,9 @@ playlists
 				ground_loot_enable 				   				0
 				lootbin_loot_enable								0
 				
+				register_damage_to_ai 							0
+				register_dummie_kill_as_actual_kill 			0
+				
 				survival_jumpkit_enabled		   				0
 				survival_wallrun_enabled		   				0
 				

@@ -1042,6 +1042,7 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
+	gamemodes/fs_tdm/_4d_tutorial.nut
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_notifications.nut

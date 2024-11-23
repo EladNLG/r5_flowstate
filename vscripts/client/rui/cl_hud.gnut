@@ -402,11 +402,11 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		{
 			if (victimDimension == 1)
 			{
-				offset -= <24000,24000,0>
+				offset -= <30000,0,0>
 			}
 			else
 			{
-				offset += <24000,24000,0>
+				offset += <30000,0,0>
 			}
 		}
 	}

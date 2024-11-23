@@ -78,6 +78,7 @@ global function WaitForChampionToFinish
 global const float SHORT_CHAMPION_CARD_TIME = 7.0
 global function FS_ResetMapLightning
 global function PrintKillHistoryFor
+global function _GetAppropriateSpawnLocation
 
 #if DEVELOPER
 	global function DEV_NextRound
@@ -1518,6 +1519,14 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 		if( !isDroppodSpawn && !is1v1EnabledAndAllowed() )
 		    TpPlayerToSpawnPoint(player)
 		
+		if (Flowstate_Is4DMode() && !Tutorial4D_HasCompletedTutorial(player))
+		{
+			if (!IsIn4DTutorial( player ))
+				SetIn4DTutorial( player, true )
+			player.SetOrigin(< -15000,20000,16>)
+			player.SetAngles(<0,-90,0>)
+		}
+
 		player.UnfreezeControlsOnServer()
 
 		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
@@ -2882,6 +2891,13 @@ void function GiveGungameWeapon(entity player)
 void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
+	
+	if (Flowstate_Is4DMode())
+	{
+		// spawn tutorial in
+		Load4DTutorial()
+	}
+
 	SetTdmStateToNextRound()
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 
