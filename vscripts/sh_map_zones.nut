@@ -115,6 +115,9 @@ void function MapZones_RegisterNetworking()
 
 void function MapZones_RegisterDataTable( asset dataTableAsset )
 {
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
+	
 	file.mapZonesDataTable = GetDataTable( dataTableAsset )
 	file.mapZonesInitialized = true
 }

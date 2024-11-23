@@ -117,6 +117,7 @@ global function UpdateDpadHud_Copy
 global function ServerCallback_Scenarios_MatchEndAnnouncement
 global function FS_ForceCompass
 global function FS_DestroyCompass
+global function AddInWorldMinimapObject
 
 global struct NextCircleDisplayCustomData
 {
@@ -2216,7 +2217,8 @@ void function AddInWorldMinimapObject_WhenValid( entity ent )
 		case CRYPTO_DRONE_TARGETNAME:
 		case "no_minimap_object":
 			return
-
+		
+		case "scenariosDeathField":
 		case "deathField":
 			thread AddInWorldMinimapDeathFieldInternal( ent, file.mapTopo )
 			return

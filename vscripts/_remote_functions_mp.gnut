@@ -313,6 +313,7 @@ void function RemoteFunctions_Init_Begin()
 				Remote_RegisterClientFunction( "FS_Scenarios_ChangeAliveStateForPlayer", "int", INT_MIN, INT_MAX, "bool" )
 				Remote_RegisterClientFunction( "FS_Scenarios_TogglePlayersCardsVisibility", "bool", "bool" )
 				Remote_RegisterClientFunction( "FS_Scenarios_SetupPlayersCards", "bool" )
+				Remote_RegisterClientFunction( "FS_Scenarios_OnRingCreated", "entity" )
 				
 				Remote_RegisterClientFunction( "FS_Scenarios_AddEnemyHandle", "int", INT_MIN, INT_MAX )
 				Remote_RegisterClientFunction( "FS_Scenarios_AddEnemyHandle2", "int", INT_MIN, INT_MAX )

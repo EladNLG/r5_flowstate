@@ -1094,7 +1094,7 @@ Scripts:
     // ReMap Live
     mp/levels/mp_rr_remap.nut
 	
-    // mp/_movement_recorder_deprecated.nut
+    mp/_movement_recorder_deprecated.nut
 ]
 
 When: "CLIENT"
