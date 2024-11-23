@@ -127,9 +127,7 @@ struct
 	int fs_scenarios_playersPerTeam = -1
 	int fs_scenarios_teamAmount = -1
 
-	float fs_scenarios_default_radius_padding = 169
-	float fs_scenarios_default_radius = 8000
-	float fs_scenarios_maxIndividualMatchTime = 300
+	float fs_scenarios_default_radius_padding = 500
 
 	float fs_scenarios_max_queuetime = 30.0
 	int fs_scenarios_min_players_forced_match = 2 // used only when max_queuetime is triggered
@@ -140,7 +138,6 @@ struct
 	bool fs_scenarios_inventory_empty = false
 	bool fs_scenarios_deathboxes_enabled = true
 	bool fs_scenarios_show_death_recap_onkilled = true
-	bool fs_scenarios_zonewars_ring_mode = false
 	float fs_scenarios_zonewars_ring_ringclosingspeed = 1.0
 	float fs_scenarios_ring_damage_step_time = 1.5
 	float fs_scenarios_game_start_time_delay = 3.0
@@ -161,8 +158,6 @@ array< bool > teamSlots
 
 void function Init_FS_Scenarios()
 {
-	settings.fs_scenarios_maxIndividualMatchTime = GetCurrentPlaylistVarFloat( "fs_scenarios_maxIndividualMatchTime", 300.0 )
-	
 	int playersPerTeam = GetCurrentPlaylistVarInt( "fs_scenarios_playersPerTeam", 3 )
 	int teamAmount = GetCurrentPlaylistVarInt( "fs_scenarios_teamAmount", 2 )
 	
@@ -178,7 +173,6 @@ void function Init_FS_Scenarios()
 	settings.fs_scenarios_inventory_empty = GetCurrentPlaylistVarBool( "fs_scenarios_inventory_empty", true )
 	settings.fs_scenarios_deathboxes_enabled = GetCurrentPlaylistVarBool( "fs_scenarios_deathboxes_enabled", true )
 	settings.fs_scenarios_show_death_recap_onkilled = GetCurrentPlaylistVarBool( "fs_scenarios_show_death_recap_onkilled", true )
-	settings.fs_scenarios_zonewars_ring_mode = GetCurrentPlaylistVarBool( "fs_scenarios_zonewars_ring_mode", true )
 	settings.fs_scenarios_zonewars_ring_ringclosingspeed =  GetCurrentPlaylistVarFloat( "fs_scenarios_zonewars_ring_ringclosingspeed", 1.0 )
 	settings.fs_scenarios_ring_damage_step_time = GetCurrentPlaylistVarFloat( "fs_scenarios_ring_damage_step_time", 1.5 )
 	settings.fs_scenarios_game_start_time_delay = GetCurrentPlaylistVarFloat( "fs_scenarios_game_start_time_delay", 3.0 )
@@ -1500,7 +1494,7 @@ void function FS_Scenarios_Main_Thread()
 				continue
 			
 			entity player = playerInWaitingStruct.player
-			
+
 			if ( !IsValidPlayer( player ) ) //IsValidPlayer will check if player is disconnecting as well
 				continue
 
@@ -1679,6 +1673,9 @@ void function FS_Scenarios_Main_Thread()
 				continue				
 			
 			entity player = eachPlayerStruct.player
+			
+			// if( player.GetPlayerName() == "r5r_CafeFPS" )
+				// continue
 			
 			if( !IsValidPlayer( player ) ) //don't pass here if player is disconnecting Cafe
 				continue
@@ -2220,7 +2217,10 @@ void function FS_Scenarios_Main_Thread()
 				{
 					if( !IsValidPlayer( player ) )
 						continue
-
+					
+					player.SetMinimapZoomScale( 0.8, 3.0 )
+					Remote_CallFunction_NonReplay( player, "FS_Scenarios_OnRingCreated", newGroup.ring )
+					
 					Highlight_ClearEnemyHighlight( player )
 					Highlight_SetEnemyHighlight( player, "hackers_wallhack" )
 
@@ -2577,10 +2577,7 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 
 		float radius = group.currentRingRadius
 
-		if( !settings.fs_scenarios_zonewars_ring_mode )
-			group.currentRingRadius = radius - settings.fs_scenarios_zonewars_ring_ringclosingspeed
-		else
-			group.currentRingRadius = GraphCapped( Time(), starttime, endtime, startradius, 0 )
+		group.currentRingRadius = GraphCapped( Time(), starttime, endtime, startradius, 0 )
 
 		foreach( player in  players )
 		{
@@ -2610,9 +2607,6 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 
 	group.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
 	group.currentRingRadius = group.calculatedRingRadius
-	
-	if( !settings.fs_scenarios_zonewars_ring_mode )
-		group.calculatedRingRadius = settings.fs_scenarios_default_radius
 
 	int realm = group.slotIndex
 	float radius = group.calculatedRingRadius
@@ -2636,8 +2630,8 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 		smallcircle.RemoveFromAllRealms()
 		smallcircle.AddToRealm( realm )
 	}
-
-	DispatchSpawn(smallcircle)
+	
+	DispatchSpawn( smallcircle )
 
 	group.ring = smallcircle
 

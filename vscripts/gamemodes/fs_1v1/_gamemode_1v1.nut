@@ -2603,6 +2603,7 @@ void function soloModePlayerToWaitingList( entity player )
 		
 		player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
 		Remote_CallFunction_ByRef( player, "FS_DestroyCompass" )
+		player.SetMinimapZoomScale( 3.0, 3.0 )
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.
