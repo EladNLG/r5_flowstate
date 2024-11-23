@@ -1706,6 +1706,7 @@ void function FS_Scenarios_OnRingCreated( entity prop )
 	file.deathField = prop
 	FS_Scenarios_MinimapDeathFieldCreated( prop )
 	AddInWorldMinimapObject( prop )
+	SetBigMapZoomScale(6.0)
 	
 	thread FS_Scenarios_Cl_DeathFieldThink( prop )
 

@@ -2218,7 +2218,7 @@ void function FS_Scenarios_Main_Thread()
 					if( !IsValidPlayer( player ) )
 						continue
 					
-					player.SetMinimapZoomScale( 0.8, 3.0 )
+					player.SetMinimapZoomScale( 0.75, 3.0 )
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_OnRingCreated", newGroup.ring )
 					
 					Highlight_ClearEnemyHighlight( player )
