@@ -213,7 +213,7 @@ void function Load4DTutorial()
     {
         if (IsValid(ent)) // ensure the entity is valid
     {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP && IsAlive(ent)) // Noclip players are not affected by the trigger
         {
             ent.Die( null, null, {damageSourceId = eDamageSourceId.damagedef_suicide} )
         }
@@ -761,7 +761,7 @@ void function Load4D4Room()
     {
         if (IsValid(ent)) // ensure the entity is valid
     {
-        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP && IsAlive(ent)) // Noclip players are not affected by the trigger
         {
             ent.Die( null, null, {damageSourceId = eDamageSourceId.damagedef_suicide} )
         }
