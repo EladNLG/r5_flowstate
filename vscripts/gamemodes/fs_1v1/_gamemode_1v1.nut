@@ -1352,6 +1352,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		case "end":
 			
 			endLock1v1( player )
+			return true
 		
 		case "remove":
 		
