@@ -2116,17 +2116,20 @@ bool function IsTrackerAdmin( string CheckPlayer ) //todo:deprecate
 
 entity function GetPlayerEntityByUID( string str )
 {
+	entity candidate
+	
 	#if TRACKER //Todo: direct global hook in client connected and lookups for name/uid to struct of name,uid,entity,etc
-		#if DEVELOPER
-			if( empty( str ) )
-			{
-				mAssert( false, "Empty uid passed to " + FUNC_NAME() + "()" + ( Flowstate_IsTrackerSupportedMode() ? "" : " -- Try ading mode to TrackerSupportedMode list if adding new stats and testing." ) )
-				return null
-			}
-		#endif 
-		return Tracker_StatsMetricsByUID( str ).ent
+		// #if DEVELOPER
+			// if( empty( str ) )
+			// {
+				// mAssert( false, "Empty uid passed to " + FUNC_NAME() + "()" + ( Flowstate_IsTrackerSupportedMode() ? "" : " -- Try ading mode to TrackerSupportedMode list if adding new stats and testing." ) )
+				// return null
+			// }
+		// #endif
+
+		if( !empty( str ) && Tracker_IsPlayerMetricsInitialized( str ) )	
+			return Tracker_StatsMetricsByUID( str ).ent
 	#else
-		entity candidate
 		
 		if ( !IsNum( str ) )
 			return candidate
@@ -2139,9 +2142,10 @@ entity function GetPlayerEntityByUID( string str )
 			if ( player.GetPlatformUID() == str )
 				return player	
 		}
-		
-		return candidate
+
 	#endif
+	
+	return candidate
 }
 
 entity function GetPlayer( string str ) //todo:deprecate
