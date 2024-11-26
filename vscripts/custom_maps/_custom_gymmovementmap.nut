@@ -486,6 +486,7 @@ function Gymmovementmap_load() {
                     ent.SetPersistentVar("gen", Time())
                     ent.p.isTimerActive = true
                     ent.p.startTime = floor(Time()).tointeger()
+                    ent.SetVelocity(<0,0,0>)
                     LocalMsg(ent, "#FS_STRING_VAR", "", 4, 1.0, "Timer Started", "", "", false)
                 } else {
                     ent.SetPersistentVar("gen", 0)
@@ -748,7 +749,7 @@ function Gymmovementmap_load() {
             }
         })
     DispatchSpawn(trigger_11)
-    entity trigger_12 = MapEditor_CreateTrigger( < 8897.002, -7959.008, 16078 > , < 0, -90.0001, 0 > , 2500, 1000, false)
+    entity trigger_12 = MapEditor_CreateTrigger( < 9047.002, -7959.008, 16078 >, < 0, -95, 0 >, 2250, 1000, false)
     trigger_12.SetEnterCallback(void
         function(entity trigger, entity ent) {
             if (IsValidPlayer(ent) && ent.GetPhysics() != MOVETYPE_NOCLIP) {
