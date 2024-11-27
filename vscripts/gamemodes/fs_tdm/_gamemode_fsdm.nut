@@ -170,7 +170,7 @@ struct
 	array< void functionref() > tdmStateInProgressCallbacks
 	bool bIsChampionShowing
 	
-	
+	table<string, LocationSettings> locationSettingsMap = {}
 	
 } file
 
@@ -590,9 +590,40 @@ void function DM__OnEntitiesDidLoad()
 
 void function _RegisterLocation(LocationSettings locationSettings)
 {
-    file.locationSettings.append(locationSettings)
+	int index = file.locationSettings.len() 
+	locationSettings.index = index
+	
+    file.locationSettings.append( locationSettings )	
+	file.locationSettingsMap[ locationSettings.name ] <- locationSettings	
     file.droplocationSettings.append(locationSettings)
 }
+
+int function DetermineLockedPOI()
+{ 
+	int potentialPOI = GetLocationSettingsIndexByName( GetCurrentPlaylistVarString( "locked_poi_name", "" ) )
+	return potentialPOI > -1 ? potentialPOI : FlowState_LockedPOI() 
+}
+
+int function GetLocationSettingsIndexByName( string name )
+{
+	if( name in file.locationSettingsMap )
+	{
+		#if DEVELOPER
+			printw( "resolved location:", name )
+		#endif 
+		
+		return file.locationSettingsMap[ name ].index
+	}
+	else 
+	{
+		#if DEVELOPER
+			printw( "location by name not found:", name )
+		#endif
+	}
+		
+	return -1
+}
+
 
 LocPair function _GetVotingLocation()
 {
@@ -2916,7 +2947,7 @@ void function SimpleChampionUI()
 			file.selectedLocation = file.locationSettings[ choice ]
 		
 		if( FlowState_LockPOI() )
-			file.selectedLocation = file.locationSettings[ FlowState_LockedPOI() ]
+			file.selectedLocation = file.locationSettings[ DetermineLockedPOI() ]
 	}
 	else
 	{
