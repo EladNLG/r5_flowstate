@@ -369,6 +369,10 @@ void function Server_Init()
 
 	SvDevStats_LevelInit()
 	
+	// Town Takeovers                
+	RisingWalls_Init()
+	Bloodhound_TT_Init()
+	
 	PilotsPassage_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
@@ -418,6 +422,11 @@ void function Client_Init()
 	ClPip_LevelInit()
 	ClDataKnife_Init()
 	BleedoutClient_Init()
+	
+	// Town Takeovers                  
+	ClRisingWalls_Init()
+	ClBloodhound_TT_Init()
+
 	SmartAmmoClient_Init()
 	CLGoblinDropship_Init()
 	ClIntroscreen_Init()

@@ -58,6 +58,7 @@ global enum eMaps
 	mp_rr_canyonlands_mu2, //25
 	mp_rr_tropic_island, //26
 	mp_rr_desertlands_holiday, //27
+	mp_rr_desertlands_mu2
 	mp_lobby_walk,
 	
 	

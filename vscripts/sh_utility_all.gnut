@@ -864,6 +864,21 @@ float function RoundToNearestMultiplier( float value, float multiplier )
 	return neg ? -value : value
 }
 
+bool function IsBitFlagSet( int bitMask, int flag )
+{
+	return ( bitMask & flag ) != 0
+}
+
+int function SetBitFlag( int bitMask, int flag )
+{
+	return bitMask | flag
+}
+
+int function ClearBitFlag( int bitMask, int flag )
+{
+	return bitMask & ~flag
+}
+
 int function HIWORD( int value )
 {
 	return (value >> 16) & 0xFFFF
@@ -2535,6 +2550,13 @@ string function StripRuiStringFormatting( string text )
 
 	return newText
 }
+
+#if SERVER
+asset function GetAssetFromString( string str )
+{
+	return GetKeyValueAsAsset( { lol = str }, "lol" )
+}
+#endif
 
 bool function IsDevGamemode()
 {

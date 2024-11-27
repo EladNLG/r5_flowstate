@@ -124,6 +124,8 @@ void function Utility_Shared_Init()
 	RegisterSignal( "devForcedWin" )
 	RegisterSignal( "OnContinousUseStopped" )
 	RegisterSignal( "OnChargeEnd" )
+	RegisterSignal( "FadeModelIntensityOverTime" )
+	RegisterSignal( "FadeModelColorOverTime" )
 	RegisterSignal( "FadeModelAlphaOverTime" )
 
 	#document( "IsAlive", "Returns true if the given ent is not null, and is alive." )
@@ -3308,6 +3310,28 @@ bool function EntHasModelSet( entity ent )
 	return true
 }
 
+#if SERVER
+void function AddCallback_OnUseEntity_ServerOnly( entity ent, void functionref( entity, entity, int ) callbackFunc )
+{
+	//ent.SetPredictedUse( false )
+	ent.e.onUseEntityCallbacks.append( callbackFunc )
+}
+#endif
+
+#if SERVER
+void function RemoveCallback_OnUseEntity_ServerOnly( entity ent, void functionref( entity, entity, int ) callbackFunc )
+{
+	int ornull funcPos = ent.e.onUseEntityCallbacks.find( callbackFunc )
+	Assert( funcPos != -1, "Cannot remove " + string( callbackFunc ) + " that was not added to entity" )
+	ent.e.onUseEntityCallbacks.remove( expect int( funcPos ) )
+		ent.SetPredictedUse( true )
+}
+#endif
+
+void function AddCallback_OnUseEntity_ClientServer( entity ent, void functionref( entity, entity, int ) callbackFunc )
+{
+	ent.e.onUseEntityCallbacks.append( callbackFunc )
+}
 
 void function AddCallback_OnUseEntity( entity ent, void functionref( entity, entity, int ) callbackFunc )
 {
@@ -5512,6 +5536,62 @@ void function DeleteAllLinkedEnts( entity ent )
 }
 
 
+void function PROTO_FadeModelIntensityOverTime( entity model, float duration = 1, float startIntensity = 1, float endIntensity = 10 )
+{
+	EndSignal( model, "OnDestroy" )
+
+	Signal( model, "FadeModelIntensityOverTime" )
+	EndSignal( model, "FadeModelIntensityOverTime" )
+
+	float startTime       = Time()
+	float endTime         = startTime + duration
+	float intensityResult = startIntensity
+
+	while ( Time() <= endTime )
+	{
+		intensityResult = GraphCapped( Time(), startTime, endTime, startIntensity, endIntensity )
+		model.kv.intensity = intensityResult
+		//printt ("Model: " + model + " Time: " + Time() + " Intensity: " + intensityResult + " startIntensity:" + startIntensity + " endIntensity:" + endIntensity + " startTime: " + startTime + " EndTime: " + endTime)
+		//printt ( "Model intensity value: " + intensityResult )
+		WaitFrame()
+	}
+
+	if ( intensityResult != endIntensity )
+	{
+		model.kv.intensity = endIntensity
+		//printt( "Set intensity value: " + endIntensity )
+	}
+}
+
+
+void function PROTO_FadeModelColorOverTime( entity model, float duration, vector startColor = < 255, 255, 255 >, vector endColor = < 0, 0, 0 > )
+{
+	EndSignal( model, "OnDestroy" )
+
+	Signal( model, "FadeModelColorOverTime" )
+	EndSignal( model, "FadeModelColorOverTime" )
+
+	float startTime = Time()
+	float endTime   = startTime + duration
+
+	while ( Time() <= endTime )
+	{
+		vector colorResult = GraphCappedVector( Time(), startTime, endTime, startColor, endColor )
+		string colorString = colorResult.x + " " + colorResult.y + " " + colorResult.z
+		model.kv.rendercolor = colorString
+		model.kv.renderamt = 255
+		//printt ( "model color value: " + colorResult )
+		WaitFrame()
+	}
+
+	string endColorString = endColor.x + " " + endColor.y + " " + endColor.z
+	if ( model.kv.rendercolor != endColorString )
+	{
+		model.kv.rendercolor = endColorString
+		//printt ( "model color value: " + model.kv.rendercolor )
+		//printt( "set color value: " + endColorString )
+	}
+}
 void function PROTO_FadeModelAlphaOverTime( entity ent, float duration, int startAlpha = 255, int endAlpha = 0 )
 {
 	EndSignal( ent, "OnDestroy" )

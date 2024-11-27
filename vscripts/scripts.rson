@@ -371,6 +371,8 @@ Scripts:
 	mp/sh_comms_menu.nut
 	
 	mp/sh_warp_gates.gnut
+	mp/sh_rising_walls.nut  //World's Edge MU2/MU3
+	mp/sh_bloodhound_tt.nut  //World's Edge MU2/MU3
 	sh_mp_utility.gnut
 	sh_score.gnut
 	sh_elite_streak.gnut

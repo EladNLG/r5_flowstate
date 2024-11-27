@@ -5,6 +5,7 @@ global function Quickchat
 global function QuickchatToLivingAndDead
 global function HandleBroadcastCommsAction
 global function ServerToClient_BroadcastCommsActionToTeam
+global function PlayerDeliveryShouldBeUrgent
 global function GetChatTitleColorForPlayer
 global function GetMenuOptionTextForCommsAction
 global function GetShortTextForCommsAction

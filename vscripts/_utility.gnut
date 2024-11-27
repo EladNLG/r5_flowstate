@@ -43,6 +43,12 @@ global struct ShieldDamageModifier
 
 struct
 {
+	table<string, void functionref(entity)> dynamicEntCleanupFuncs_Parented_Targetname
+	table<string, void functionref(entity)> dynamicEntCleanupFuncs_Parented_Scriptname
+	table<string, void functionref(entity)> dynamicEntCleanupFuncs_Area_Scriptname
+	array<void functionref(entity)> onPlayerPositionResetFuncs
+	array<void functionref( entity )> callbacks_OnDeployAndEnableWeapons
+
 	table< entity, int >           playerToStoredUltimateCharge
 	table< entity, int >           playerToStoredTacticalCharge
 	table< entity, ItemFlavor >    playerChargeValidation
@@ -5309,6 +5315,38 @@ void function Invis_Button(vector pos, vector ang, bool up, vector destination, 
 			LocalMsg(ent, token, "", type, duration, message, submessage, "", false)
     })
 
+}
+
+void function RegisterDynamicEntCleanupItem_Parented_Scriptname( string scriptname, void functionref(entity) func = null )
+{
+	file.dynamicEntCleanupFuncs_Parented_Scriptname[ scriptname ] <- func
+}
+
+void function CleanUpPermanentsParentedToDynamicEnt( entity dynamicEnt )
+{
+	foreach ( entity ent in GetEntityAndAllChildren( dynamicEnt ) )
+	{
+		if ( !IsValid( ent ) )
+			continue
+		
+		string targetName = ent.GetTargetName()
+		string scriptName = ent.GetScriptName()
+
+		if ( targetName in file.dynamicEntCleanupFuncs_Parented_Targetname )
+		{
+			if ( file.dynamicEntCleanupFuncs_Parented_Targetname[ targetName ] != null )
+				file.dynamicEntCleanupFuncs_Parented_Targetname[ targetName ]( ent )
+			else
+				ent.Destroy()
+		}
+		else if ( scriptName in file.dynamicEntCleanupFuncs_Parented_Scriptname )
+		{
+			if ( file.dynamicEntCleanupFuncs_Parented_Scriptname[ scriptName ] != null )
+				file.dynamicEntCleanupFuncs_Parented_Scriptname[ scriptName ]( ent )
+			else
+				ent.Destroy()
+		}
+	}
 }
 
 #if DEVELOPER 
