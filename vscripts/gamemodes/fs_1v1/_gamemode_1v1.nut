@@ -2681,7 +2681,10 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	LocalMsg( player, "#FS_IN_QUEUE", "", eMsgUI.EVENT, settings.roundTime )
+	if( isScenariosMode() && FS_Scenarios_GetMatchIsEnding() )
+		LocalMsg( player, "#FS_Scenarios_WaitingForRoundEnd", "", eMsgUI.EVENT, g_fCurrentRoundEndTime - Time() )
+	else
+		LocalMsg( player, "#FS_IN_QUEUE", "", eMsgUI.EVENT, settings.roundTime )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 

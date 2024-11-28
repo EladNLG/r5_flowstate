@@ -667,6 +667,9 @@ void function SURVIVAL_PlaceGroundItems()
 
 	foreach( ent in itemEnts )
 	{
+		if( GetEditorClass( ent ) != "info_survival_weapon_location" )
+			continue
+
 		if( isScenariosMode() )
 		{
 			FS_Scenarios_SaveLocationFromLootSpawn( ent )
@@ -678,9 +681,6 @@ void function SURVIVAL_PlaceGroundItems()
 			ent.Destroy() // save even more edicts
 			continue
 		}
-
-		if( GetEditorClass( ent ) != "info_survival_weapon_location" )
-			continue
 
 		OnGroundLootSpawned( ent )
 	}

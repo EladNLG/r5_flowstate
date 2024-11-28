@@ -302,6 +302,7 @@ global enum eDamageSourceId
 	//explosion
 	
 	//custom
+	nextbot
 	mp_weapon_raygun
 	mp_weapon_haloshotgun
 	mp_weapon_halosmg
@@ -529,6 +530,8 @@ void function DamageTypes_Init()
 	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_titan_sword]						<- $"rui/gamemodes/shadow_squad/legend_icon"
 	file.damageSourceIDToImage[eDamageSourceId.mp_weapon_titan_sword_slam]						<- $"rui/gamemodes/shadow_squad/legend_icon"
 	file.damageSourceIDToImage[eDamageSourceId.melee_titan_sword]					<- $"rui/gamemodes/shadow_squad/legend_icon"
+	
+	file.damageSourceIDToImage[eDamageSourceId.nextbot]					<- $"rui/gamemodes/shadow_squad/legend_icon"
 	// file.damageSourceIDToImage[eDamageSourceId.sp_weapon_arc_tool]			<- $"r2_ui/menus/loadout_icons/primary_weapon/primary_arc_tool"
 
 	file.damageSourceIDToName =
@@ -688,7 +691,8 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.mp_weapon_titan_sword ] 	 				= "Sword", 
 		[ eDamageSourceId.mp_weapon_titan_sword_slam ] 	 			= "Sword",
 		[ eDamageSourceId.melee_titan_sword ] 	 					= "Sword",
-		[ eDamageSourceId.mp_weapon_lightninggun ]					= "Lightning Gun"
+		[ eDamageSourceId.mp_weapon_lightninggun ]					= "Lightning Gun",
+		[ eDamageSourceId.nextbot ]									= "Nextbot"
 	}
 
 	#if DEVELOPER

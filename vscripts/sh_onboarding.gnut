@@ -1170,7 +1170,7 @@ void function UpdatePlayerCounts()
 		if( Playlist() == ePlaylists.fs_scenarios )
 		{
 			foreach( player in GetPlayerArray() )
-				Remote_CallFunction_ByRef( player, "FS_Scenarios_ForceUpdatePlayerCount" )
+				Remote_CallFunction_NonReplay( player, "FS_Scenarios_ForceUpdatePlayerCount", player )
 		} else
 		{
 			array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()

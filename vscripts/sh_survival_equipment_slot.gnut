@@ -424,6 +424,8 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SHOTGUN
 				case "sniper":
 					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SNIPER
+				case "explosive":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_EXPLOSIVE
 				default:
 					Warning( format( "%s() - Unhandled ammo type: '%s'.", FUNC_NAME(), weaponData.ammoType ) )
 					return eCommsAction.BLANK
@@ -579,7 +581,7 @@ int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef, 
 				// return eCommsAction.INVENTORY_NO_AMMO_SNIPER
         
 			return eCommsAction.INVENTORY_NEED_AMMO_SNIPER
-		case "EXPLOSIVE_AMMO":
+		case EXPLOSIVE_AMMO:
 			return eCommsAction.INVENTORY_NEED_AMMO_EXPLOSIVE
 	}
 

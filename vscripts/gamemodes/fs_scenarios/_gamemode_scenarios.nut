@@ -29,6 +29,7 @@ global function FS_Scenarios_ForceRest
 global function FS_Scenarios_SetupPanels
 global function FS_Scenarios_ClientCommand_Rest
 global function FS_Scenarios_PlayerCanPing
+global function FS_Scenarios_GetMatchIsEnding
 
 #if TRACKER 
 	global function Scenarios_PlayerDataCallbacks
@@ -55,7 +56,7 @@ global struct scenariosGroupStruct
 	
 	soloLocStruct &groupLocStruct
 	entity ring
-	float calculatedRingRadius
+	
 	float currentRingRadius
 	vector calculatedRingCenter
 	int slotIndex //realm slot
@@ -674,7 +675,7 @@ void function FS_Scenarios_SpawnBigDoorsForGroup( scenariosGroupStruct group )
 
 	foreach( i, bigDoorsData data in file.allBigMapDoors )
 	{
-		if( Distance2D( data.origin, Center) <= group.calculatedRingRadius )
+		if( Distance2D( data.origin, Center) <= group.currentRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -755,7 +756,7 @@ void function FS_Scenarios_SpawnDoorsForGroup( scenariosGroupStruct group )
 	
 	foreach( i, doorsData data in file.allMapDoors )
 	{
-		if( Distance2D( data.origin, Center) <= group.calculatedRingRadius )
+		if( Distance2D( data.origin, Center) <= group.currentRingRadius )
 			chosenSpawns.append( data )
 	}
 	
@@ -993,7 +994,7 @@ void function FS_Scenarios_SpawnLootbinsForGroup( scenariosGroupStruct group )
 	array< lootbinsData > chosenSpawns
 	
 	foreach( i, lootbinStruct in file.allMapLootbins )
-		if( Distance2D( lootbinStruct.origin, Center) <= group.calculatedRingRadius )
+		if( Distance2D( lootbinStruct.origin, Center) <= group.currentRingRadius )
 			chosenSpawns.append( lootbinStruct )
 
 	string zoneRef = "zone_high"
@@ -1092,7 +1093,9 @@ void function FS_Scenarios_DestroyLootbinsForGroup( scenariosGroupStruct group )
 
 void function FS_Scenarios_SaveLocationFromLootSpawn( entity ent )
 {
-	file.allLootSpawnsLocations.append( ent.GetOrigin() )
+	if( GetEditorClass( ent ) == "info_survival_weapon_location" || GetEditorClass( ent ) == "info_survival_loot_hotzone" )
+		file.allLootSpawnsLocations.append( ent.GetOrigin() )
+	
 	ent.Destroy() //save edicts even more
 }
 
@@ -1109,7 +1112,7 @@ void function FS_Scenarios_SpawnLootForGroup( scenariosGroupStruct group )
 	array<vector> chosenSpawns
 	
 	foreach( spawn in file.allLootSpawnsLocations )
-		if( Distance2D( spawn, Center) <= group.calculatedRingRadius )
+		if( Distance2D( spawn, Center) <= group.currentRingRadius )
 			chosenSpawns.append( spawn )
 
 	string zoneRef = "zone_high"
@@ -1528,11 +1531,11 @@ void function FS_Scenarios_Main_Thread()
 
 			array<entity> players = FS_Scenarios_GetAllPlayersForGroup( group )
 
-			if( group.isReady && !group.IsFinished )
+			if( group.isReady && !group.IsFinished && group.endTime > 0 )
 			{
 				bool shouldRingDoDamageThisFrame = false
 				//Anuncio que la ronda individual está a punto de terminar
-				if( Time() > group.endTime - 30 && !group.showedEndMsg )
+				if( IsValid( group.ring ) && Time() > ( group.endTime - 30 ) && !group.showedEndMsg )
 				{
 					foreach( player in players )
 					{
@@ -1726,22 +1729,6 @@ void function FS_Scenarios_Main_Thread()
 
 		scenariosGroupStruct newGroup //Creates a new game
 		newGroup.isForcedGame = forceGame //Todo something with e.e. Cafe
-		
-		float maxEndTime = settings.fs_scenarios_characterselect_enabled == true ? ( 7.0 + settings.fs_scenarios_characterselect_time_per_player*settings.fs_scenarios_playersPerTeam ) : 0.0
-		maxEndTime += Time() + settings.fs_scenarios_ringclosing_maxtime + 7
-
-		if( maxEndTime > g_fCurrentRoundEndTime )
-		{
-			//not enough time for another match. Cafe
-			g_fCurrentRoundEndTime = maxEndTime //Set the global flowstate end time to the max time this round could have and don't create new games
-			SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
-			file.scenariosStopMatchmaking = true
-			newGroup.isLastGameFromRound = true
-
-			#if DEVELOPER
-			Warning("[Scenarios] Time was extended", maxEndTime )
-			#endif
-		}
 
 		Assert( waitingPlayers.len() < ( settings.fs_scenarios_playersPerTeam * settings.fs_scenarios_teamAmount ) )
 
@@ -1806,8 +1793,6 @@ void function FS_Scenarios_Main_Thread()
 				continue
 
 			player.p.scenariosTeamsMatched++ //To give priority next game. Cafe
-			if( file.scenariosStopMatchmaking )
-				LocalMsg( player, "#FS_Scenarios_WaitingForRoundEnd", "", eMsgUI.EVENT, maxEndTime - Time() )
 		}
 
 		array<entity> players = FS_Scenarios_GetAllPlayersForGroup( newGroup )
@@ -2234,6 +2219,7 @@ void function FS_Scenarios_Main_Thread()
 
 					RemoveCinematicFlag( player, CE_FLAG_INTRO )
 					player.SetPlayerNetTime( "FS_Scenarios_gameStartTime", startTime )
+					
 					Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetupPlayersCards", false )
 					player.SetShieldHealth( 0 )
 					player.SetShieldHealthMax( 0 )
@@ -2250,7 +2236,6 @@ void function FS_Scenarios_Main_Thread()
 				SetGamestateForPlayers( players, e1v1State.MATCHING )
 
 				newGroup.startTime = Time()
-				newGroup.endTime = Time() + settings.fs_scenarios_ringclosing_maxtime
 				newGroup.isReady = true
 			}()
 		}()
@@ -2372,7 +2357,7 @@ void function FS_Scenarios_HandleGroupIsFinished( entity player )
 					Signal( splayer, "BleedOut_OnRevive" )
 			}
 			
-			wait 4
+			wait 5
 
 			foreach ( splayer in FS_Scenarios_GetAllPlayersForGroup( group ) ) //before is finished to avoid issues
 			{
@@ -2545,49 +2530,100 @@ void function FS_Scenarios_StartRingMovementForGroup( scenariosGroupStruct group
 {
 	if( !group.isValid || group.IsFinished )
 		return
-
+	
 	EndSignal( group.dummyEnt, "FS_Scenarios_GroupFinished" )
-
+	
 	array<entity> players = clone FS_Scenarios_GetAllPlayersForGroup( group )
-
+	
 	foreach( player in  players )
 	{
 		player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
 		player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", -1 )
 	}
-
+	
 	WaitSignal( group.dummyEnt, "FS_Scenarios_GroupIsReady" )
-
+	
+	ArrayRemoveInvalid( players )
+	
+	float closingSpeed = settings.fs_scenarios_zonewars_ring_ringclosingspeed // Per frame
+	float frameDuration = 0.05 // 1 / GetConVarFloat( "script_server_fps" ) // Time per frame in seconds
 	float starttime = Time()
-	float endtime = Time() + settings.fs_scenarios_ringclosing_maxtime
-
 	float startradius = group.currentRingRadius
-	printt( "STARTED RING FOR GROUP", group.groupHandle, "Duration Closing", endtime - Time(), "Starting Radius", startradius )
-
+	
+	// Total frames required to close the ring
+	float framesToClose = startradius / closingSpeed
+	// Calculate time to close based on frames
+	float timeToClose = framesToClose * frameDuration * 2.0
+	float endtime = starttime + timeToClose
+	
+	foreach( player in players )
+	{
+		Remote_CallFunction_NonReplay( player, "FS_Scenarios_SetRingCloseTimeForMinimap", timeToClose )
+	}
+	
+	group.endTime = endtime
+	
+	float maxEndTime = settings.fs_scenarios_characterselect_enabled == true ? ( 7.0 + settings.fs_scenarios_characterselect_time_per_player*settings.fs_scenarios_playersPerTeam ) : 0.0
+	maxEndTime += group.endTime + 5
+	
+	if( maxEndTime > g_fCurrentRoundEndTime )
+	{
+		//not enough time for another match. Cafe
+		g_fCurrentRoundEndTime = maxEndTime //Set the global flowstate end time to the max time this round could have and don't create new games
+		SetGlobalNetTime( "flowstate_DMRoundEndTime", g_fCurrentRoundEndTime )
+		file.scenariosStopMatchmaking = true
+		group.isLastGameFromRound = true
+	
+		#if DEVELOPER
+		Warning("[Scenarios] Time was extended", maxEndTime )
+		#endif
+	}
+	
+	table<int, soloPlayerStruct> waitingPlayers = clone FS_1v1_GetPlayersWaiting()
+	
+	foreach ( playerHandle, eachPlayerStruct in waitingPlayers )
+	{	
+		if( !IsValid(eachPlayerStruct) )
+			continue				
+		
+		entity player = eachPlayerStruct.player
+	
+		if( !IsValidPlayer( player ) ) //don't pass here if player is disconnecting Cafe
+			continue
+		
+		if( players.contains( player ) )
+			continue
+	
+		if( file.scenariosStopMatchmaking )
+			LocalMsg( player, "#FS_Scenarios_WaitingForRoundEnd", "", eMsgUI.EVENT, maxEndTime - Time() )
+	}		
+	
+	EndSignal( group.ring, "OnDestroy" )
+	
 	while ( group.currentRingRadius > -1 )
 	{
 		if( !group.isReady )
 		{
-			WaitFrame()
+			wait frameDuration
 			continue
 		}
-		
+	
 		players.clear()
 		players = clone FS_Scenarios_GetAllPlayersForGroup( group )
-
-		float radius = group.currentRingRadius
-
-		group.currentRingRadius = GraphCapped( Time(), starttime, endtime, startradius, 0 )
-
-		foreach( player in  players )
+	
+		// Decrease radius
+		group.currentRingRadius -= closingSpeed
+	
+		foreach( player in players )
 		{
 			player.SetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius", group.currentRingRadius )
 			player.SetPlayerNetTime( "FS_Scenarios_currentDistanceFromCenter", Distance2D( player.GetOrigin(), group.calculatedRingCenter ) )
 		}
-
-		WaitFrame()
+		
+		wait frameDuration
 	}
 }
+
 
 void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 {
@@ -2601,17 +2637,16 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 
 	foreach( LocPair spawn in groupLocStruct.respawnLocations )
 	{
-		if( Distance( spawn.origin, Center ) > ringRadius )
-			ringRadius = Distance(spawn.origin, Center )
+		if( Distance2D( spawn.origin, Center ) > ringRadius )
+			ringRadius = Distance2D(spawn.origin, Center )
 	}
 
-	group.calculatedRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
-	group.currentRingRadius = group.calculatedRingRadius
+	group.currentRingRadius = ringRadius + settings.fs_scenarios_default_radius_padding
 
+	printw( "RING RADIUS WAS CREATED WITH ", group.currentRingRadius, "UNITS" )
 	int realm = group.slotIndex
-	float radius = group.calculatedRingRadius
+	float radius = group.currentRingRadius
 
-    vector smallRingCenter = Center
 	entity smallcircle = CreateEntity( "prop_script" )
 	smallcircle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	smallcircle.kv.fadedist = 2000
@@ -2619,7 +2654,7 @@ void function FS_Scenarios_CreateCustomDeathfield( scenariosGroupStruct group )
 	smallcircle.kv.solid = 0
 	smallcircle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	// smallcircle.SetOwner(Owner)
-	smallcircle.SetOrigin( smallRingCenter )
+	smallcircle.SetOrigin( Center )
 	smallcircle.SetAngles( <0, 0, 0> )
 	smallcircle.NotSolid()
 	smallcircle.DisableHibernation()
@@ -2931,6 +2966,10 @@ int function DetermineLowThreshold( int teamAmount, int playersPerTeam )
 	return teamAmount * playersPerTeam 
 }
 
+bool function FS_Scenarios_GetMatchIsEnding()
+{
+	return file.scenariosStopMatchmaking
+}
 #if TRACKER
 	void function Scenarios_PlayerDataCallbacks() //todo move to convar
 	{

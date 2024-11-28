@@ -5000,10 +5000,7 @@ string function GetOwnerName()
 
 bool function IsAdmin( entity player )
 {
-	if( file.authkey == "" ) 
-		return false
-	
-	return player.p.isAdmin
+	return player.GetPlayerNetBool( "IsAdmin" )
 }
 
 bool function ClientCommand_VoteForMap(entity player, array<string> args)

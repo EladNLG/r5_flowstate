@@ -218,47 +218,6 @@ function CodeCallback_RegisterClass_CPlayer()
 		return ( this.supportsXRay != null )
 	}
 
-	function CPlayer::GiveExtraWeaponMod( mod )
-	{
-		if ( this.HasExtraWeaponMod( mod ) )
-			return
-
-		local mods = this.GetExtraWeaponMods()
-		mods.append( mod )
-
-		this.SetExtraWeaponMods( mods )
-	}
-
-
-	function CPlayer::HasExtraWeaponMod( mod )
-	{
-		local mods = this.GetExtraWeaponMods()
-		foreach( _mod in mods )
-		{
-			if ( _mod == mod )
-				return true
-		}
-		return false
-	}
-
-
-	function CPlayer::TakeExtraWeaponMod( mod )
-	{
-		if ( !this.HasExtraWeaponMod( mod ) )
-			return
-
-		local mods = this.GetExtraWeaponMods()
-		mods.fastremovebyvalue( mod )
-
-		this.SetExtraWeaponMods( mods )
-	}
-
-	function CPlayer::ClearExtraWeaponMods()
-	{
-		this.SetExtraWeaponMods( [] )
-	}
-
-
 	function CPlayer::SetPlayerPilotSettings( settingsName )
 	{
 		this.SetPlayerRequestedSettings( settingsName )

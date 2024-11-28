@@ -74,6 +74,7 @@ global function Flowstate_ShowRespawnTimeUI
 global function Flowstate_ShowMatchFoundUI
 
 global function UiToClient_ConfirmRest
+global function FS_Scenarios_SetRingCloseTimeForMinimap
 
 const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
 
@@ -527,9 +528,12 @@ void function Flowstate_StartTimeChanged( entity player, float old, float new, b
 	
 	thread Flowstate_PlayStartRoundSounds( )
 	thread Flowstate_ShowStartTimeUI( new )
+}
 
-	if( Playlist() == ePlaylists.fs_scenarios )
-		SetNextCircleDisplayCustomClosing( Time() + GetCurrentPlaylistVarInt( "fs_scenarios_ringclosing_maxtime", 100 ) + 3, "FLOWSTATE ZONE WARS" )
+void function FS_Scenarios_SetRingCloseTimeForMinimap( int seconds )
+{
+	float endtime = Time() + seconds
+	SetNextCircleDisplayCustomClosing( endtime, "FLOWSTATE ZONE WARS" )
 }
 
 void function Flowstate_ShowRoundEndTimeUI( float new )

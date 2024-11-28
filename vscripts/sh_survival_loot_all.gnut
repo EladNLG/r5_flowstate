@@ -260,8 +260,8 @@ void function SURVIVAL_Loot_All_InitShared()
 	file.disabledRefs.clear()
 	file.disabledRefs = split( GetCurrentPlaylistVarString( "survival_disabled_loot", " " ), " " )
 
-	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot_sdk.rpak" ) )
 	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new.rpak" ) )
+	SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/survival_loot_sdk.rpak" ) )
 	
 	if( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
 		SURVIVAL_Loot_RegFromDataTable( GetDataTable( $"datatable/flowstate_all_new_halomod.rpak" ) )
@@ -377,6 +377,10 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 	{
 		LootData data
 		data.ref = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "ref" ) )
+		
+		if( !IsNewLootEnabled( data.ref ) )
+			continue
+		
 		string featureFlagRef = GetLootTableString( data.ref, dt, i, "featureFlag" )
 		if ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) )
 		{
@@ -400,7 +404,10 @@ void function SURVIVAL_Loot_RegFromDataTable(var dt)
 			data.baseWeapon = data.ref
 		}
 		
-		if( !IsNewLootEnabled( data.baseWeapon ) || !EnableWhiteBlueAndPurplePredefinedSets( data.ref ) )
+		if( !IsNewLootEnabled( data.baseWeapon ) )
+			continue
+		
+		if( !EnableWhiteBlueAndPurplePredefinedSets( data.ref ) )
 			continue
 		
 		data.fakeAmmoIcon = GetLootTableAsset( data.ref, dt, i, "fakeAmmoIcon" )

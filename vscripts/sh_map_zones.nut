@@ -205,6 +205,11 @@ void function EntitiesDidLoad()
 #if DEVELOPER
 	thread DebugFrameThread()
 #endif // DEVELOPER
+	if( isScenariosMode() )
+	{
+		SURVIVAL_PlaceGroundItems()
+		return
+	}
 
 	if ( !file.mapZonesInitialized )
 		return

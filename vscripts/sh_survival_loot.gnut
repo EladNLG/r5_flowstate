@@ -914,10 +914,13 @@ void function OnClientConnected( entity player )
 		file.playerInventoryData[ player ][ slot ] <- ""
 	}
 
-	// ValidateDataTable( player, "datatable/flowstate_all_new.rpak" )
-	// ValidateDataTable( player, "datatable/flowstate_weapon_mods.rpak" )
-    // ValidateDataTable( player, "datatable/flowstate_all_new_groups.rpak" )
-	// ValidateDataTable( player, "datatable/flowstate_weapon_attachment_data" )
+	ValidateDataTable( player, "datatable/flowstate_all_new.rpak" )
+	ValidateDataTable( player, "datatable/survival_loot_sdk.rpak" )
+	ValidateDataTable( player, "datatable/flowstate_all_new_halomod.rpak" )
+	ValidateDataTable( player, "datatable/flowstate_all_new_snd.rpak" )
+	ValidateDataTable( player, "datatable/flowstate_weapon_mods.rpak" )
+	ValidateDataTable( player, "datatable/flowstate_all_new_groups.rpak" )
+	ValidateDataTable( player, "datatable/flowstate_weapon_attachment_data.rpak" )
 }
 
 void function OnPlayerRespawned( entity player )
