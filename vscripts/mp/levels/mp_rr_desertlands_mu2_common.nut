@@ -1,6 +1,5 @@
 global function Desertlands_MapInit_Common
-global function CodeCallback_PlayerEnterUpdraftTrigger
-global function CodeCallback_PlayerLeaveUpdraftTrigger
+
 global function CodeCallback_PreMapInit
 
 const string HARVESTER_BEAM_MDL = $"mdl/fx/harvester_beam_mu1.rmdl"
@@ -54,6 +53,17 @@ const int NUM_LOOT_DRONES_TO_SPAWN = 12
 const int NUM_LOOT_DRONES_WITH_VAULT_KEYS = 4
 #endif
 
+global struct UpdraftTriggerSettings
+{
+	//needs script_server_fps 20 so it feels like retail native implementation, otherwise reduce maxShakeActivationHeight to 375 and liftExitDuration to 1.5
+	
+	float minShakeActivationHeight = 500.0               // At what z-position to start shaking the player's view
+	float maxShakeActivationHeight = 400.0               // At what z-position will the player's view be shaking at the maximum
+	float liftSpeed                = 300.0                   	// Maximum upward speed
+	float liftAcceleration         = 100.0                 		// How fast to accelerate to the maximum upward speed
+	float liftExitDuration         = 2.5                   		// After clearing the updraft trigger, how many extra seconds to continue lifting for
+}
+
 struct
 {
 	bool siloDoorHasBeenActivated = false
@@ -62,6 +72,10 @@ struct
 	array<LootData> items
 	array<LootData> ordnance
 	#endif
+
+	UpdraftTriggerSettings&      updraftSettings = { ... }
+	
+	array<string> jumpJetAttachments = [ "vent_left", "vent_right" ]
 
 } file
 
@@ -264,7 +278,7 @@ void function EntitiesDidLoad()
 	Desertlands_MU1_EntitiesLoaded_Common()
 
 	GeyserInit()
-	//Updrafts_Init()
+	Updrafts_Init()
 
 	FillLootTable()
 	
@@ -584,38 +598,26 @@ bool function Geyser_JumpPad_ShouldPushPlayerOrNPC( entity target )
 const string UPDRAFT_TRIGGER_SCRIPT_NAME = "skydive_dust_devil"
 void function Updrafts_Init()
 {
-	/*return
 	array<entity> triggers = GetEntArrayByScriptName( UPDRAFT_TRIGGER_SCRIPT_NAME )
+	
 	foreach ( entity trigger in triggers )
 	{
-		if ( trigger.GetClassName() != "trigger_updraft" )
-		{
-			entity newTrigger = CreateEntity( "trigger_cylinder" )
-			newTrigger.SetOrigin( trigger.GetOrigin() )
-			newTrigger.SetAngles( trigger.GetAngles() )
-			newTrigger.SetModel( trigger.GetModelName() )
-			newTrigger.SetScriptName( UPDRAFT_TRIGGER_SCRIPT_NAME )
-			newTrigger.kv.triggerFilterTeamBeast = 1
-			newTrigger.kv.triggerFilterTeamNeutral = 1
-			newTrigger.kv.triggerFilterTeamOther = 1
-			newTrigger.kv.triggerFilterUseNew = 1
-			DispatchSpawn( newTrigger )
-			trigger.Destroy()
-			DebugDrawCylinder( newTrigger.GetOrigin(), < -90, 0, 0 >, JUMP_PAD_PUSH_RADIUS, newTrigger.GetAboveHeight(), 255, 0, 255, true, 9999.9 )
-		}
-	}*/
+		Warning( "[+] Spawning Cafe's Updraft Trigger pos at " + trigger.GetOrigin() )
+
+		trigger.SetEnterCallback( PlayerEnterUpdraftTrigger )
+	}
 }
 
-void function BurnPlayerOverTime( entity player )
+void function BurnPlayerOverTime( entity trigger, entity player )
 {
-	/*Assert( IsValid( player ) )
+	Assert( IsValid( player ) )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnDeath" )
-	player.EndSignal( "DeathTotem_PreRecallPlayer" )
+	
 	for ( int i = 0; i < 8; ++i )
 	{
-		//if ( !player.Player_IsInsideUpdraftTrigger() )
-			//break
+		if( !player.p.isPlayerUpdrafting )
+			break
 
 		if ( !player.IsPhaseShifted() )
 		{
@@ -623,24 +625,129 @@ void function BurnPlayerOverTime( entity player )
 		}
 
 		wait 0.5
-	}*/
+	}
+}
+
+void function PlayerEnterUpdraftTrigger( entity trigger, entity player )
+{
+	if( !IsValid( player ) )
+		return
+	
+	if ( !player.IsPlayer() )
+		return
+
+	float entZ = player.GetOrigin().z
+
+	thread Player_EnterUpdraft( trigger, player, file.updraftSettings.minShakeActivationHeight + entZ, entZ - file.updraftSettings.maxShakeActivationHeight, max( -5750.0, entZ - file.updraftSettings.maxShakeActivationHeight ), file.updraftSettings.liftSpeed, file.updraftSettings.liftAcceleration, file.updraftSettings.liftExitDuration )
+}
+
+//Made by @CafeFPS
+void function Player_EnterUpdraft( entity trigger, entity player, float minHeight, float maxHeight, float activationHeight, float liftSpeed, float liftAcceleration, float liftExitDuration )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+	
+	array<entity> fxs
+	
+	OnThreadEnd(
+		function() : ( player, fxs )
+		{
+			if( IsValid( player ) )
+			{
+				player.p.isPlayerUpdrafting = false
+				player.kv.airSpeed = player.GetPlayerSettingFloat( "airSpeed" )
+				player.kv.airAcceleration = player.GetPlayerSettingFloat( "airAcceleration" )
+				player.SetThirdPersonShoulderModeOff()
+				
+				player.Anim_Stop()
+				StopSoundOnEntity( player, "Survival_InGameFlight_Travel_1P" )
+				StopSoundOnEntity( player, "Survival_InGameFlight_Travel_3P" )
+				
+				DeployAndEnableWeapons( player )
+			}
+			
+			foreach( entity ent in fxs )
+			{
+				if( IsValid( ent ) )
+				{
+					EffectStop( ent )
+					ent.Destroy()
+				}
+			}
+		} )
+
+	while ( player.GetOrigin().z > activationHeight )
+		WaitFrame()
+
+	player.p.isPlayerUpdrafting = true
+	player.kv.airSpeed = 300
+	player.kv.airAcceleration = 1000 
+	HolsterAndDisableWeapons( player )
+	
+	// Play freefall landing anim + jumpjets fx
+	// Can't play the anim and make it move at the same time kral pls help (use wattson temp)
+	// player.Anim_NonScriptedPlay("animseq/humans/class/light/pilot_light_wattson/mp_pilot_freefall_anticipate.rseq" )
+	// thread PlayAnim( player, "animseq/humans/class/light/pilot_light_wattson/mp_pilot_freefall_anticipate.rseq", player, "", 0 )
+	// player.Anim_DisableUpdatePosition()
+	// player.Anim_DisableAnimDelta()
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "Survival_InGameFlight_Land_Start_1P" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "Survival_InGameFlight_Land_Start_3P" )
+	
+	player.SetThirdPersonShoulderModeOn()
+	
+	thread BurnPlayerOverTime( trigger, player )
+
+	//Jumpjet fx
+	foreach ( string attachment in file.jumpJetAttachments )
+	{
+		int landingFXID = GetParticleSystemIndex( $"P_surv_team_land_jet" )
+		entity handle = StartParticleEffectOnEntity_ReturnEntity( player, landingFXID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		SetTeam( handle, player.GetTeam() )
+		EffectSetControlPointVector( handle, 1, GetSkydiveSmokeColorForTeam( player.GetTeam() ) )
+		fxs.append( handle )
+	}
+	
+	float velocity
+
+	while ( trigger.IsTouching( player ) )
+	{
+		velocity += liftAcceleration
+		
+		vector playerCurrentVel = < player.GetVelocity().x, player.GetVelocity().y, velocity >
+
+		player.SetVelocity( ClampVelocity( playerCurrentVel, liftSpeed ) )
+
+		WaitFrame()
+	}
+
+	// Player is out of trigger, use liftExitDuration
+	float starttime = Time()
+	float endTime = starttime + liftExitDuration
+	
+	while ( Time() < endTime )
+	{
+		velocity += liftAcceleration
+		
+		vector playerCurrentVel = < player.GetVelocity().x, player.GetVelocity().y, velocity >
+
+		player.SetVelocity( ClampVelocity( playerCurrentVel, liftSpeed ) )
+
+		WaitFrame()
+	}
+}
+
+vector function ClampVelocity(vector velocity, float maxSpeed) 
+{
+    float speed = velocity.Length()
+
+    if (speed > maxSpeed) 
+	{
+        velocity = velocity * (maxSpeed / speed)
+    }
+    return velocity
 }
 #endif
-
-void function CodeCallback_PlayerEnterUpdraftTrigger( entity trigger, entity player )
-{
-	/*float entZ = player.GetOrigin().z
-	OnEnterUpdraftTrigger( trigger, player, max( -5750.0, entZ - 400.0 ) )
-	#if SERVER
-		PIN_Interact ( player, "desertlands_updraft_enter" )
-	#endif*/
-}
-
-void function CodeCallback_PlayerLeaveUpdraftTrigger( entity trigger, entity player )
-{
-	//OnLeaveUpdraftTrigger( trigger, player )
-}
-
 
 
                            // 888                                .d888                            888    d8b

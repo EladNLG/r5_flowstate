@@ -1151,6 +1151,12 @@ global struct ServerPlayerStruct
 	int shotsfired = 0
 	
 	int quickHealEnableCount
+	
+	//1v1 Coaching mode
+	bool playerisready = false
+	
+	//updraft
+	bool isPlayerUpdrafting = false
 }
 
 global struct ChallengeScore
@@ -1265,6 +1271,9 @@ global struct ServerAIStruct
 	entity decoyOwner
 	string lastSchedule
 	string lastAnim
+	
+	//nextbots
+	float screamSoundDebounce
 }
 
 
