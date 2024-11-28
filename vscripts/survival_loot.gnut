@@ -31,6 +31,7 @@ global function SpawnAllOptics
 global function SURVIVAL_DropMainWeapon
 global function SURVIVAL_DropBackpackItem
 global function Loot_AddCallback_OnPlayerLootPickup
+global function Loot_AddCallback_OnPlayerLootPickupRetail
 global function SURVIVAL_NumItemsInInventory
 global function ResetPlayerInventory
 global function GetAllLootZones
@@ -59,11 +60,13 @@ global function RemoveCallback_LootPhysicsParented
 
 global function Dev_ForceDropDeathbox
 global function SURVIVAL_Death_DropLoot_Internal
+global function SURVIVAL_IsValidLootGroup
 
 global function Loot_AddCallback_OnGiveMainWeapon
 global function Loot_RemoveCallback_OnGiveMainWeapon
 global function Loot_AddCallback_OnWeaponDrop
 global function Loot_RemoveCallback_OnWeaponDrop
+global function Loot_IsStandardSurvivalLootEnabled
 
 //added 8/8/2024 ~mkos
 global function AddCallback_OnPlayerWeaponAttachmentChanged
@@ -118,6 +121,20 @@ global struct ThrowLootParams
 	float[2] throwVelocityRange = [150.0, 250.0]
 }
 
+struct LootGroup
+{
+	string                  ref
+	int                     tier
+	int						priority
+	table < string, float > entries
+	float                   totalDistribution
+	bool                    finalized = false
+
+	//#if DEV
+	string DEV_definitionSource
+	//#endif
+}
+
 struct PlayerLootThrowData
 {
 	float lastThrowTime
@@ -142,7 +159,7 @@ struct {
 	LootZone hotZone
 	table<vector, array<string> > vaultLootSpawned
 	array<entity> spawnedAmmoStacks
-
+	table< string, LootGroup >              lootGroups
 	table<entity, bool> hasEquippedAttachmentEver
 	table<entity, bool> hasEquippedOrdnanceEver
 	table<entity, int>  specialAmmoCounts
@@ -156,6 +173,7 @@ struct {
 	table< string, bool functionref(entity, string, int) > specialCaseRefCountFunctions
 	table< string, void functionref(entity, string, int) > specialCaseRefDecrementFunctions
 
+	array< void functionref(entity, entity, string, int, bool, entity, int) >       Callbacks_OnPlayerLootPickup
 	table< entity, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootPhysicsParented
 	table< string, array<void functionref( entity parentEnt, entity childEnt ) > >  Callbacks_OnLootSpawnParented
 	array< void functionref(entity, entity, entity) >								Callbacks_OnGiveMainWeapon
@@ -702,6 +720,11 @@ string function LootZones_GetRefForOrigin(vector origin)
 	}
 
 	return "zone_low" //fallback spawn low loot
+}
+
+bool function Loot_IsStandardSurvivalLootEnabled()
+{
+	return GetCurrentPlaylistVarBool( "loot_standard_survival_enabled", true )
 }
 
 vector function LootZones_GetParentForOrigin(vector origin)
@@ -4627,6 +4650,12 @@ void function Loot_AddCallback_OnPlayerLootPickup( void functionref( entity user
 
 }
 
+void function Loot_AddCallback_OnPlayerLootPickupRetail( void functionref(entity, entity, string, int, bool, entity, int) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerLootPickup.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Loot_AddCallback_OnPlayerLootPickup" )
+	file.Callbacks_OnPlayerLootPickup.append( callbackFunc )
+}
+
 void function SURVIVAL_RemoveSpecificItemFromPlayerInventory( entity player, string ref, int count )
 {
 	LootData data                                  = SURVIVAL_Loot_GetLootDataByRef( ref )
@@ -5598,6 +5627,11 @@ void function SurvivalLoot_OnPhysicsDisabled( entity physicsEnt )
 	ent.Solid()
 
 	physicsEnt.Destroy()
+}
+
+bool function SURVIVAL_IsValidLootGroup( string groupName )
+{
+	return groupName in file.lootGroups
 }
 
 void function MoveToNewPosition( entity loot, vector origin, vector angles )

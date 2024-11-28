@@ -537,6 +537,8 @@ Scripts:
 	mp/_ai_mp.gnut
 	_xp.gnut
 	_achievements.gnut
+	
+	mp/_loot_gun_racks.nut
 
 	mp/spawn.nut
 	mp/_score.nut
