@@ -58,10 +58,10 @@ global struct UpdraftTriggerSettings
 	//needs script_server_fps 20 so it feels like retail native implementation, otherwise reduce maxShakeActivationHeight to 375 and liftExitDuration to 1.5
 	
 	float minShakeActivationHeight = 500.0               // At what z-position to start shaking the player's view
-	float maxShakeActivationHeight = 400.0               // At what z-position will the player's view be shaking at the maximum
+	float maxShakeActivationHeight = 380 //400.0               // At what z-position will the player's view be shaking at the maximum
 	float liftSpeed                = 300.0                   	// Maximum upward speed
 	float liftAcceleration         = 100.0                 		// How fast to accelerate to the maximum upward speed
-	float liftExitDuration         = 2.5                   		// After clearing the updraft trigger, how many extra seconds to continue lifting for
+	float liftExitDuration         = 1.5 //2.5                   		// After clearing the updraft trigger, how many extra seconds to continue lifting for
 }
 
 struct
