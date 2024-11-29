@@ -239,8 +239,11 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 //////////////////////////////////////////
 #if CLIENT 
 
-	void function FS_Scenarios_ForceUpdatePlayerCount() //getting rid of networked int for this game mode, so we can show proper enemy player count (each team should have a different value, networked int will show only one value) Colombia
+	void function FS_Scenarios_ForceUpdatePlayerCount( entity player ) //getting rid of networked int for this game mode, so we can show proper enemy player count (each team should have a different value, networked int will show only one value) Colombia
 	{
+		if( player != GetLocalClientPlayer() )
+			return
+		
 		var statusRui = ClGameState_GetRui()
 		
 		if( IsValid( GetLocalClientPlayer() ) && GetLocalClientPlayer().GetPlayerNetTime( "FS_Scenarios_currentDeathfieldRadius" ) != 0 && statusRui != null )
@@ -263,9 +266,9 @@ void function FS_Scenarios_UpdatePlayerScore( entity player, int event, entity v
 			
 			array<entity> players = GetPlayerArray()
 			
-			#if DEVELOPER
-				printt( "setting to ", GetPlayerArray().len() )
-			#endif 
+			// #if DEVELOPER
+				// printt( "setting to ", GetPlayerArray().len() )
+			// #endif 
 			
 			RuiSetInt( statusRui, "livingPlayerCount", players.len() )
 			RuiSetInt( statusRui, "squadsRemainingCount", players.len() )

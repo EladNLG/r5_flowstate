@@ -245,6 +245,7 @@ function lootbins_buttons() {
                 user.TakeOffhandWeapon(OFFHAND_TACTICAL)
                 user.TakeOffhandWeapon(OFFHAND_ULTIMATE)
                 user.SetPersistentVar("gen", Time())
+                user.SetVelocity(<0,0,0>)
                 LocalMsg(user, "#FS_STRING_VAR", "", 4, 1.0, "Timer Started", "", "", false)
             } else {
                 user.SetPersistentVar("gen", 0)

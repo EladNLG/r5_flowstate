@@ -205,6 +205,9 @@ void function UpdateTriggerStatusFromFlagChange( string flag )
 */
 void function FireTriggerInit( entity trigger )
 {
+	if( trigger.GetScriptName() == "skydive_dust_devil" )
+		return
+	
 	trigger.ConnectOutput( "OnStartTouch", FireStartTouch )
 	trigger.ConnectOutput( "OnEndTouch", FireEndTouch )
 }

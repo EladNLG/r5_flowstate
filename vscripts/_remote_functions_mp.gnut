@@ -76,7 +76,6 @@ void function SetupRemoteFuncAliases()
 			Consumable_UseBomb,
 			ServerCallback_CTF_HideCustomUI,
 			Tracker_ShowChampion,
-			FS_Scenarios_ForceUpdatePlayerCount,
 			ServerToClient_DisplayCancelReviveHintForPlayer,
 			ServerToClient_RemoveCancelReviveHintForPlayer,
 			ServerCallback_FlashScreenForPlayer,
@@ -135,7 +134,6 @@ void function SetupRemoteFuncAliases()
 			"Consumable_UseBomb",
 			"ServerCallback_CTF_HideCustomUI",
 			"Tracker_ShowChampion",
-			"FS_Scenarios_ForceUpdatePlayerCount",
 			"ServerToClient_DisplayCancelReviveHintForPlayer",
 			"ServerToClient_RemoveCancelReviveHintForPlayer",
 			"ServerCallback_FlashScreenForPlayer",
@@ -223,6 +221,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "Remote_CallFunction_ByRef_internal", "int", INT_MIN, INT_MAX )
 	Remote_RegisterClientFunction( "FS_LocalizationConsistencyCheck_014" )
 	Remote_RegisterClientFunction( "FS_ByRef_ConsistencyCheck" )
+	
 	AddCallback_OnNetworkRegistration( ByRef_ConsistencyCheck )
 
 	#if ENTITYVAR_DEPRECATED	
@@ -240,6 +239,14 @@ void function RemoteFunctions_Init_Begin()
 		#endif
 	#endif
 
+	//Custom box msg from server //Reenabled to use Message_New function in dev modes.
+	Remote_RegisterUntypedFunction_deprecated( "fs_NewBoxBuildMessage" )
+	Remote_RegisterUntypedFunction_deprecated( "fs_NewBoxShowMessage" )
+		
+	// Ringflare
+	// Remote_RegisterClientFunction( "EnterTriggerRF", "entity")
+	// Remote_RegisterClientFunction( "ExitTriggerRF", "entity")
+	
 	//Evo shield mod
 	if( GetCurrentPlaylistVarBool( "flowstate_evo_shields", false ) )
 		Remote_RegisterClientFunction("EvoShield_PlayFX", "int", 0, 10)
@@ -251,13 +258,13 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction("Flowstate_UpdateRainbowShieldExtraProperty", "int", INT_MIN, INT_MAX, "int", 0, 9999)
 	
 	//Dynamic client side lights spawn from server
-	if( MapName() == eMaps.mp_rr_arena_composite ) //TEMP. To free up buffer space. Currently only used in composite.
+	if( MapName() == eMaps.mp_rr_arena_composite ) //TEMP. To free up buffer space. Currently only used in composite. Cafe
 		Remote_RegisterClientFunction( "ServerCallback_SpawnClientSideDynamicLight", "vector", -32000.0, 32000.0, 32, "vector", -32000.0, 32000.0, 32, "int", 0, 255, "float", 0.0, 32000.0, 8, "float", 0.0, 32000.0, 8 )
 
 	// R5R Sword
 	RegisterNetworkedVariable( "isPlayerBlocking", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 	if( Playlist() != ePlaylists.fs_scenarios )
-		RegisterNetworkedVariable( "TitanSwordSuper", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -2.0 )//temp change need a SNVT_TIME SNDC_PLAYER_EXCLUSIVE slot for scenarios
+		RegisterNetworkedVariable( "TitanSwordSuper", SNDC_PLAYER_EXCLUSIVE, SNVT_TIME, -2.0 )//temp change. need a SNVT_TIME SNDC_PLAYER_EXCLUSIVE slot for scenarios. Cafe
 	Remote_RegisterClientFunction( "ServerCallback_TitanSword_SuperReady", "entity" )
 	Remote_RegisterClientFunction( "ServerCallback_StopDash" )
 	Remote_RegisterClientFunction( "FS_TitanSword_CreateSlamGroundFx", "vector", -32000.0, 32000.0, 32 )
@@ -315,6 +322,9 @@ void function RemoteFunctions_Init_Begin()
 				Remote_RegisterClientFunction( "FS_Scenarios_ChangeAliveStateForPlayer", "int", INT_MIN, INT_MAX, "bool" )
 				Remote_RegisterClientFunction( "FS_Scenarios_TogglePlayersCardsVisibility", "bool", "bool" )
 				Remote_RegisterClientFunction( "FS_Scenarios_SetupPlayersCards", "bool" )
+				Remote_RegisterClientFunction( "FS_Scenarios_OnRingCreated", "entity" )
+				Remote_RegisterClientFunction( "FS_Scenarios_SetRingCloseTimeForMinimap", "int", INT_MIN, INT_MAX )
+				Remote_RegisterClientFunction( "FS_Scenarios_ForceUpdatePlayerCount", "entity" )
 				
 				Remote_RegisterClientFunction( "FS_Scenarios_AddEnemyHandle", "int", INT_MIN, INT_MAX )
 				Remote_RegisterClientFunction( "FS_Scenarios_AddEnemyHandle2", "int", INT_MIN, INT_MAX )
@@ -494,7 +504,7 @@ void function RemoteFunctions_Init_Begin()
 			
 			break
 		
-		// case flowstate_pkknockback:
+		// case eGamemodes.flowstate_pkknockback:
 			// Remote_RegisterClientFunction("UpdateRingSizeFromServer", "float", 0.0, 99999.0, 32)
 			// Remote_RegisterClientFunction("ServerCallback_FSDM_SetScreen", "int", 0, 255, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", 0, 255)
 			// Remote_RegisterClientFunction("ServerCallback_FSDM_OpenVotingPhase", "bool")
@@ -878,6 +888,8 @@ void function RemoteFunctions_Init_Begin()
 
 	if ( !IsLobby() )
 		Remote_RegisterClientFunction( "ServerCallback_ShowDeathHint", "int", 0, MAX_DEATH_HINTS )
+		
+	Bloodhound_TT_RegisterNetworking() // Bloodhound Town Takeover
 
 	//Remote_RegisterClientFunction( "ServerCallback_SatchelPlanted" ) //disabled for now ~mkos
 
@@ -918,6 +930,7 @@ void function RemoteFunctions_Init_Begin()
 
 	Remote_RegisterClientFunction( "ServerCallback_SetLootRollerLootTierFX", "int", 0, INT_MAX, "int", INT_MIN, INT_MAX, "bool" )
 	Remote_RegisterClientFunction( "ServerCallback_StopLootRollerFX", "int", 0, INT_MAX )
+	Remote_RegisterClientFunction( "ServerToClient_SetRisingWallAmbientGenericState", "entity", "bool" )
 
 	if( Flowstate_MapHasTrain() )
 		Remote_RegisterClientFunction( "ServerCallback_SetDesertlandsTrainAtStation", "bool" )
@@ -1120,7 +1133,7 @@ void function ByRef_ConsistencyCheck()
 				file.bConsistencyCheckComplete = true
 			}
 		}
-	}	
+	}
 #endif
 
 #if SERVER 

@@ -115,6 +115,9 @@ void function MapZones_RegisterNetworking()
 
 void function MapZones_RegisterDataTable( asset dataTableAsset )
 {
+	if( Playlist() == ePlaylists.fs_scenarios )
+		return
+	
 	file.mapZonesDataTable = GetDataTable( dataTableAsset )
 	file.mapZonesInitialized = true
 }
@@ -202,6 +205,11 @@ void function EntitiesDidLoad()
 #if DEVELOPER
 	thread DebugFrameThread()
 #endif // DEVELOPER
+	if( isScenariosMode() )
+	{
+		SURVIVAL_PlaceGroundItems()
+		return
+	}
 
 	if ( !file.mapZonesInitialized )
 		return

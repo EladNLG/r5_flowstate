@@ -159,6 +159,7 @@ global function Tracker_GetCurrentEventByPlayerHandle_expensive
 global function Tracker_GetCurrentEventForAttackerOnVictim
 global function Tracker_BuildAllPlayerMetrics
 global function Tracker_GetPlayerMetricsArray
+global function Tracker_IsPlayerMetricsInitialized
 global function Tracker_RegisterStat
 global function Tracker_RegisterAllSettings
 global function Tracker_StatsMetricsByUID
@@ -3702,7 +3703,7 @@ int function InitializePlayerMetricsStructForPlayer( entity player, string playe
 		playerID = player.p.UID
 	}
 	
-	if ( IsPlayerMetricsInitialized( playerID ) ) 
+	if ( Tracker_IsPlayerMetricsInitialized( playerID ) ) 
 	{
 		#if DEVELOPER
 			sqerror( "Metrics already initialized for player: " 
@@ -3754,7 +3755,7 @@ int function GetPlayerMetricsIndex( entity player )
 	return InitializePlayerMetricsStructForPlayer( player )
 }
 
-bool function IsPlayerMetricsInitialized( string uid )
+bool function Tracker_IsPlayerMetricsInitialized( string uid )
 {
 	return ( uid in PlayerIdMap )
 }
@@ -3791,8 +3792,7 @@ PlayerMetrics function __GetPlayerMetrics( int id )
 
 int function PlayerMap_Insert( string uid ) 
 {
-    int index = PlayerMetricsArray.len() - 1
-    
+    int index = PlayerMetricsArray.len() - 1 
 	PlayerIdMap[ uid ] <- index	
 	return index
 }

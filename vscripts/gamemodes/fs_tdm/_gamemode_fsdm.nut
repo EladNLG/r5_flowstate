@@ -171,7 +171,7 @@ struct
 	array< void functionref() > tdmStateInProgressCallbacks
 	bool bIsChampionShowing
 	
-	
+	table<string, LocationSettings> locationSettingsMap = {}
 	
 } file
 
@@ -596,9 +596,40 @@ void function DM__OnEntitiesDidLoad()
 
 void function _RegisterLocation(LocationSettings locationSettings)
 {
-    file.locationSettings.append(locationSettings)
+	int index = file.locationSettings.len() 
+	locationSettings.index = index
+	
+    file.locationSettings.append( locationSettings )	
+	file.locationSettingsMap[ locationSettings.name ] <- locationSettings	
     file.droplocationSettings.append(locationSettings)
 }
+
+int function DetermineLockedPOI()
+{ 
+	int potentialPOI = GetLocationSettingsIndexByName( GetCurrentPlaylistVarString( "locked_poi_name", "" ) )
+	return potentialPOI > -1 ? potentialPOI : FlowState_LockedPOI() 
+}
+
+int function GetLocationSettingsIndexByName( string name )
+{
+	if( name in file.locationSettingsMap )
+	{
+		#if DEVELOPER
+			printw( "resolved location:", name )
+		#endif 
+		
+		return file.locationSettingsMap[ name ].index
+	}
+	else 
+	{
+		#if DEVELOPER
+			printw( "location by name not found:", name )
+		#endif
+	}
+		
+	return -1
+}
+
 
 LocPair function _GetVotingLocation()
 {
@@ -1557,15 +1588,6 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 		}catch(e420){
 		//AttachEdict rare crash
 		}
-
-		if( flowstateSettings.GiveAllOpticsToPlayer )
-		{
-			SetPlayerInventory( player, [] )
-			Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
-			array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
-			foreach(optic in optics)
-				SURVIVAL_AddToPlayerInventory(player, optic)
-		}
 	}
 
 	if( flowstateSettings.is_halo_gamemode && IsValid( player ))
@@ -1699,6 +1721,15 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 	
 	Survival_SetInventoryEnabled( player, true )
 	SetPlayerInventory( player, [] )
+	
+	if( flowstateSettings.GiveAllOpticsToPlayer )
+	{
+		SetPlayerInventory( player, [] )
+		Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
+		array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
+		foreach(optic in optics)
+			SURVIVAL_AddToPlayerInventory(player, optic)
+	}
 
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 	{
@@ -2156,13 +2187,10 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 	//todo: init outside func
 
     array<string> Weapons = [
-		"mp_weapon_alternator_smg optic_cq_threat bullets_mag_l2 stock_tactical_l2 laser_sight_l2"
-		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
-		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
-		"mp_weapon_mastiff optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
-		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2"
+		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
+		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
+		"mp_weapon_hemlok barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2"
 	]
 
 	//R5RDEV-1
@@ -2185,13 +2213,13 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 
 	//todo: init outside func..
     array<string> Weapons = [
+		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
+		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+		"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
-		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
-		"mp_weapon_energy_ar optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
-		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger"
+		"mp_weapon_mastiff shotgun_bolt_l2 stock_tactical_l2",
+		"mp_weapon_energy_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2",
+		"mp_weapon_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2"
 	]
 
 	//R5RDEV-1
@@ -2982,7 +3010,7 @@ void function SimpleChampionUI()
 			file.selectedLocation = file.locationSettings[ choice ]
 		
 		if( FlowState_LockPOI() )
-			file.selectedLocation = file.locationSettings[ FlowState_LockedPOI() ]
+			file.selectedLocation = file.locationSettings[ DetermineLockedPOI() ]
 	}
 	else
 	{
@@ -5042,10 +5070,7 @@ string function GetOwnerName()
 
 bool function IsAdmin( entity player )
 {
-	if( file.authkey == "" ) 
-		return false
-	
-	return player.p.isAdmin
+	return player.GetPlayerNetBool( "IsAdmin" )
 }
 
 bool function ClientCommand_VoteForMap(entity player, array<string> args)

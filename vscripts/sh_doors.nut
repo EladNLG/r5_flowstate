@@ -18,6 +18,8 @@ global function IsDoorLocked
 
 #if SERVER
 global function RemoveDoorFromManagedEntArray
+global function OpenDoor
+global function CloseDoor
 #endif
 
 #if SERVER && DEVELOPER
@@ -113,7 +115,10 @@ void function ShDoors_Init()
 		RegisterSignal( "OperateLinkedDoor" )
 		RegisterSignal( "BlockableDoor_ThreadedRegen" )
 		RegisterSignal( "ScriptCalled" )
+		RegisterSignal( "ScriptedDoorReady" )
 		RegisterSignal( "AnimTimeout" )
+		RegisterSignal( "ForceToggleScriptedDoor" )
+		RegisterSignal( "OnDoorReset" )
 
 		AddSpawnCallback_ScriptName( "survival_door_model", OnDoorSpawned )
 		AddSpawnCallback_ScriptName( "survival_door_plain", OnDoorSpawned )
@@ -667,6 +672,141 @@ float function GetDoorLongestWidth( entity door )
 		doorWidth = doorWidthY
 
 	return doorWidth
+}
+#endif
+#if SERVER
+array<entity> function GetAllDoorEnts()
+{
+	array<entity> results
+
+	results.extend( GetAllNonCodeDoorEnts() )
+	results.extend( GetAllCodeDoorEnts() )
+	return results
+}
+
+
+
+array<entity> function GetAllNonCodeDoorEnts()
+{
+	array<entity> results
+
+	results.extend( GetEntArrayByScriptName( "survival_door_plain" ) )
+	results.extend( GetEntArrayByScriptName( "survival_door_model" ) )
+	results.extend( GetEntArrayByScriptName( "survival_door_sliding" ) )
+	results.extend( GetEntArrayByScriptName( "survival_door_blockable" ) )
+	return results
+}
+
+array<entity> function GetAllCodeDoorEnts()
+{
+	array<entity> results
+
+	results.extend( GetEntArrayByScriptName( "survival_door_code" ) )
+	results.extend( GetEntArrayByClass_Expensive( "prop_door" ) )
+	return results
+}
+#endif //SERVER
+
+
+#if SERVER
+table<entity, entity> s_triggerToScriptDoorMap
+void function SetupScriptDoorForNPCs( entity scriptDoor )
+{
+}
+
+entity function CreateSurvivalDoorPlain( asset model, vector origin, vector angles )
+{
+	int solidType = 6 // use vPhysics
+
+	entity door = CreatePropDynamic( model, origin, angles, solidType )
+	door.SetScriptName( "survival_door_plain" )
+	thread OnDoorSpawned( door )
+
+	return door
+}
+
+array<entity> function GetEntsFromArrayInRange( vector origin, float radius, array<entity> ents )
+{
+	float distCheck = pow( radius, 2 )
+
+	array <entity> results
+	foreach ( ent in ents )
+	{
+		if ( DistanceSqr( ent.GetOrigin(), origin ) <= distCheck )
+			results.append( ent )
+	}
+	return results
+}
+
+array<entity> function GetDoorsAtOrigin( vector origin, float radius = 64 )
+{
+	array<entity> doorModels = GetAllDoorEnts()
+	return GetEntsFromArrayInRange( origin, radius, doorModels )
+}
+
+entity function GetDoorAtOrigin( vector origin, float radius = 64 )
+{
+	//Warning - this will just return the first door it finds
+	array<entity> doors = GetDoorsAtOrigin( origin, radius )
+	if ( doors.len() == 0 )
+		return null
+
+	return doors[ 0 ]
+}
+
+#endif //#if SERVER
+
+
+#if SERVER
+void function LockDoor( entity door )
+{
+	if ( IsCodeDoor( door ) )
+	{
+		door.SetDoorLocked( true )
+		return
+	}
+
+	door.e.isDisabled = true
+	thread LockedDoorUsePrompts( door )
+
+}
+
+void function LockedDoorUsePrompts( entity door )
+{
+	//we don't want script doors to say "locked" if they are in the open position
+	AssertIsNewThread()
+	door.EndSignal( "OnDestroy" )
+
+	wait 3.0 //need to wait for door.e.isOpen to be set before deciding on what prompts to show the player
+
+	if ( !IsValid( door ) )
+		return
+
+	if ( door.e.isOpen )
+		door.SetUsePrompts( "#EMPTY_STRING", "#EMPTY_STRING" ) //no need to show "locked" ip door is in the open position
+	else
+		door.SetUsePrompts( "#SURVIVAL_LOCKED_DOOR", "#SURVIVAL_LOCKED_DOOR" )
+}
+
+
+void function UnlockDoor( entity door )
+{
+	if ( IsCodeDoor( door ) )
+	{
+		door.SetDoorLocked( false )
+		return
+	}
+
+	door.e.isDisabled = false
+	if ( door.e.isOpen )
+		door.SetUsePrompts( "#SURVIVAL_CLOSE_DOOR", "#SURVIVAL_CLOSE_DOOR" )
+	else
+		door.SetUsePrompts( "#SURVIVAL_OPEN_DOOR", "#SURVIVAL_OPEN_DOOR" )
+}
+
+bool function IsScriptDoorLocked( entity door )
+{
+	return door.e.isDisabled
 }
 #endif
 
@@ -2116,6 +2256,67 @@ void function CodeCallback_OnDoorInteraction( entity door, entity user, entity o
 	#endif
 }
 
+void function OpenDoor( entity door, entity player )
+{
+	if ( IsCodeDoor( door ) )
+	{
+		//door.OpenDoor( null )
+		return
+	}
+
+	if ( door.e.isOpen )
+		return
+
+	ToggleDoor( door, player )
+}
+
+
+void function CloseDoor( entity door, entity player )
+{
+	//printf( "CloseDoor() on " + door.GetScriptName() )
+	if ( IsCodeDoor( door ) )
+	{
+		//printf( "Is Code Door: true" )
+		//door.CloseDoor( null )
+		return
+	}
+
+	if ( !door.e.isOpen )
+	{
+		//printf( "door is not open" )
+		return
+	}
+
+	ToggleDoor( door, player )
+}
+
+
+void function ToggleDoor( entity door, entity player )
+{
+	//printf( "ToggleDoor()" )
+	if ( IsValid( player ) )
+	{
+		//printf( "player is valid" )
+		Signal( door, "OnPlayerUse", { player = player } )
+	}
+	else
+	{
+		//printf( "player is not valid" )
+		Signal( door, "ForceToggleScriptedDoor", { player = null } )
+	}
+}
+
+void function OpenAndLockAllScriptDoors()
+{
+	/*foreach( door in GetAllNonCodeDoorEnts() )
+	{
+		if ( !IsValid( door ) )
+			continue
+		OpenDoor( door, null )
+		LockDoor( door )
+		door.UnsetUsable() //interferes with reload prompt
+	}*/
+}
 bool function IsDoorLocked( entity door )
 {
 	if ( IsCodeDoor( door ) )

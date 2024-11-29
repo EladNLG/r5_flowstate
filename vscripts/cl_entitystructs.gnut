@@ -31,6 +31,8 @@ global struct ClientEntityStruct
 	// for cockpit
 	entity mainVGUI
 	entity body
+	
+	bool isOpen
 
 	// for mainVGUI
 	var rodeoAlertIcon

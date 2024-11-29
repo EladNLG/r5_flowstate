@@ -1352,6 +1352,7 @@ bool function ClientCommand_mkos_challenge(entity player, array<string> args)
 		case "end":
 			
 			endLock1v1( player )
+			return true
 		
 		case "remove":
 		
@@ -2603,6 +2604,7 @@ void function soloModePlayerToWaitingList( entity player )
 		
 		player.SetPlayerNetTime( "FS_Scenarios_timePlayerEnteredInLobby", Time() )
 		Remote_CallFunction_ByRef( player, "FS_DestroyCompass" )
+		player.SetMinimapZoomScale( 3.0, 3.0 )
 	}
 
 	SetPlayerInventory( player, [] ) //clear inventory.
@@ -2679,7 +2681,10 @@ void function soloModePlayerToWaitingList( entity player )
 	
 	//检查resting list 是否有该玩家
 	deleteSoloPlayerResting( player )
-	LocalMsg( player, "#FS_IN_QUEUE", "", eMsgUI.EVENT, settings.roundTime )
+	if( isScenariosMode() && FS_Scenarios_GetMatchIsEnding() )
+		LocalMsg( player, "#FS_Scenarios_WaitingForRoundEnd", "", eMsgUI.EVENT, g_fCurrentRoundEndTime - Time() )
+	else
+		LocalMsg( player, "#FS_IN_QUEUE", "", eMsgUI.EVENT, settings.roundTime )
 }
 
 void function soloModePlayerToInProgressList( soloGroupStruct newGroup ) 

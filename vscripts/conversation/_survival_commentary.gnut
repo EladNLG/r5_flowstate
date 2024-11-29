@@ -20,6 +20,7 @@ global function SetChampion
 global function GetChampion
 
 global function PlayBattleChatterLineToTeamButNotSpeaker
+global function PlayBattleChatterLineToSpeakerAndTeamThatBlocksLowerPriorityLines
 global function PlayBattleChatterLineToSpeakerAndOtherPlayer
 global function PlayBattleChatterLineDelayedToPlayer
 global function TryPlayWeaponBattleChatterLine
@@ -227,6 +228,15 @@ void function PlayBattleChatterLineToPlayer( string conversationType, entity lis
 	PlayDialogueForPlayer_NoWait( conversationType, listeningPlayer, speakingPlayer, dialogueFlags )
 }
 
+void function PlayBattleChatterLineToSpeakerAndTeamThatBlocksLowerPriorityLines( entity speakingPlayer, string chatterLine )
+{
+	if ( !IsValid( speakingPlayer ) )
+		return
+
+	foreach ( player in GetFriendlySquadArrayForPlayer( speakingPlayer ) )
+		PlayBattleChatterLineToPlayerThatBlocksLowerPriorityLines( chatterLine, player, speakingPlayer )
+}
+
 int function SurvivalCommentary_GetChampionEEH()
 {
 	return GetGlobalNetInt( "championEEH" )
@@ -334,6 +344,15 @@ bool function ShouldStompConAltForLine( string conversationType, entity speaking
 
 	return false
 }
+
+void function PlayBattleChatterLineToPlayerThatBlocksLowerPriorityLines( string conversationType, entity listeningPlayer, entity speakingPlayer )
+{
+	if ( !ShouldPlayBattleChatter( conversationType, listeningPlayer, speakingPlayer ) )
+		return
+
+	PlayDialogueForPlayer_NoWait( conversationType, listeningPlayer, speakingPlayer, eDialogueFlags.BLOCK_LOWER_PRIORITY_QUEUE_ITEMS )
+}
+
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if( DamageInfo_GetDamage( damageInfo ) == 0 )

@@ -375,6 +375,7 @@ function Firstmap_load() {
                     ent.SetPersistentVar("gen", Time())
                     ent.p.isTimerActive = true
                     ent.p.startTime = floor(Time()).tointeger()
+                    ent.SetVelocity(<0,0,0>)
                     LocalMsg(ent, "#FS_STRING_VAR", "", 4, 1.0, "Timer Started", "", "", false)
                 } else {
                     ent.SetPersistentVar("gen", 0)

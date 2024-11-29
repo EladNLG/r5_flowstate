@@ -32,6 +32,7 @@ global struct LocationSettings
     vector cinematicCameraOffset
 	LocPair &victorypos
 	asset locationAsset
+	int index = -1
 }
 
 // Screen IDS

@@ -429,6 +429,7 @@ function grapplemap_load() {
                     user.SetPersistentVar("gen", Time())
                     user.p.isTimerActive = true
                     user.p.startTime = floor(Time()).tointeger()
+                    user.SetVelocity(<0,0,0>)
                     LocalMsg(user, "#FS_STRING_VAR", "", 4, 1.0, "Timer Started", "", "", false)
                 } else {
                     user.SetPersistentVar("gen", 0)

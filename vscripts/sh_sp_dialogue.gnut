@@ -28,6 +28,7 @@ global function StopDialogue
 global function StopDialogueForPlayer
 global function PlayDialogueForPlayer_NoWait
 global function PlayDialogueForPlayer
+global function PlayDialogueForPlayer_Retail
 global function PlayRadioDialogueToAll
 global function PlayRadioDialogueToTeam
 global function PlayRadioDialogueToPlayer
@@ -792,6 +793,85 @@ void function PlayRadioDialogueToTeam( string alias, int teamNum )
 void function PlayRadioDialogueToPlayer( string alias, entity player )
 {
 	PlayRadioDialogueTo_Internal( alias, [player] )
+}
+
+void function PlayDialogueForPlayer_Retail( string name, entity player, entity speaker, float delay = 0, int dialogueFlags = 0, string responseName = "", entity responseSpeaker = null, int customQueueIdx = -1 )
+{
+	if ( !IsValid( player ) )
+		return
+	Assert( player.IsPlayer() )
+
+	bool isForAllSpeakers = ((dialogueFlags & eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS) != 0)
+	if ( !IsValid( speaker ) && !isForAllSpeakers )
+	{
+		if ( !IsBitFlagSet( dialogueFlags, eDialogueFlags.USE_CUSTOM_SPEAKERS ) )
+		{
+			Warning( "Attempted to play dialogue on a null speaker without identifying an environmental/custom speaker flag." )
+			return
+		}
+	}
+
+	int aliasID = GetNextAliasIdForName( name )
+	if ( aliasID < 0 )
+	{
+		Warning( "Dialogue line " + name + " is not registered" )
+		return
+	}
+
+	int responseID = -1
+	if ( responseName != "" )
+	{
+		responseID = GetNextAliasIdForName( responseName )
+		if ( responseID < 0 )
+		{
+			Warning( "Dialogue line " + responseName + " is not registered" )
+		}
+		else
+		{
+			if ( ! ShouldPlayDialogueIfSolo( GetDataForAliasId( responseID ), responseSpeaker ) )
+				responseID = -1
+		}
+	}
+
+	PlayAliasIdForPlayer( aliasID, player, speaker, delay, dialogueFlags, responseID, responseSpeaker, customQueueIdx )
+}
+
+void function PlayAliasIdForPlayer( int aliasID, entity player, entity speaker, float delay = 0, int dialogueFlags = 0, int responseID = -1, entity responseSpeaker = null, int customQueueIdx = -1 )
+{
+	EndSignal( player, "OnDestroy" )
+	if ( IsValid( speaker ) )
+		EndSignal( speaker, "OnDestroy" )
+
+	if ( delay > 0 )
+		wait delay
+
+	file.dialoguePlaying = true
+	file.lastLineRequestPriority = GetLinePriorityForAliasId( aliasID )
+
+	OnThreadEnd(
+		function() : ( aliasID )
+		{
+			file.dialoguePlaying = false
+			if ( aliasID in file.waitingOnDialogue )
+				delete file.waitingOnDialogue[aliasID]
+		}
+	)
+
+	if ( !(aliasID in file.waitingOnDialogue) )
+		file.waitingOnDialogue[aliasID] <- true
+
+	PlayDialogue_Internal( aliasID, dialogueFlags, player, speaker, responseID, responseSpeaker, customQueueIdx )
+
+	while ( true )
+	{
+		table signalData = WaitSignal( player, "DialogueFinishedForID", "AllDialogueFinished" )
+		if ( string( signalData.signal ) == "AllDialogueFinished" )
+			break
+		if ( signalData.aliasID == aliasID )
+			break
+		if ( !(aliasID in file.waitingOnDialogue) )
+			break
+	}
 }
 
 void function PlayDialogueForPlayer( string name, entity player, entity speaker, float delay = 0, int dialogueFlags = 0, string responseName = "", entity responseSpeaker = null )

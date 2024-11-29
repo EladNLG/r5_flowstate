@@ -1951,7 +1951,7 @@ playlists
 				
 				fs_scenarios_show_death_recap_onkilled			1
 				fs_scenarios_zonewars_ring_mode					1
-				fs_scenarios_zonewars_ring_ringclosingspeed 	1.0
+				fs_scenarios_zonewars_ring_ringclosingspeed 	0.8
 				fs_scenarios_ring_damage_step_time				1.5
 				fs_scenarios_game_start_time_delay				5.0
 				fs_scenarios_ring_damage						25.0

@@ -371,6 +371,8 @@ Scripts:
 	mp/sh_comms_menu.nut
 	
 	mp/sh_warp_gates.gnut
+	mp/sh_rising_walls.nut  //World's Edge MU2/MU3
+	mp/sh_bloodhound_tt.nut  //World's Edge MU2/MU3
 	sh_mp_utility.gnut
 	sh_score.gnut
 	sh_elite_streak.gnut
@@ -535,6 +537,8 @@ Scripts:
 	mp/_ai_mp.gnut
 	_xp.gnut
 	_achievements.gnut
+	
+	mp/_loot_gun_racks.nut
 
 	mp/spawn.nut
 	mp/_score.nut
@@ -1098,7 +1102,7 @@ Scripts:
     // ReMap Live
     mp/levels/mp_rr_remap.nut
 	
-    // mp/_movement_recorder_deprecated.nut
+    mp/_movement_recorder_deprecated.nut
 ]
 
 When: "CLIENT"

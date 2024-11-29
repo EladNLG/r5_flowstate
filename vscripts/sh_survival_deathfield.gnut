@@ -40,6 +40,8 @@ global function ServerCallback_Survival_CreateBeaconWorldIcon
 global function SURVIVAL_AddCallback_OnDeathFieldStartShrink
 global function SURVIVAL_AddCallback_OnDeathFieldStopShrink
 global function UpdateSurveyBeaconHint
+
+global function FS_Scenarios_OnRingCreated
 #endif
 
 global function HasDeathFieldImmunity
@@ -1692,29 +1694,36 @@ void function OnPropDynamicCreated( entity prop )
 	}
 }
 
+//This HAS to be in a remote function to avoid race conditions where local client still has multiple realms assigned
+//This fixes the issue where ring size is not showed correctly on client in scenarios
+void function FS_Scenarios_OnRingCreated( entity prop )
+{
+	if ( !IsValid( prop ) || prop.GetTargetName() != "scenariosDeathField" )
+		return
+	
+	printt( "[+] Scenarios deathfield spawned in local player realm", prop, prop.GetTargetName() )
+
+	file.deathField = prop
+	FS_Scenarios_MinimapDeathFieldCreated( prop )
+	AddInWorldMinimapObject( prop )
+	SetBigMapZoomScale(6.0)
+	
+	thread FS_Scenarios_Cl_DeathFieldThink( prop )
+
+	var gamestateRui = ClGameState_GetRui()
+	array<var> ruis = [gamestateRui]
+	var cameraRui = GetCameraCircleStatusRui()
+	if ( IsValid( cameraRui ) )
+		ruis.append( cameraRui )
+
+	foreach( rui in ruis )
+	{
+		RuiTrackFloat3( rui, "deathFieldOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
+	}
+}
+
 void function OnPropScriptCreated( entity prop )
 {
-	if ( prop.GetTargetName() == "scenariosDeathField" )
-	{
-		if ( !GetLocalClientPlayer().DoesShareRealms( prop ) )
-			return
-
-		printt( "scenarios deathfield spawned in local player realm", prop, prop.GetTargetName() )
-		file.deathField = prop
-		thread FS_Scenarios_Cl_DeathFieldThink( prop )
-
-		var gamestateRui = ClGameState_GetRui()
-		array<var> ruis = [gamestateRui]
-		var cameraRui = GetCameraCircleStatusRui()
-		if ( IsValid( cameraRui ) )
-			ruis.append( cameraRui )
-
-		foreach( rui in ruis )
-		{
-			RuiTrackFloat3( rui, "deathFieldOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
-		}
-	}
-
 	if ( prop.GetTargetName() == "surveyZone" )
 	{
 		file.surveyMinimapEnts.append( prop )

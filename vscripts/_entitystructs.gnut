@@ -350,8 +350,9 @@ global struct ServerEntityStruct
 	bool forceHeadshotDeath
 	bool isLeftDoor
 	vector spawnAngles
-	bool isOpen
 	vector goalAngles
+	bool   isOpen // used by sh_lootbins.nut and sh_doors.nut
+	//bool   isLeftDoor // used by sh_doors.nut
 	entity usePlayer
 	bool isDoorBlocker
 	void functionref( entity, entity, var ) Callback_VortexTriggerBulletHit
@@ -1150,6 +1151,12 @@ global struct ServerPlayerStruct
 	int shotsfired = 0
 	
 	int quickHealEnableCount
+	
+	//1v1 Coaching mode
+	bool playerisready = false
+	
+	//updraft
+	bool isPlayerUpdrafting = false
 }
 
 global struct ChallengeScore
@@ -1264,6 +1271,9 @@ global struct ServerAIStruct
 	entity decoyOwner
 	string lastSchedule
 	string lastAnim
+	
+	//nextbots
+	float screamSoundDebounce
 }
 
 
