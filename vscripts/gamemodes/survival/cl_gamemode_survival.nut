@@ -2132,6 +2132,7 @@ bool function FS_ShouldHookMapKey()
 		|| Playlist() == ePlaylists.fs_snd 
 		|| Playlist() == ePlaylists.fs_dm
 		|| Playlist() == ePlaylists.fs_dm_fast_instagib
+		|| Playlist() == ePlaylists.fs_realistic_ttv
 		// || Playlist() == ePlaylists.fs_scenarios
 	)
 		return true

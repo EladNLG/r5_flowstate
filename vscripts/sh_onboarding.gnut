@@ -175,10 +175,9 @@ void function Sequence_WaitingForPlayers()
 
 	// bool shouldNotWaitForever = maximumTimeToSpendToWaitForPlayers > 0.0 && !PreGame_GetWaitingForPlayersWaitForeverEnabled()
 
+	const float LOOP_INTERVAL = 0.1
 	while ( !Flag( "MinPlayersReached" ) )
 	{
-		const float LOOP_INTERVAL = 0.1
-
 		timeSpentWaitingForPlayers += LOOP_INTERVAL
 		wait LOOP_INTERVAL
 

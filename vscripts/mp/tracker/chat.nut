@@ -108,6 +108,8 @@ void function RegisterAllChatCommands() //if chat commands enabled.
 			break 
 			
 		case ePlaylists.fs_1v1:
+		case ePlaylists.fs_lgduels_1v1:
+		case ePlaylists.fs_vamp_1v1:
 			
 			Commands_Register( "!wait", cmd_wait, [ "/wait", "\\wait" ] )
 			Commands_Register( "!rest", cmd_rest, [ "/rest", "\\rest" ] )
@@ -154,6 +156,8 @@ void function cmd_rest( string tag, array<string> args, entity activator )
 			break
 			
 		case ePlaylists.fs_1v1:
+		case ePlaylists.fs_lgduels_1v1:
+		case ePlaylists.fs_vamp_1v1:
 		
 			ClientCommand_Maki_SoloModeRest( activator, args )	
 			break

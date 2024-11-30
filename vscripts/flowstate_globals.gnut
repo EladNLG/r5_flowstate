@@ -96,6 +96,7 @@ struct
 	bool FlowState_GiveTactical
 	bool FlowState_RestMsg
 	float Flowstate_itemDissolveTime
+	bool Flowstate_CycleHaloPlaylists
 	
 } SH_flowstateSettings
 
@@ -185,7 +186,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.Flowstate_fs_1v1								= ( Playlist() == ePlaylists.fs_1v1 )
 	SH_flowstateSettings.Flowstate_fs_lgduels_1v1						= ( Playlist() == ePlaylists.fs_lgduels_1v1 )
 	SH_flowstateSettings.Flowstate_fs_dm_fast_instagib					= ( Playlist() == ePlaylists.fs_dm_fast_instagib )
-	SH_flowstateSettings.Flowstate_fs_dm								= ( Playlist() == ePlaylists.fs_dm )
+	SH_flowstateSettings.Flowstate_fs_dm								= ( Playlist() == ePlaylists.fs_dm || Playlist() == ePlaylists.fs_realistic_ttv )
 	SH_flowstateSettings.Flowstate_Is_PartyCrasher						= ( MapName() == eMaps.mp_rr_party_crasher )
 	SH_flowstateSettings.Flowstate_Is_Canyon_Staging					= ( MapName() == eMaps.mp_rr_canyonlands_staging )
 	SH_flowstateSettings.Flowstate_IsHaloMode							= ( GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) )
@@ -195,6 +196,7 @@ void function Initialize_SH_FlowstateSettings()
 	SH_flowstateSettings.FlowState_GiveTactical							= GetCurrentPlaylistVarBool( "give_legend_tactical", false )
 	SH_flowstateSettings.FlowState_RestMsg 								= GetCurrentPlaylistVarBool( "rest_msg", false )
 	SH_flowstateSettings.Flowstate_itemDissolveTime						= GetCurrentPlaylistVarFloat( "dissolve_drops_time", 7 )
+	SH_flowstateSettings.Flowstate_CycleHaloPlaylists					= GetCurrentPlaylistVarBool( "cycle_halo_playlists", false )
 }
 
 // Playlist GET
@@ -273,7 +275,7 @@ bool function FlowState_EnableMovementGymLogs()					{ return SH_flowstateSetting
 bool function Flowstate_MovementGym_ClassicMovement()			{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement }
 int function Flowstate_MovementGym_ClassicMovement_Type()		{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_Type }
 bool function Flowstate_MovementGym_ClassicMovement_AutoBHOP()	{ return SH_flowstateSettings.Flowstate_MovementGym_ClassicMovement_AutoBHOP }
-//bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }	//moved to sh_mapname_playlist_gamemode_enums.gnut	
+//bool function Flowstate_IsHaloMode()							{ return SH_flowstateSettings.Flowstate_IsHaloMode }	//(mk):moved to sh_mapname_playlist_gamemode_enums.gnut	
 bool function Flowstate_DisableAllMapTriggers()					{ return SH_flowstateSettings.Flowstate_DisableAllMapTriggers }
 bool function Flowstate_IsLGDuels()								{ return SH_flowstateSettings.Flowstate_fs_lgduels_1v1 }
 bool function Flowstate_IsMovementGym()							{ return SH_flowstateSettings.Flowstate_movementgym }
@@ -290,6 +292,7 @@ bool function Equipment_GetRespawnKitEnabled()                  { return SH_flow
 bool function FlowState_GiveTactical()							{ return SH_flowstateSettings.FlowState_GiveTactical }
 bool function FlowState_RestMsg()								{ return SH_flowstateSettings.FlowState_RestMsg }
 float function Flowstate_GetDissolveTime()						{ return SH_flowstateSettings.Flowstate_itemDissolveTime }
+bool function Flowstate_CycleHaloPlaylists()					{ return SH_flowstateSettings.Flowstate_CycleHaloPlaylists } //used in ctf/tdm
 
 void function DEV_RegisterNetworking_SpawnSystem()
 {

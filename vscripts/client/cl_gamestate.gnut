@@ -188,6 +188,10 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetString( rui, "gameModeString", "FS DEATHMATCH" )
 			break
 			
+			case ePlaylists.fs_realistic_ttv:
+			RuiSetString( rui, "gameModeString", "FS REALISTIC TTV" )
+			break
+			
 			case ePlaylists.fs_survival_solos:
 			RuiSetString( rui, "gameModeString", "APEX SOLOS" )
 			break

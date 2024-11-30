@@ -449,8 +449,16 @@ bool function __ShouldUseLocal_internal( string uid, string statKey )
 		
 	entity player = GetPlayerEntityByUID( uid )
 	if( IsValid( player ) )
-		__AggregateStat_internal( player, statKey )
+	{
+		if( Tracker_GetPlayerLeftFlag( player ) )
+		{
+			__AggregateStat_internal( player, statKey )			
+			return true
+		}
 		
+		return false
+	}
+	
 	return true
 }
 #else //TRACKER && HAS_TRACKER_DLL

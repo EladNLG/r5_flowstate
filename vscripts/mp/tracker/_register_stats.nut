@@ -169,6 +169,13 @@ void function Script_RegisterAllStats()
 			Tracker_RegisterStat( "halo_ctf_wins", null, TrackerStats_CtfWins, STORE_STAT )
 		break 
 		
+		case ePlaylists.fs_realistic_ttv:
+			Tracker_RegisterStat( "realistic_kills", null, Tracker_ReturnKills )
+			Tracker_RegisterStat( "realistic_deaths", null, Tracker_ReturnDeaths )
+			Tracker_RegisterStat( "realistic_portals", null, TrackerStats_GetPortalPlacements, STORE_STAT )
+			Tracker_RegisterStat( "realistic_kidnaps", null, TrackerStats_GetPortalKidnaps, STORE_STAT )
+		break
+		
 		//case :
 	}
 }
@@ -270,7 +277,20 @@ var function TrackerStats_CtfFlagsReturned( string uid )
 
 var function TrackerStats_CtfWins( string uid )
 {
-	return 0 //Cafe: todo
+	entity ent = GetPlayerEntityByUID( uid )
+	return ent.p.wonctf ? 1 : 0
+}
+
+var function TrackerStats_GetPortalPlacements( string uid )
+{
+	entity ent = GetPlayerEntityByUID( uid )
+	return ent.p.portalPlacements
+}
+
+var function TrackerStats_GetPortalKidnaps( string uid )
+{
+	entity ent = GetPlayerEntityByUID( uid )
+	return ent.p.portalKidnaps
 }
 
 //////////////////////////////////////////////////////////

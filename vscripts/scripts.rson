@@ -1047,6 +1047,7 @@ When: "SERVER"
 Scripts:
 [
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
+	gamemodes/fs_realistic_ttv/_realistic_mode.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_notifications.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut

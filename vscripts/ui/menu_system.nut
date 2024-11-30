@@ -311,10 +311,8 @@ void function UpdateSystemPanel( var panel )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
 		
-		if( Playlist() == ePlaylists.fs_dm )
-		{
+		if( Playlist() == ePlaylists.fs_dm || Playlist() == ePlaylists.fs_realistic_ttv )
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
-		}
 
 		if( uiGlobal.is1v1GameType ) //initialized after level load
 		{
@@ -322,7 +320,7 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.ToggleRest[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
 		}
-		else if( Playlist() == ePlaylists.fs_movementrecorder )
+		else if( Playlist() == ePlaylists.fs_movementrecorder || Playlist() == ePlaylists.fs_realistic_ttv )
 		{
 			SetButtonData( panel, buttonIndex++, file.OpenWeaponsMenu[ panel ] )
 		}
@@ -449,6 +447,10 @@ void function UpdateSystemPanel( var panel )
 			
 			case ePlaylists.fs_dm:
 			msgonbottom = "FS DM - Ping: " + MyPing() + " ms."
+			break
+			
+			case ePlaylists.fs_dm:
+			msgonbottom = "Realistic TTV - Ping: " + MyPing() + " ms."
 			break
 			
 			case ePlaylists.fs_lgduels_1v1:

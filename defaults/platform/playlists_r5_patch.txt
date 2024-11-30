@@ -372,8 +372,6 @@ playlists
 ////////////////////////////////////											///////////////////////////////////
 				///////////////////////////////////////////////////////////////////////////////////
 				
-				
-				
 				///////////////////////////////////////////////////////////////////////////////////
 				//// General Server Settings												///////
 				///////////////////////////////////////////////////////////////////////////////////
@@ -411,6 +409,8 @@ playlists
 				textmute_offence_decay_time						45.0 	// Time that must pass before players offence tier is reduced by decay_amount -- 0 to disable
 				textmute_offence_decay_amount					1		// How many offence levels will be decreased for player each decay_time cycle
 				
+				cycle_halo_playlists							1 		// Set this to 1 to make halomodes multi-playlist
+				
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Aim Assist																///////
 				///////////////////////////////////////////////////////////////////////////////////
@@ -425,7 +425,7 @@ playlists
 				///////////////////////////////////////////////////////////////////////////////////
 				
 				logging_enabled 								1		// Enabling this will run the tracker system ( TODO: rename to tracker_enabled )
-				logging_encryption								1
+				logging_encryption								0
 				logging_shipstats 								1		// Enabling this will transfer data at end of match ( TODO: rename to tracker_shipstats )
 				use_global_stats								1		// Enabling this will use API data ( which only transfers at the start/end of a match or when a non batched player connects for stat queries )
 				use_online_motd 								0		// Still indev ( don't enable )
@@ -770,7 +770,7 @@ playlists
 				flowstate_give_character_passive				1
 				
 				//winter express exclusive
-				infinite_heal_items								1
+				infinite_heal_items								0 //seting to 0 is auto heal
 				desertlands_script_train_enable					1
 				desertlands_script_train_car_count 				3
 				desertlands_script_train_stoppanel_enabled  	0
@@ -1269,7 +1269,7 @@ playlists
 				battlechatter_enabled			  				1
 				
 				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
-				max_team_size									3 // above 1 will enable tdm
+				max_team_size									1 // above 1 will enable tdm
 				max_players										25
 				min_players										0
 				
@@ -1337,15 +1337,16 @@ playlists
 				flowstateRoundtime 								800
 				flowstateResetKills 							1
 				flowstateTimer 									1
-				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
-				flowstateLockeedPOI 							0
+				flowstateLockPOI 								1  // flowstateRandomizePOIS must be 0 if you want to lock poi.
+				flowstateLockeedPOI 							13
+				locked_poi_name									"TTV Building"
 				flowstateCapitolCityReplacesTTVLocation 		0 //Makes ttv building bigger
 				flowstateAdminTgive 							0 //tgive is for the admin ONLY
 				flowstateAutoChangeLevelEnable					1
 				flowstateRoundsBeforeChangeLevel				3
-				flowstateGiveAllOpticsToPlayer					0
+				flowstateGiveAllOpticsToPlayer					1
 				flowstate_headshots_only_gamemode 				0 //i recommend a wingman only in respawn kit above
-				flowstateReloadTacticalOnRespawn  				0
+				flowstateReloadTacticalOnRespawn  				1
 				flowstateReloadUltimateOnRespawn 				1
 				
 				//custom maps by community
@@ -1410,6 +1411,148 @@ playlists
 				mp_rr_aqueduct									1
 				mp_rr_arena_composite							1
 				mp_rr_aqueduct_night							1
+			} } }
+		}
+		
+		fs_realistic_ttv
+		{
+						inherit defaults
+			vars
+			{
+				visible											1
+				
+				name							   				"TDM/FFA"
+				description										"DM or FFA with multiple settings, customize your own server"
+				abbreviation					  				"TDM/FFA"
+				lobbytitle						 				"TDM/FFA"
+			
+				image							  				worlds_edge
+				video							  				worlds_edge
+				panel_image										panel_worlds_edge
+				battlechatter_enabled			  				1
+				
+				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
+				max_team_size									1 // above 1 will enable tdm
+				max_players										25
+				min_players										0
+				
+				//Skip Intros:
+				character_select_time_min		  				0
+				character_select_time_max		  				0
+				charselect_picking_delay_after_all 				0
+				survival_enable_squad_intro						0
+				survival_enable_gladiator_intros   				0
+				jump_from_plane_enabled							0
+				match_ending_enabled			   				0
+				
+				//No circle:
+				sur_circle_start_paused							1
+				
+				//Replays: 
+				replay_enabled					 				1 		 
+				replay_delay					   				5
+				replay_new_ui 									1
+				
+				//Flowstate by CafeFPS
+				
+				//GENERAL SETTINGS
+				flowstate_allow_cfgs							0
+				flowstateBattleLogEnable 						0
+				flowstateChatLogEnable 							0
+				
+				default_shield_hp				  				100
+				survival_shields				   				1
+				skydive_ziplines_enabled		   				1
+				ground_loot_enable 				   				0
+				lootbin_loot_enable								0
+				
+				survival_jumpkit_enabled		   				0
+				survival_wallrun_enabled		   				0
+				
+				survival_infinite_ammo			 				1
+				survival_custom_deploy			 				1
+				
+				enable_small_pheonix			   				0
+					
+				//For FFA classic mode
+				//specific weapons and abilities settings
+				respawn_kit_enabled 							1
+				respawn_kit_primary_weapon 						"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 barrel_stabilizer_l4_flash_hider stock_tactical_l3"
+				respawn_kit_secondary_weapon 					"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3 hopup_headshot_dmg"
+				respawn_kit_tactical 							"mp_ability_phase_walk"
+				respawn_kit_ultimate 							"mp_weapon_phase_tunnel" //"mp_ability_phase_rewind"
+				
+				//random weapons and abilities settings
+				flowstateRandomGuns 							0 	//round, big weapons list
+				flowstateRandomGunsMetagame						1 	//Metagame small weapon list primary:(r99,r301,flatline) secondary:(wingman,pk,eva,mastiff) every round
+				flowstateRandomTactical 						0 	//grapple,phase walk,stim,bubble, bang smokes, hound q, tf2 cloak
+				flowstateRandomUltimate							0 	//caustic ult,jumppad,wraith ult,3dash,hound ult, gibby ult
+
+				blacklisted_weapon_0							"mp_weapon_energy_ar"
+				blacklisted_weapon_1							"mp_weapon_esaw"
+
+				whitelisted_weapon_0 							"mp_weapon_mastiff"
+				//whitelisted_weapon_1 							""				
+				
+				//whitelisted_ability_0 						"mp_weapon_grenade_bangalore"
+				//whitelisted_ability_1 						""
+				
+				flowstateEndlessFFAorTDM						0 //location won't change, no champion will be defined
+				Admins											"r5r_CafeFPS"
+				respawn_delay 									5
+				flowstateRoundtime 								800
+				flowstateResetKills 							1
+				flowstateTimer 									1
+				flowstateLockPOI 								1  // flowstateRandomizePOIS must be 0 if you want to lock poi.
+				flowstateLockeedPOI 							0
+				realistic_mode									1
+				locked_poi_name									"TTV Building"
+				flowstateCapitolCityReplacesTTVLocation 		0 //Makes ttv building bigger
+				flowstateAdminTgive 							0 //tgive is for the admin ONLY
+				flowstateAutoChangeLevelEnable					1
+				flowstateRoundsBeforeChangeLevel				1
+				flowstateGiveAllOpticsToPlayer					0
+				flowstate_headshots_only_gamemode 				0 //i recommend a wingman only in respawn kit above
+				flowstateReloadTacticalOnRespawn  				1
+				flowstateReloadUltimateOnRespawn 				1
+				
+				flowstateKickHighPingPlayer						0
+				flowstateMaxPingAllowed							300
+				solo_mode 										1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
+				flowstateDoorsEnabled							1 //Doors enabled or disabled in all buildings.
+				flowstateDoorsRegen								0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
+
+				//visuals
+				flowstateForceCharacter 						1	//It enables the following settings
+				// 11 blisk, 12 fade, 13 amogus, 14 rhapsody, 15 ash, 16 jack cooper, 17 loba, 18 revenant, 19 ballistic, 20 marvin, 21 pete
+				flowstateChosenCharacter 						8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateForceAdminCharacter					0
+				flowstateChosenAdminCharacter					0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateDummyOverride 							0	// explains itself, it's bugged with some abilities (grapple ie)
+				
+				//game continuity 
+				flowstateAutoreloadPrimary 						0
+				flowstateAutoreloadSecondary 					0
+				flowstateKillshotEnabled 						1	//enables the killshot sound when killing
+				
+				//extrashields
+				flowstateExtrashieldsEnabled 					0
+				flowstateExtrashieldsSpawntime 					240
+				flowstateExtrashieldValue 						150 //extrashield actual value
+				afk_to_rest_bool								0
+				
+				flowstate_enable_bullet_slow					1
+				
+				flowstate_modified_movement						0 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode || 12 = Halo Movement NEW		
+			
+				desertlands_script_train_stoppanel_enabled		0
+				desertlands_script_train_enable					0
+				
+				show_short_champion_screen						1
+			}
+			gamemodes { fs_dm { maps {
+				mp_rr_desertlands_64k_x_64k						1
+				mp_rr_desertlands_64k_x_64k_nx				 	1
 			} } }
 		}
 
@@ -2028,6 +2171,7 @@ playlists
 				
 				flowstate_give_random_custom_models_toall		0
 				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
+				give_random_legend_on_spawn			 			0 //1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 
 				enable_voice									0
 				default_enable_input_banner_setting	 			1 // display input ui default setting for players
@@ -2040,23 +2184,24 @@ playlists
 				//installing or enabling extra spawn paks
 				// to add paks, prefix a mapname with spawnsets_  and list the paks to enable "1,2,3"
 				
+				spawnsets_mp_rr_desertlands_64k_x_64k			"1"
 				spawnsets_mp_rr_canyonlands_64k_x_64k			"1"
-				spawnsets_mp_rr_aqueduct 						"1"
 				spawnsets_mp_rr_arena_composite 				"1"
 				spawnsets_mp_rr_arena_phase_runner				"1"
 				spawnsets_mp_rr_olympus_mu1						"1"
 				spawnsets_mp_rr_arena_skygarden					"1"
 				
 				spawnpaks_use_sets 								1	// bool, enables using other than stock spawn paks
-				spawnpaks_use_random							1	// bool, loads random configured pak on mapstart
-				spawnpaks_prefer								0	// bool, enables the below setting 
-				spawnpaks_preferred_pak							0 	// integer, pak number 
+				spawnpaks_use_random							0	// bool, loads random configured pak on mapstart
+				spawnpaks_prefer								1	// bool, enables the below setting 
+				spawnpaks_preferred_pak							4 	// integer, pak number 
 				spawnpaks_playlist_override						0 	// bool, enables using below defined playlist for spawnpaks_playlist_override
 								
 				custom_spawnpak									""	// string, custom spawn.rpak override
 				custom_playlist_spawnpak						""  // string, custom playlist override (fs_1v1, fs_scenarios, etc. )  loads spawns for this gametype instead of game loaded gametype
 			}
 			gamemodes { fs_dm { maps {
+				mp_rr_ashs_redemption							1
 				mp_rr_canyonlands_64k_x_64k 					1
 				mp_rr_aqueduct 									1
 				mp_rr_aqueduct_night 							1
@@ -2143,7 +2288,7 @@ playlists
 				// mkos systems
 
 				logging_enabled 								1 //enables logging system
-				logging_encryption								1 //encrypts data for transfer (reccomended)
+				logging_encryption								0 //encrypts data for transfer (reccomended)
 				logging_shipstats 								1 // connects to tracker server to keep player stats up to date (only verified servers count towards leaderboard)
 				default_ibmm_wait								5 //0 for instant queue any input
 				ibmm_wait_limit									15 //maximum wait time allowed to match input
@@ -2627,8 +2772,8 @@ playlists
 				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
 				max_teams						   				2
 				max_team_size									4
-				max_players										8
-				min_players										8
+				max_players										16
+				min_players										4
 				
 				default_shield_hp				  				125
 				survival_shields				   				1
@@ -2703,7 +2848,7 @@ playlists
 				flowstateCapitolCityReplacesTTVLocation 		0 //Makes ttv building bigger
 				flowstateAdminTgive 							1 //tgive is for the admin ONLY
 				flowstateAutoChangeLevelEnable					1
-				flowstateRoundsBeforeChangeLevel				5
+				flowstateRoundsBeforeChangeLevel				1
 				flowstateGiveAllOpticsToPlayer					0
 				flowstate_headshots_only_gamemode 				0 //i recommend a wingman only in respawn kit above
 				flowstateReloadTacticalOnRespawn  				1
@@ -2764,8 +2909,9 @@ playlists
 				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
 				max_teams									  	3
 				max_team_size									8
-				max_players										8
-				min_players										8
+				max_players										16
+				min_players										4
+				max_rounds										1 // Flowstate auto change level
 				
 				// Intro Settings:
 				character_select_time_min					  	0
@@ -2811,7 +2957,7 @@ playlists
 
 				////CTF Score And Round time:
 				max_score									  	3	//Set max amount of flag captures
-				round_time									 	30   //Sets time limit for rounds in minutes
+				round_time									 	1   //Sets time limit for rounds in minutes
 				flowstate_modified_movement						12 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode || 12 = Halo Movement NEW
 			}
 			gamemodes { custom_ctf { maps {
@@ -2838,11 +2984,9 @@ playlists
 				pin_match_type					 				survival
 				
 				// match teams will not fill with more than one party, up to max_teams of size max_team_size (or less) -- not exceeding max_players
-				max_team_size									60
-				max_teams                                       1
+				max_team_size									1
 				max_players										60
 				min_players										0
-				redish_highlight_los                            0
 				
 				default_shield_hp				  				0
 				survival_shields				   				0

@@ -56,6 +56,7 @@ global function Tracker_SavePlayerData
 global function SetAfkToRest
 global function ArrayRemoveBot //todo move to code
 global function ClientCommand_RequestStat
+global function Tracker_SetStartLog
 
 #if TRACKER
 	global const bool STUB = false
@@ -157,9 +158,10 @@ global function AddCallback_PlayerData
 global function Tracker_IsBatchStatsLoaded
 global function Tracker_GetCurrentEventByPlayerHandle_expensive
 global function Tracker_GetCurrentEventForAttackerOnVictim
+global function Tracker_IsPlayerMetricsInitialized
 global function Tracker_BuildAllPlayerMetrics
 global function Tracker_GetPlayerMetricsArray
-global function Tracker_IsPlayerMetricsInitialized
+global function Tracker_GetPlayerLeftFlag
 global function Tracker_RegisterStat
 global function Tracker_RegisterAllSettings
 global function Tracker_StatsMetricsByUID
@@ -196,6 +198,9 @@ global function Tracker_IsRestrictedServer
 global function Tracker_SetRestrictedServer
 global function Tracker_SetForceUpdatePlayerData
 global function Tracker_GetStartUnixTime
+
+//Todo: port to indev 
+global function Tracker_SetShouldShip
 
 global function Tracker_ReturnSuperglides
 global function Tracker_ReturnKills
@@ -347,6 +352,7 @@ struct PlayerMetrics
 	int shots
 	int hits
 
+	bool hadleft = false
 	bool playerleft = false
 	bool ignore_sync_flag = false
 	
@@ -449,7 +455,7 @@ struct //Todo: move appropriate to tracker.var
 	string onlineMOTD = ""
 	
 	// Chatbot Messages
-	array<string> BotAllowedModes = [ "fs_1v1", "lg_duel_mode", "fs_scenarios" ]
+	array<string> BotAllowedModes = [ "fs_1v1", "fs_lgduels_1v1", "fs_scenarios", "fs_dm", "fs_haloMod", "fs_movementrecorder", "fs_realistic_ttv" ]
 	bool bBotAllowed
 	bool bChatbotEnabled
 	bool bIntervalThreadRunning
@@ -739,6 +745,11 @@ bool function bEnc( bool ornull setting = null )
 bool function bGlobalStats()
 {
 	return file.global_stats
+}
+
+void function Tracker_SetShouldShip( bool value )
+{
+	file.bShouldShip = value
 }
 
 string function GetPlayerUIDFromHandle( int handle )
@@ -1392,7 +1403,14 @@ void function __SetPlayerSyncData( entity player )
 	( 
 		void function() : ( OID ) 
 		{
-			SQ_ResetStats__internal( OID )
+			thread 
+			(
+				void function() : ( OID )
+				{
+					wait 1
+					SQ_ResetStats__internal( OID )
+				}
+			)()
 		}
 	)
 	
@@ -1605,7 +1623,7 @@ void function PIN_Init()
 	if( file.LogOn )
 	{
 		SetServerVar( "tracker_enabled", true )
-		AddCallback_OnTdmStateEnter_InProgress( SetStartLog )
+		AddCallback_OnTdmStateEnter_InProgress( Tracker_SetStartLog )
 		FlagInit( "START_LOG", true )
 		thread __CONTROLLED_LogInit()
 	}
@@ -1696,14 +1714,8 @@ bool function Tracker_IsBatchFetchQueued()
 	return file.bBatchFetchInit
 }
 
-void function SetStartLog()
-{
-	//possible bLog() check 
-	
-	#if DEVELOPER
-		sqprint("Flag set: \"START_LOG\" in [SetTdmStateToInProgress]")
-	#endif
-	
+void function Tracker_SetStartLog()
+{	
 	FlagSet( "START_LOG" )
 }
 
@@ -3792,7 +3804,8 @@ PlayerMetrics function __GetPlayerMetrics( int id )
 
 int function PlayerMap_Insert( string uid ) 
 {
-    int index = PlayerMetricsArray.len() - 1 
+    int index = PlayerMetricsArray.len() - 1
+    
 	PlayerIdMap[ uid ] <- index	
 	return index
 }
@@ -4276,6 +4289,15 @@ void function SavePlayerData( entity player, string setting, ... )
 	Tracker_SavePlayerData( player.p.UID, setting, vargv[0] )
 }
 
+bool function Tracker_GetPlayerLeftFlag( entity player ) 
+{
+	int index = GetPlayerMetricsIndex( player )
+	
+    if ( index != -1 ) 
+        return PlayerMetricsArray[ index ].hadleft
+	
+    return false
+}
 
 bool function GetPlayerLeftFlag( entity player ) 
 {
@@ -4287,6 +4309,7 @@ bool function GetPlayerLeftFlag( entity player )
 		
 		if( left )
 		{
+			PlayerMetricsArray[ index ].hadleft = true
 			PlayerMetricsArray[ index ].playerleft = false
 			return true
 		}
@@ -4823,7 +4846,7 @@ void function FinishGameStatsRound()
 			if( !Logging_ShipStats() )
 				sqprint( "Shipping to stats server DISABLED -- check playlists file to enable --" )
 				
-			if( !Flag( "SurvivalCommentary_FirstBloodReached" ) || !file.bShouldShip )
+			if( ( !Flowstate_IsHaloMode() && !Flag( "SurvivalCommentary_FirstBloodReached" ) ) || !file.bShouldShip )
 			{
 				sqprint( "No stats to ship...\n" )
 				stopLogging__internal( false )
@@ -5583,6 +5606,7 @@ bool function bLog(){ return file.LogOn }
 bool function bEnc(){ return file.LogE }
 bool function bGlobalStats(){ return file.global_stats }
 bool function bBotEnabled(){ return file.bChatbotEnabled }
+void function Tracker_SetStartLog(){}
 
 //persistence
 string function Tracker_FetchPlayerData( string UID, string setting ){ return "" }
