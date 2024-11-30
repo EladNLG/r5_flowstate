@@ -4819,6 +4819,12 @@ void function __UpdateLiveStats_internal( SerializedData metrics )
 		SQ_UpdateLiveStats__internal( metrics )
 }
 
+//Modes where winning doesn't requiring fighting. 
+const array<int> IGNORE_FIRST_BLOOD_PLAYLISTS =
+[
+	ePlaylists.fs_haloMod_ctf
+]
+
 void function FinishGameStatsRound()
 {
 	if( process_end_round_complete == true )
@@ -4846,7 +4852,7 @@ void function FinishGameStatsRound()
 			if( !Logging_ShipStats() )
 				sqprint( "Shipping to stats server DISABLED -- check playlists file to enable --" )
 				
-			if( ( !Flowstate_IsHaloMode() && !Flag( "SurvivalCommentary_FirstBloodReached" ) ) || !file.bShouldShip )
+			if( ( !IGNORE_FIRST_BLOOD_PLAYLISTS.contains( Playlist() ) && !Flag( "SurvivalCommentary_FirstBloodReached" ) ) || !file.bShouldShip )
 			{
 				sqprint( "No stats to ship...\n" )
 				stopLogging__internal( false )
