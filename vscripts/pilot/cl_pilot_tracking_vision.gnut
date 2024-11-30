@@ -167,7 +167,7 @@ void function TrackingVisionUpdatePlayerConnected( entity player )
 		particleData.active = false
 		particleData.update = false
 
-#if DEV
+#if DEVELOPER
 		particleData.debugEntity = player
 #endif
 
@@ -199,7 +199,7 @@ void function TrackingVisionUpdate( entity player )
 			particleData.active = false
 			particleData.update = false
 
-#if DEV
+#if DEVELOPER
 			particleData.debugEntity = enemy
 #endif
 

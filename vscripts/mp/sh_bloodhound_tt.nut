@@ -507,7 +507,7 @@ void function SetUpBloodhoundTTSmartLootRewards()
 
 	// ammo
 	int i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + ammoTargets.len() + "/" + ammoTargetPositions.len())
 	#endif
 	foreach ( entity target in ammoTargets )
@@ -531,7 +531,7 @@ void function SetUpBloodhoundTTSmartLootRewards()
 
 	// health
 	i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + healthTargets.len() + "/" + healthTargetPositions.len())
 	#endif
 	foreach ( entity target in healthTargets )
@@ -765,7 +765,7 @@ void function CreateBloodhoundTTLootRewards()
 	// ammo
 	bool hasPositionHack = GetCurrentPlaylistVarBool( "blood_tt_loot_override_hack", true )
 	int i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + ammoTargets.len() + "/" + ammoTargetPositions.len())
 	#endif
 	foreach ( entity target in ammoTargets )
@@ -789,7 +789,7 @@ void function CreateBloodhoundTTLootRewards()
 
 	// health
 	i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + healthTargets.len() + "/" + healthTargetPositions.len())
 	#endif
 	foreach ( entity target in healthTargets )
@@ -813,7 +813,7 @@ void function CreateBloodhoundTTLootRewards()
 
 	// reward rare
 	i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + rewardRareTargets.len() + "/" + rewardRareTargetPositions.len())
 	#endif
 	foreach ( entity target in rewardRareTargets )
@@ -837,7 +837,7 @@ void function CreateBloodhoundTTLootRewards()
 	bool highJackpotItemSpawned = false
 	// reward high
 	i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + rewardHighTargets.len() + "/" + rewardHighTargetPositions.len())
 	#endif
 	foreach ( entity target in rewardHighTargets )
@@ -866,7 +866,7 @@ void function CreateBloodhoundTTLootRewards()
 
 	// reward ultra
 	i = 0
-	#if DEV
+	#if DEVELOPER
 		printf("BLOOD TT LOOT - " + rewardUltraTargets.len() + "/" + rewardUltraTargetPositions.len())
 	#endif
 	foreach ( int idx, entity target in rewardUltraTargets )
