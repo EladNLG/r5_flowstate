@@ -2170,7 +2170,6 @@ playlists
 				default_lock1v1_setting							1 // default setting if player has no saved preference ( 0 means disabled until player turns on )
 				
 				flowstate_give_random_custom_models_toall		0
-				give_random_legend_on_spawn			 			1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 				give_random_legend_on_spawn			 			0 //1 // gives both opponents same random legend -- make sure to disable flowstate_give_random_custom_models_toall
 
 				enable_voice									0
