@@ -1007,8 +1007,10 @@ void function __HandleKidnap( entity kidnapper, entity victim )
 	
 	if( kidnapper.IsPlayer() )
 	{
-		kidnapper.p.portalKidnaps++		
-		LocalEventMsg( kidnapper, "#FS_KIDNAPPED", victim.p.name + " in " + ( Time() - kidnapper.p.portalPlaceTime ) + " seconds" )
+		kidnapper.p.portalKidnaps++	
+	
+		string victimName = IsValid( victim ) ? victim.p.name : "unknown"	
+		LocalEventMsg( kidnapper, "#FS_KIDNAPPED", victimName + " in " + ( Time() - kidnapper.p.portalPlaceTime ) + " seconds" )
 	}
 }
 
