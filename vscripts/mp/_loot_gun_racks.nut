@@ -80,7 +80,7 @@ void function OnEntitiesDidLoad()
 			{
 				if ( !SURVIVAL_Loot_IsRefValid( lootRef ) || SURVIVAL_Loot_GetLootDataByRef( lootRef ).lootType != eLootType.MAINWEAPON )
 				{
-					gunRack.SetModel( GUNRACK_MODEL )
+					gunRack.SetModel( GUNRACK_MODEL_OFF )
 					continue
 				}
 
@@ -98,7 +98,7 @@ void function OnGunRackSpawned( entity gunRack )
 
 void function GunRacks_SetRackOff( entity gunRack )
 {
-	gunRack.SetModel( GUNRACK_MODEL )
+	gunRack.SetModel( GUNRACK_MODEL_OFF )
 }
 
 void function GunRacks_AddGunLootItem( entity gunRack, string lootRef )
@@ -146,7 +146,7 @@ void function GunRack_OnPlayerLootPickedUp( entity player, entity lootEnt, strin
 	if ( lootEnt in file.lootToRackTable )
 	{
 		entity gunRack = file.lootToRackTable[ lootEnt ]
-		gunRack.SetModel( GUNRACK_MODEL )
+		gunRack.SetModel( GUNRACK_MODEL_OFF )
 		delete file.lootToRackTable[ lootEnt ]
 	}
 }
