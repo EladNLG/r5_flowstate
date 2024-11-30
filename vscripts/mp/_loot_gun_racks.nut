@@ -31,7 +31,7 @@ void function GunRacks_Init()
 
 	file.gunRackLootOverride = GetCurrentPlaylistVarString( "standard_rack_loot_group_override", "" )
 
-	AddSpawnCallbackEditorClass( "prop_dynamic", GUN_RACK_CLASS_NAME, OnGunRackSpawned )
+	//AddSpawnCallbackEditorClass( "prop_dynamic", GUN_RACK_CLASS_NAME, OnGunRackSpawned )
 	AddSpawnCallbackEditorClass( "prop_dynamic_lightweight", GUN_RACK_CLASS_NAME, OnGunRackSpawned )
 	AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
 	Loot_AddCallback_OnPlayerLootPickupRetail( GunRack_OnPlayerLootPickedUp )
@@ -143,7 +143,7 @@ array<entity> function GetAllGunRacks()
 
 void function GunRack_OnPlayerLootPickedUp( entity player, entity lootEnt, string ref, int unitsPickedUp, bool willDestroy, entity deathBox, int pickupFlags )
 {
-	if ( lootEnt in file.lootToRackTable )
+	//if ( lootEnt in file.lootToRackTable )
 	{
 		entity gunRack = file.lootToRackTable[ lootEnt ]
 		gunRack.SetModel( GUNRACK_MODEL_OFF )
