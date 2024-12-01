@@ -973,8 +973,10 @@ void function StartRound()
 	file.ctfState = eCTFState.WINNER_DECIDED
 	SetGlobalNetInt( "FSDM_GameState", file.ctfState )
 	
-	if( winners.len() )
-		Tracker_SetShouldShip( true )
+	#if TRACKER
+		if( winners.len() )
+			Tracker_SetShouldShip( true )		
+	#endif
 		
 	PIN_RoundEnd( file.currentRound )
 	file.currentRound++
