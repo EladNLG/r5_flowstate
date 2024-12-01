@@ -29,6 +29,9 @@ const string HARVESTER_EMPTY_IDLE_ANIM = "source_empty_idle"
 const string HARVESTER_FULL_TO_EMPTY_ANIM = "source_full_to_empty"
 const string HARVESTER_MINIMAP_SCRIPTNAME = "crafting_harvester_minimap"
 
+//workbench assets
+const asset WORKBENCH_CLUSTER_AIRDROP_MODEL = $"mdl/props/crafting_replicator/crafting_replicator.rmdl"
+
 //audio assets
 const string HARVESTER_AMBIENT_LOOP = "Crafting_Extractor_AmbientLoop"
 const string WORKBENCH_AMBIENT_LOOP = "Crafting_V2_0_Replicator_AmbientLoop"
@@ -151,6 +154,7 @@ void function Desertlands_MapInit_Common()
 		RegisterSignal( "ReachedPathEnd" )
 		AddSpawnCallback_ScriptName( "conveyor_rotator_mover", OnSpawnConveyorRotatorMover )
 		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_harvester", SetupFakeCraftingSiphon )
+		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_workbench_cluster", SetupFakeReplicator )
 	#endif
 
 	#if CLIENT
@@ -365,6 +369,79 @@ void function FSMemorialEnter( entity trigger , entity ent )
 	Message( ent, "FLOWSTATE MEMORIAL", "Gracias por darme la vida, gracias por las enseñanzas.\n Gracias por darme las fuerzas para seguir adelante.\n Gracias por darme las fuerzas para desarrollar Flowstate.\n                  Por CafeFPS." )
 }
 
+void function SetupFakeReplicator( entity ent)
+{
+	ent.Hide()
+
+	vector origin = ent.GetOrigin()
+	vector angles = ent.GetAngles()
+	array<entity> links = ent.GetLinkEntArray()
+	array<entity> parentLinks = ent.GetLinkParentArray()
+	entity par = ent.GetParent()
+
+	entity replicator = CreateMaterialHarvester( WORKBENCH_CLUSTER_AIRDROP_MODEL, origin, angles, 6, 15000, false )
+	replicator.SetCanBeMeleed( false )
+
+	//entity ambGenericPassive = CraftingSiphon_CreateAmbientGeneric( replicator.GetOrigin(), HARVESTER_AMBIENT_LOOP, true )
+
+	DispatchSpawn( replicator )
+	replicator.SetFadeDistance( 15000 )
+	//replicator.SetScriptName( replicator_SCRIPTNAME )
+
+	replicator.SetUsable()
+	replicator.SetUsableByGroup("pilot")
+	replicator.AddUsableValue( USABLE_CUSTOM_HINTS )
+	replicator.SetUsePrompts( "%use% Replicate", "%use% Replicate" )
+
+	
+	thread PlayAnim( replicator, "crafting_replicator_ready_groundidle" )
+	AddCallback_OnUseEntity( replicator, OnRepUse )
+	#if CLIENT
+	AddEntityCallback_GetUseEntOverrideText( replicator, Crafting_Harvester_UseTextOverride )
+	#endif
+}
+
+
+void function OnRepUse( entity replicator, entity playerUser, int useInputFlags )
+{	
+	replicator.UnsetUsable()
+
+	thread PlayBattleChatterLineDelayedToSpeakerAndTeam( playerUser, "bc_MatsPickedUp", 0.80 )
+
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicator_Start_1P" )
+	EmitSoundOnEntityExceptToPlayer( replicator, playerUser, "Crafting_Replicator_Start_3P" )
+	//entity ambGenericPassive = CraftingSiphon_CreateAmbientGeneric( replicator.GetOrigin(), HARVESTER_AMBIENT_LOOP, false )
+
+	thread RepAnims( replicator, playerUser )
+}
+
+void function RepAnims( entity replicator, entity playerUser )
+{	
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicator_DoorOpen" )
+	waitthread PlayAnim( replicator, "crafting_replicator_open" )
+	wait 1
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicater_WarningToEnd" )
+	wait 2
+	thread PlayAnim( replicator, "crafting_replicator_close" )
+	wait 0.7
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicator_DoorClose" )
+	wait 1
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicator_Menu_Deny" )
+	wait 1
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicator_Menu_Deny" )
+	wait 1
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Crafting_Replicator_Menu_Deny" )
+	wait 1
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "weapon_vortex_gun_explosivewarningbeep" )
+	wait 1
+	StartParticleEffectOnEntityWithPos( replicator, GetParticleSystemIndex( $"P_trophy_sys_dmg" ), FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 60>, <0, 0, 0> )
+	EmitSoundOnEntityOnlyToPlayer( replicator, playerUser, "Pilot_Mvmt_Execution_Cloak_AndroidSparks" )
+	Dev_PrintMessage( playerUser, "CRAFTING SYSTEM IS STILL WIP", "We are working hard to bring new content into R5Reloaded, Crafting is one of them!", 5, "UI_CraftingTable_Purchase_Accept_1P" )
+	wait 5
+	replicator.SetUsable()
+}
+
+
 void function SetupFakeCraftingSiphon( entity ent)
 {
 	ent.Hide()
@@ -407,13 +484,15 @@ void function OnCraftUse( entity harvester, entity playerUser, int useInputFlags
 	EmitSoundOnEntityExceptToPlayer( harvester, playerUser, HARVESTER_COLLECT_3P )
 	entity ambGenericPassive = CraftingSiphon_CreateAmbientGeneric( harvester.GetOrigin(), HARVESTER_AMBIENT_LOOP, false )
 
-	thread CraftAnims( harvester )
+	thread CraftAnims( harvester, playerUser )
 }
 
-void function CraftAnims( entity harvester )
+void function CraftAnims( entity harvester, entity playerUser )
 {	
 	waitthread PlayAnim( harvester, "source_full_to_empty" )
 	thread PlayAnim( harvester, "source_empty_idle" )
+	wait 2
+	Dev_PrintMessage( playerUser, "CRAFTING SYSTEM IS STILL WIP", "We are working hard to bring new content into R5Reloaded, Crafting is one of them!", 2, "UI_CraftingTable_Purchase_Accept_1P" )
 }
 
 entity function CraftingSiphon_CreateAmbientGeneric( vector origin, string alias, bool active )
