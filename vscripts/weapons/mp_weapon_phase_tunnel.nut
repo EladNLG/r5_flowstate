@@ -1158,7 +1158,7 @@ void function OnPhaseTunnelTriggerEnter_Internal( entity trigger, entity ent )
 		{
 			if( IsValid( ent ) )
 			{
-				Warning( "setting to none" )
+				//Warning( "setting to none" )
 				ent.e.portalDirection = eDirection.NONE
 			}
 		}
