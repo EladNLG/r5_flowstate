@@ -842,7 +842,7 @@ void function RemovePortalDelayed( entity player, PhaseTunnelData tunnelData )
 		tunnelData.tunnelEnt.Signal( "PhaseTunnel_DestroyTunnel" )
 		
 		if( IsValid( player ) )
-			LocalMsg( p(0), "#FS_REMOVED_PORTAL", "#FS_REMOVED_PORTAL_DESC", eMsgUI.IBMM, 10 )
+			LocalMsg( player, "#FS_REMOVED_PORTAL", "#FS_REMOVED_PORTAL_DESC", eMsgUI.IBMM, 10 )
 	}
 }
 
