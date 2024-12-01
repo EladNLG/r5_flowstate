@@ -699,6 +699,7 @@ Scripts:
 	client/objects/cl_drone_crypto.nut
 
 	client/rui/cl_weapon_status.gnut
+	client/rui/cl_custom_use_prompt.gnut
 
 	client/_cl_model_viewer.nut
 	client/cl_passives.gnut

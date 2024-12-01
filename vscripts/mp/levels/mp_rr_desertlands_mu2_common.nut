@@ -21,6 +21,50 @@ const string SILO_DOORS_OPEN_SFX = "Desertlands_Fortress_Interactive_Panel"
 const string SILO_ELEVATOR_LOOP_SFX = "Desertlands_MU2_Silo_Ascend_LP"
 const string SILO_ELEVATOR_STOP_SFX = "Desertlands_MU2_Silo_Ascend_End"
 
+//harevster assets
+const float HARVESTER_USE_DURATION = 0.5
+const asset HARVESTER_MODEL = $"mdl/props/crafting_siphon/crafting_siphon.rmdl"
+const string HARVESTER_FULL_IDLE_ANIM = "source_full_idle"
+const string HARVESTER_EMPTY_IDLE_ANIM = "source_empty_idle"
+const string HARVESTER_FULL_TO_EMPTY_ANIM = "source_full_to_empty"
+const string HARVESTER_MINIMAP_SCRIPTNAME = "crafting_harvester_minimap"
+
+//audio assets
+const string HARVESTER_AMBIENT_LOOP = "Crafting_Extractor_AmbientLoop"
+const string WORKBENCH_AMBIENT_LOOP = "Crafting_V2_0_Replicator_AmbientLoop"
+const string HARVESTER_COLLECT_1P = "Crafting_Extractor_Collect_1P"
+const string HARVESTER_COLLECT_3P = "Crafting_Extractor_Collect_3P"
+const string HARVESTER_COLLECT_TEAM = "UI_InGame_Crafting_Extractor_Collect_Squad"
+const string WORKBENCH_MENU_OPEN_START = "Crafting_ReplicateMenu_OpenStart"
+const string WORKBENCH_MENU_OPEN_FAIL = "Crafting_ReplicateMenu_OpenFail"
+const string WORKBENCH_MENU_OPEN_SUCCESS = "Crafting_ReplicateMenu_OpenSuccess"
+const string WORKBENCH_CRAFTING_START_1P = "Crafting_V2_0_Replicator_Crafting_Start_1P"
+const string WORKBENCH_CRAFTING_START_3P = "Crafting_V2_0_Replicator_Crafting_Start_3P"
+const string WORKBENCH_CRAFTING_FINISH = "Crafting_Replicator_CraftingFinish"
+const string WORKBENCH_CRAFTING_FINISH_WARNING = "Crafting_Replicater_WarningToEnd"
+const string WORKBENCH_CRAFTING_LOOP = "Crafting_Replicator_CraftingLoop"
+const string WORKBENCH_CRAFTING_DOOR_OPEN = "Crafting_V2_0_Replicator_Crafting_Finish_Eject"
+const string WORKBENCH_CRAFTING_DOOR_CLOSE = "Crafting_V2_0_Replicator_Crafting_Close"
+
+//minimap assets
+const asset WORKBENCH_ICON_ASSET = $"rui/hud/gametype_icons/survival/crafting_workbench"
+const asset WORKBENCH_ICON_LIMITED_ASSET = $"rui/hud/gametype_icons/survival/crafting_workbench_limited"
+const asset WORKBENCH_ICON_AIRDROP_ASSET = $"rui/hud/gametype_icons/survival/crafting_workbench_airdrop"
+
+const asset DISPENSER_WORKBENCH_ICON_ASSET = $"rui/hud/gametype_icons/survival/crafting_workbench_2"
+const asset DISPENSER_WORKBENCH_ICON_AIRDROP_ASSET = $"rui/hud/gametype_icons/survival/crafting_workbench_airdrop_2"
+const asset DISPENSER_CRAFTING_SMALL_WORKBENCH_ASSET = $"rui/hud/ping/icon_ping_crafting_2_hexagon"
+global const asset CRAFTING_2_ZONE_ASSET = $"rui/hud/gametype_icons/survival/crafting_2_zone"
+
+const asset HARVESTER_ICON_ASSET = $"rui/hud/gametype_icons/survival/crafting_harvester"
+const asset CRAFTING_SMALL_HARVESTER_ASSET = $"rui/hud/gametype_icons/survival/crafting_small_harvester"
+const asset CRAFTING_SMALL_WORKBENCH_ASSET = $"rui/hud/ping/icon_ping_crafting_hexagon"
+global const asset CRAFTING_ZONE_ASSET = $"rui/hud/gametype_icons/survival/crafting_zone"
+const asset CRAFTING_CURRENCY_ASSET = $"rui/hud/gametype_icons/survival/crafting_currency"
+
+//initialization scriptnames
+global const string HARVESTER_SCRIPTNAME = "crafting_harvester"
+
 #if SERVER
 global function Desertlands_MU1_MapInit_Common
 global function Desertlands_MU1_EntitiesLoaded_Common
@@ -87,7 +131,7 @@ void function Desertlands_MapInit_Common()
 {
 	printt( "Desertlands_MapInit_Common" )
 
-	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_desertlands_64k_x_64k.rpak" )
+	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_desertlands_mu2.rpak" )
 
 	FlagInit( "PlayConveyerStartFX", true )
 	FlagInit( "PlayConveyerEndFX", true )
@@ -106,6 +150,7 @@ void function Desertlands_MapInit_Common()
 
 		RegisterSignal( "ReachedPathEnd" )
 		AddSpawnCallback_ScriptName( "conveyor_rotator_mover", OnSpawnConveyorRotatorMover )
+		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_crafting_harvester", SetupFakeCraftingSiphon )
 	#endif
 
 	#if CLIENT
@@ -316,10 +361,130 @@ void function FSMemorialEnter( entity trigger , entity ent )
 {
 	if( !IsValid(ent) ) return
 	
-	printt( "memorial enter" )
+	printt( "memorial enter" ) //I'm so sorry for your loss Cafe, I know they are somewhere out there watching and proud of you <3 -Lorry
 	Message( ent, "FLOWSTATE MEMORIAL", "Gracias por darme la vida, gracias por las enseñanzas.\n Gracias por darme las fuerzas para seguir adelante.\n Gracias por darme las fuerzas para desarrollar Flowstate.\n                  Por CafeFPS." )
 }
 
+void function SetupFakeCraftingSiphon( entity ent)
+{
+	ent.Hide()
+
+	vector origin = ent.GetOrigin()
+	vector angles = ent.GetAngles()
+	array<entity> links = ent.GetLinkEntArray()
+	array<entity> parentLinks = ent.GetLinkParentArray()
+	entity par = ent.GetParent()
+
+	entity harvester = CreateMaterialHarvester( HARVESTER_MODEL, origin, angles, 6, 15000, false )
+	harvester.SetCanBeMeleed( false )
+
+	entity ambGenericPassive = CraftingSiphon_CreateAmbientGeneric( harvester.GetOrigin(), HARVESTER_AMBIENT_LOOP, true )
+
+	DispatchSpawn( harvester )
+	harvester.SetFadeDistance( 15000 )
+	harvester.SetScriptName( HARVESTER_SCRIPTNAME )
+
+	harvester.SetUsable()
+	harvester.SetUsableByGroup("pilot")
+	harvester.AddUsableValue( USABLE_CUSTOM_HINTS )
+	harvester.SetUsePrompts( "%use% Extract", "%use% Extract" )
+
+	
+	thread PlayAnim( harvester, "source_full_idle" )
+	AddCallback_OnUseEntity( harvester, OnCraftUse )
+	#if CLIENT
+	AddEntityCallback_GetUseEntOverrideText( harvester, Crafting_Harvester_UseTextOverride )
+	#endif
+}
+
+void function OnCraftUse( entity harvester, entity playerUser, int useInputFlags )
+{	
+	harvester.UnsetUsable()
+
+	thread PlayBattleChatterLineDelayedToSpeakerAndTeam( playerUser, "bc_MatsPickedUp", 0.80 )
+
+	EmitSoundOnEntityOnlyToPlayer( harvester, playerUser, HARVESTER_COLLECT_1P )
+	EmitSoundOnEntityExceptToPlayer( harvester, playerUser, HARVESTER_COLLECT_3P )
+	entity ambGenericPassive = CraftingSiphon_CreateAmbientGeneric( harvester.GetOrigin(), HARVESTER_AMBIENT_LOOP, false )
+
+	thread CraftAnims( harvester )
+}
+
+void function CraftAnims( entity harvester )
+{	
+	waitthread PlayAnim( harvester, "source_full_to_empty" )
+	thread PlayAnim( harvester, "source_empty_idle" )
+}
+
+entity function CraftingSiphon_CreateAmbientGeneric( vector origin, string alias, bool active )
+{
+	entity ambGeneric = CreateEntity( "ambient_generic" )
+	ambGeneric.SetOrigin( origin )
+	ambGeneric.SetSoundName( alias )
+	ambGeneric.SetEnabled( active )
+	DispatchSpawn( ambGeneric )
+	return ambGeneric
+}
+
+entity function CreateMaterialHarvester( asset model, vector ornull origin = null, vector ornull angles = null, int solidType = 0, float fadeDist = -1, bool dispatchSpawn = true )
+{
+	entity materialHarvester = CreateEntity( "prop_dynamic" )
+	materialHarvester.SetValueForModelKey( model )
+	materialHarvester.kv.fadedist = fadeDist
+	materialHarvester.kv.renderamt = 255
+	materialHarvester.kv.rendercolor = "255 255 255"
+	materialHarvester.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		materialHarvester.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			materialHarvester.SetAngles( expect vector( angles ) )
+	}
+
+	if ( dispatchSpawn )
+		DispatchSpawn( materialHarvester )
+
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen after DispatchSpawn, otherwise origin is snapped to nearest whole unit
+		materialHarvester.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			materialHarvester.SetAngles( expect vector( angles ) )
+	}
+
+	materialHarvester.SetFadeDistance( fadeDist )
+
+	return materialHarvester
+}
+#endif
+
+#if CLIENT
+string function Crafting_Harvester_UseTextOverride( entity ent )
+{
+	entity player = GetLocalViewPlayer()
+
+	CustomUsePrompt_Show( ent )
+	CustomUsePrompt_SetSourcePos( ent.GetOrigin() + < 0, 0, 30 > )
+
+	CustomUsePrompt_SetAdditionalText( "%ping% " + Localize( "#COMMS_PING" ) ) //removing for 14.1 due to shared crafting materials removing the need for pinging harvestors for teammates
+	CustomUsePrompt_SetText( Localize("#CRAFTING_HARVESTER_USE_PROMPT") )
+	CustomUsePrompt_SetLineColor( GetCraftingColor() )
+	CustomUsePrompt_SetHintImage( CRAFTING_CURRENCY_ASSET )
+	CustomUsePrompt_SetShouldCenterImage( true )
+
+	if ( PlayerIsInADS( player ) )
+		CustomUsePrompt_ShowSourcePos( false )
+	else
+		CustomUsePrompt_ShowSourcePos( true )
+
+	return ""
+}
+
+vector function GetCraftingColor()
+{
+	return SrgbToLinear( <0, 255, 240> / 255.0 )
+}
 #endif
 
 //=================================================================================================
