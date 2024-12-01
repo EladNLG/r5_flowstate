@@ -1337,9 +1337,9 @@ playlists
 				flowstateRoundtime 								800
 				flowstateResetKills 							1
 				flowstateTimer 									1
-				flowstateLockPOI 								1  // flowstateRandomizePOIS must be 0 if you want to lock poi.
-				flowstateLockeedPOI 							13
-				locked_poi_name									"TTV Building"
+				flowstateLockPOI 								0  // flowstateRandomizePOIS must be 0 if you want to lock poi.
+				flowstateLockeedPOI 							0
+				locked_poi_name									""
 				flowstateCapitolCityReplacesTTVLocation 		0 //Makes ttv building bigger
 				flowstateAdminTgive 							0 //tgive is for the admin ONLY
 				flowstateAutoChangeLevelEnable					1
@@ -2190,10 +2190,10 @@ playlists
 				spawnsets_mp_rr_olympus_mu1						"1"
 				spawnsets_mp_rr_arena_skygarden					"1"
 				
-				spawnpaks_use_sets 								1	// bool, enables using other than stock spawn paks
+				spawnpaks_use_sets 								0	// bool, enables using other than stock spawn paks
 				spawnpaks_use_random							0	// bool, loads random configured pak on mapstart
-				spawnpaks_prefer								1	// bool, enables the below setting 
-				spawnpaks_preferred_pak							4 	// integer, pak number 
+				spawnpaks_prefer								0	// bool, enables the below setting 
+				spawnpaks_preferred_pak							0 	// integer, pak number 
 				spawnpaks_playlist_override						0 	// bool, enables using below defined playlist for spawnpaks_playlist_override
 								
 				custom_spawnpak									""	// string, custom spawn.rpak override
@@ -2956,7 +2956,7 @@ playlists
 
 				////CTF Score And Round time:
 				max_score									  	3	//Set max amount of flag captures
-				round_time									 	1   //Sets time limit for rounds in minutes
+				round_time									 	8   //Sets time limit for rounds in minutes
 				flowstate_modified_movement						12 // 0 = Apex || 1 = Titanfall 2 || 2 = Titanfall 2 High Air Accel || 3 = Titanfall 2 Low Grav || 4 = CSGO || 5 = CSGO High Air Accel || 6 = Surf || 7 = Half-Life 1 || 8 = Halo || 9 = Superglide Boost || 10 = Instagib || 11 = Fun Mode || 12 = Halo Movement NEW
 			}
 			gamemodes { custom_ctf { maps {
@@ -2986,7 +2986,7 @@ playlists
 				max_team_size									1
 				max_players										60
 				min_players										0
-				
+				redish_highlight_los                            0
 				default_shield_hp				  				0
 				survival_shields				   				0
 				skydive_ziplines_enabled		   				0
