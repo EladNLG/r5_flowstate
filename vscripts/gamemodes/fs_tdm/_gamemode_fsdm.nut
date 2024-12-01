@@ -1589,8 +1589,9 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			
-			player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-			player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+			//(mk): modes handle melee
+			//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+			//player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )		
 
 			if( flowstateSettings.is_halo_gamemode )
 			{
