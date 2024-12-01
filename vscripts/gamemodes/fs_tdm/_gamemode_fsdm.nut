@@ -1255,7 +1255,10 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 					if( flowstateSettings.is_halo_gamemode )
 						Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 				}
-
+				
+				if( !IsValid( victim ) ) //(mk): SURVIVAL_Death_DropLoot waitthreads
+					return
+					
 				entity weapon = victim.GetActiveWeapon( eActiveInventorySlot.mainHand )
 				
 				if( IsValid( weapon ) && weapon.w.isInAdsCustom )
