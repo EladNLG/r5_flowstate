@@ -234,6 +234,9 @@ void function ResetZiplineUsageDelayed(entity player)
 		}
 	)
 	
+	if( IsValid( player.Zipline_GetActiveZipline() ) && IsValid( player.Zipline_GetLastZipline() ) && player.Zipline_GetActiveZipline() != player.Zipline_GetLastZipline() )
+		return //onthredend handles
+	
 	float maxTime = Time() + ZIPLINES_COOLDOWN	
 	player.canUseZipline = false
 	
