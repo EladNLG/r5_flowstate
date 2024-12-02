@@ -1,3 +1,5 @@
+untyped //todo: remove after SetCanUseZipline move to code
+
 global function CodeCallbacksShared_Init
 
 global function CodeCallback_AnimationDone
@@ -66,6 +68,9 @@ global function CodeCallback_OnPlayerStartZoomOut
 global function CodeCallback_CanStartCustomWeaponActivity
 global function AddCallback_CanStartCustomWeaponActivity
 
+global function AddCallback_CanUseZipline
+
+global typedef CanUseZiplineCallback bool functionref( entity player, entity zipline, vector ziplineClosestPoint )
 struct
 {
 	#if SERVER
@@ -82,6 +87,29 @@ struct
 	array<bool functionref( entity, entity )> canPlayerUseCheckCallbacks
 
 } file
+
+void function AddCallback_CanUseZipline( CanUseZiplineCallback callbackFunc )
+{
+	#if SERVER
+		if( svGlobal.canUseZiplineCallbacks.contains( callbackFunc ) )
+	#else //CLIENT 
+		if( clGlobal.canUseZiplineCallbacks.contains( callbackFunc ) )
+	#endif 
+	{
+		mAssert
+		( 	
+			false, @"Tried to add function 
+			" + string( callbackFunc ) + 
+			"() but was already added with " + FUNC_NAME() 	
+		)
+	}
+	
+	#if SERVER 
+		svGlobal.canUseZiplineCallbacks.append( callbackFunc )
+	#else //CLIENT 
+		clGlobal.canUseZiplineCallbacks.append( callbackFunc )
+	#endif
+}
 
 void function CodeCallbacksShared_Init()
 {
@@ -189,32 +217,42 @@ bool function CodeCallback_CanUseEntity( entity player, entity ent )
 
 void function ResetZiplineUsageDelayed(entity player)
 {
-	if(!IsValid(player)) return
-	
-	if(IsValid(player.Zipline_GetActiveZipline()) && IsValid(player.Zipline_GetLastZipline()) && player.Zipline_GetActiveZipline() != player.Zipline_GetLastZipline())
-	{
-		player.p.ziplineUsages = 0
+	if( !IsValid( player ) ) 
 		return
-	}
 	
 	Signal( player, "NewZiplineUse" )
-	EndSignal( player, "NewZiplineUse" )
+	EndSignal( player, "NewZiplineUse", "OnDestroy" )	
 	
-	bool clearScore = false
-
-	float maxTime = Time() + ZIPLINES_COOLDOWN
+	OnThreadEnd
+	(
+		void function() : ( player )
+		{
+			if( !IsValid( player ) )
+				return 
+				
+			player.SetCanUseZipline( true )
+		}
+	)
 	
-	while( Time() < maxTime )
+	float maxTime = Time() + ZIPLINES_COOLDOWN	
+	player.canUseZipline = false
+	
+	while( Time() < maxTime && !player.IsMantling() )
+	{
+		if( player.IsOnGround() && !player.IsWallHanging() && !player.IsWallRunning() )
+			break
+			
 		WaitFrame()
-	
-	if(IsValid(player))
-		player.p.ziplineUsages = 0
+	}
 }
 
 const float ZIPLINE_MAX_USE_ANGLE = 35.0
 bool function CodeCallback_CanUseZipline( entity player, entity zipline, vector ziplineClosestPoint )
 {
 	if ( !IsValid( player ) )
+		return false
+	
+	if( !player.canUseZipline )		
 		return false
 	
 	if ( !player.IsHuman() )
@@ -232,9 +270,6 @@ bool function CodeCallback_CanUseZipline( entity player, entity zipline, vector 
 
 	if ( GetGameState() >= eGameState.WinnerDetermined )
 		return false
-	
-	if(player.p.ziplineUsages == 3)
-			return false
 		
 	#if SERVER
 		foreach ( func in svGlobal.canUseZiplineCallbacks )

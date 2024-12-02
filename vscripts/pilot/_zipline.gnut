@@ -748,7 +748,13 @@ function CreateZiplineJetEffects( entity player )
 void function CodeCallback_ZiplineMount( entity player, entity zipline )
 {
 	player.p.ziplineUsages++
-	thread ResetZiplineUsageDelayed(player)
+	
+	if( player.p.ziplineUsages == 3 )
+	{
+		thread ResetZiplineUsageDelayed( player )
+		return
+	}
+		
 	#if SERVER
 		EmitDifferentSoundsOnEntityForPlayerAndWorld( "player_zipline_attach", "3p_zipline_attach", player, player )		
 	#endif
