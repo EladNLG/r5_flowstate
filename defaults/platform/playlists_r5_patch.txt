@@ -1428,7 +1428,7 @@ playlists
 				description										"DM or FFA with multiple settings, customize your own server"
 				abbreviation					  				"TDM/FFA"
 				lobbytitle						 				"TDM/FFA"
-        
+
 				image							  				worlds_edge
 				video							  				worlds_edge
 				panel_image										panel_worlds_edge
@@ -1523,7 +1523,6 @@ playlists
 				flowstateMaxPingAllowed							300
 				solo_mode 										1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
 				flowstateDoorsEnabled							1 //Doors enabled or disabled in all buildings.
-        
 				flowstateDoorsRegen								0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
 
 				//visuals
@@ -1559,8 +1558,8 @@ playlists
 				mp_rr_desertlands_64k_x_64k_nx				 	1
 			} } }
 		}
-    
-    fs_4d
+
+		fs_4d
 		{
 			inherit defaults
 			vars
