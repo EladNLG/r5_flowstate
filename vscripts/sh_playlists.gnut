@@ -394,6 +394,10 @@ asset function GetModeEmblemImage( string playlistName )
 		case "fs_scenarios":
 		emblemImage = $""
 		break
+		
+		case "fs_realistic_ttv":
+		emblemImage = $""
+		break
 	}
 
 	#endif

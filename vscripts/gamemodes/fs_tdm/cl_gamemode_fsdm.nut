@@ -652,6 +652,8 @@ void function Flowstate_StartTime_Thread( float endtime )
 		msg = "CTF Starting in "
 	else if( Playlist() == ePlaylists.fs_scenarios )
 		msg = "Zone War Starting in "
+	else if( Playlist() == ePlaylists.fs_realistic_ttv )
+		msg = "Realistic TTV Survival in : "
 
 	while ( Time() <= endtime )
 	{

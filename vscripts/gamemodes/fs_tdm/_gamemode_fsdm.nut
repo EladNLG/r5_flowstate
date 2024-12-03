@@ -79,6 +79,8 @@ global const float SHORT_CHAMPION_CARD_TIME = 7.0
 global function FS_ResetMapLightning
 global function PrintKillHistoryFor
 global function _GetAppropriateSpawnLocation
+global function Flowstate_IsRealisticMode
+global function Halo_GotoNextPlaylist
 
 #if DEVELOPER
 	global function DEV_NextRound
@@ -123,7 +125,6 @@ global function CheckForObservedTarget
 global function FS_Hack_CreateBulletsCollisionVolume
 
 const float STATIC_WAIT_TIME = 1.0
-const float MODE1V1_ITEM_DISSOLVE_TIME = 4.0
 
 struct 
 {
@@ -170,8 +171,10 @@ struct
 	
 	array< void functionref() > tdmStateInProgressCallbacks
 	bool bIsChampionShowing
-	
 	table<string, LocationSettings> locationSettingsMap = {}
+	
+	array< string > metagameWeaponsPrimary
+	array< string > metagameWeaponsSecondary
 	
 } file
 
@@ -224,6 +227,7 @@ struct
 	bool give_random_custom_models_toall
 	bool bIs1v1ModeEnabled
 	bool show_short_champion_screen
+	bool bIsRealisticMode
 	
 	//string settings 
 	string custom_match_ending_title
@@ -285,6 +289,12 @@ void function InitializePlaylistSettings()
 	flowstateSettings.allow_cfgs 							= GetCurrentPlaylistVarBool( "flowstate_allow_cfgs", false )					
 	flowstateSettings.give_random_custom_models_toall		= GetCurrentPlaylistVarBool( "flowstate_give_random_custom_models_toall", false )
 	flowstateSettings.show_short_champion_screen			= GetCurrentPlaylistVarBool( "show_short_champion_screen", true )
+	flowstateSettings.bIsRealisticMode 						= Playlist() == ePlaylists.fs_realistic_ttv
+}
+
+bool function Flowstate_IsRealisticMode()
+{
+	return flowstateSettings.bIsRealisticMode
 }
 
 void function ResetLoadedWeapons( entity player )
@@ -328,6 +338,12 @@ void function _CustomTDM_Init()
 	RegisterSignal( "EndScriptedPropsThread" )
 	RegisterSignal( "FS_WaitForBlackScreen" )
 	RegisterSignal( "FS_ForceDestroyAllLifts" )
+	
+	if( FlowState_RandomGunsMetagame() )
+	{
+		PrimaryWeaponMetagame_Init()
+		SecondaryWeaponMetagame_Init()
+	}
 	
 	flowstateSettings.bIs1v1ModeEnabled = bIs1v1Mode()
 	if( flowstateSettings.enable_global_chat )
@@ -495,6 +511,9 @@ void function _CustomTDM_Init()
 	
 	if( !isScenariosMode() )
 		AddSpawnCallback( "prop_survival", Common_DissolveDropable )
+			
+	if( Flowstate_IsRealisticMode() )
+		RealisticMode_Init()
 }
 
 void function __OnEntitiesDidLoadCTF()
@@ -630,7 +649,6 @@ int function GetLocationSettingsIndexByName( string name )
 	return -1
 }
 
-
 LocPair function _GetVotingLocation()
 {
     switch( MapName() )
@@ -739,24 +757,29 @@ void function SetFallTriggersStatus(bool status){
 	file.FallTriggersEnabled = status
 }
 
-LocPair function _GetAppropriateSpawnLocation(entity player)
+LocPair function _GetAppropriateSpawnLocation( entity player )
 {
-	switch(GetGameState())
+	switch( GetGameState() )
     {
         case eGameState.MapVoting:
 			return _GetVotingLocation()
         case eGameState.Playing:
 
-			if(IsFFAGame())
+			if( flowstateSettings.bIsRealisticMode )
+				return RealisticMode_GetBestSpawnPointFFA()
+				
+			if( IsFFAGame() )
 				return Flowstate_GetBestSpawnPointFFA()
 			else
 				return Flowstate_GetBestSpawnPointFFA() // !FIXME
     }
+	
 	return _GetVotingLocation() //this should be unreachable
 }
 
 LocPair function Flowstate_GetBestSpawnPointFFA()
 {
+
 	if(file.selectedLocation.spawns.len() == 0) return _GetVotingLocation()
 	table<LocPair, float> SpawnsAndNearestEnemy = {}
 
@@ -1226,18 +1249,23 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 					if( Flowstate_IsFastInstaGib() )
 						decidedWaitTime = STATIC_WAIT_TIME
 				}
-				
+					
 				Remote_CallFunction_ByRef( victim, "ForceScoreboardLoseFocus" )
 				
 				//(mk): I originally intended this to be apart of a lifestate change or YouDied callback, and setting UpdateNextRespawnTime( entity player, float time ), client using: GetNextRespawnTime( player )  but due to various mode behavior, it's better left as a remote func call.
 				Remote_CallFunction_Replay( victim, "Flowstate_ShowRespawnTimeUI", int( DEATHCAM_TIME_SHORT + decidedWaitTime ) )//+ DEATHCAM_TIME_SHORT ) )
 
-				if( flowstateSettings.is_halo_gamemode )
+				if( flowstateSettings.is_halo_gamemode || flowstateSettings.bIsRealisticMode )
 				{
 					thread SURVIVAL_Death_DropLoot( victim, damageInfo ) //(mk):this wait threads inside.
-					Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
+					
+					if( flowstateSettings.is_halo_gamemode )
+						Remote_CallFunction_NonReplay( victim, "FS_ForceDestroyCustomAdsOverlay" )
 				}
-
+				
+				if( !IsValid( victim ) ) //(mk): SURVIVAL_Death_DropLoot waitthreads
+					return
+					
 				entity weapon = victim.GetActiveWeapon( eActiveInventorySlot.mainHand )
 				
 				if( IsValid( weapon ) && weapon.w.isInAdsCustom )
@@ -1323,13 +1351,17 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 	    		if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
                 {
 	    			//Heal
-	    			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
+	    			if( FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak() )
 					{
 	    			    PlayerRestoreHPFIESTA(attacker, 100)
 	    			    UpgradeShields(attacker, false)
-	    			} else 
+	    			} 
+					else 
 					{
-						PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
+						if( flowstateSettings.bIsRealisticMode )
+							RealisticMode_GivePlayerBonusHeals( attacker )
+						else
+							PlayerRestoreHP( attacker, 100, Equipment_GetDefaultShieldHP() )
 					}
 
 	    			if(FlowState_KillshotEnabled())
@@ -1343,8 +1375,10 @@ void function _OnPlayerDied( entity victim, entity attacker, var damageInfo )
 	    			    GiveGungameWeapon(attacker)
 	    			    //KillStreakAnnouncer(attacker, false)
 	    			}
-
-	    			WpnAutoReloadOnKill(attacker)
+					
+					if( !flowstateSettings.bIsRealisticMode )
+						WpnAutoReloadOnKill( attacker )
+						
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
 					
 					//lg_duel mkos
@@ -1573,8 +1607,9 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			player.TakeOffhandWeapon( OFFHAND_MELEE )
 			
-			// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-			// player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+			//(mk): modes handle melee
+			//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+			//player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )		
 
 			if( flowstateSettings.is_halo_gamemode )
 			{
@@ -1585,6 +1620,7 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 				player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 			}
+			
 		}catch(e420){
 		//AttachEdict rare crash
 		}
@@ -1655,7 +1691,6 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 			player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 			GiveRandomUlt( player )
 		}
-
 	}
 
 	if (Flowstate_Is4DMode())
@@ -1706,7 +1741,8 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 	if( !player.HasPassive( ePassives.PAS_PILOT_BLOOD ) && 
 		!Flowstate_IsFS1v1() && 
 		!Flowstate_IsLGDuels() && 
-		!Flowstate_IsFastInstaGib() )
+		!Flowstate_IsFastInstaGib() && 
+		!flowstateSettings.bIsRealisticMode )
 	{
 		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	}
@@ -1721,16 +1757,15 @@ void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 	
 	Survival_SetInventoryEnabled( player, true )
 	SetPlayerInventory( player, [] )
-	
+
 	if( flowstateSettings.GiveAllOpticsToPlayer )
 	{
-		SetPlayerInventory( player, [] )
 		Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
-		array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
+		array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
 		foreach(optic in optics)
 			SURVIVAL_AddToPlayerInventory(player, optic)
 	}
-
+	
 	if( Flowstate_IsFSDM() || flowstateSettings.is_halo_gamemode )
 	{
 		const array<string> loot = [ "mp_weapon_frag_grenade_halomod", "mp_weapon_plasma_grenade_halomod" ]
@@ -1833,10 +1868,10 @@ void function SetPlayerCustomModel( entity player, int index )
 		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_medium_loba.rmdl" )
 		break
 		
-		// case 18:
-		// player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
-		// player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
-		// break
+		case 18:
+		player.SetBodyModelOverride( $"mdl/Humans/pilots/pilot_heavy_revenant.rmdl" )
+		player.SetArmsModelOverride( $"mdl/Humans/pilots/pov_pilot_heavy_revenant.rmdl" )
+		break
 
 		case 19: // ballistic
 		player.SetBodyModelOverride( $"mdl/Humans/pilots/ballistic_base_w.rmdl" )
@@ -2046,8 +2081,7 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 		    Mods.append( strip(mod) )
 	}
 	
-	try
-	{
+	try{
 		entity weaponNew
 		if(IsValid(player))
 		{
@@ -2086,10 +2120,8 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 			player.ClearFirstDeployForAllWeapons()			
 		}
-	}
-	catch(e420)
-	{
-		printt( "Invalid weapon name for tgive command?: " + e420 )
+	}catch(e420){
+		printt("Invalid weapon name for tgive command.")
 	}
 }
 
@@ -2181,59 +2213,83 @@ void function SetupInfiniteAmmoForWeapon( entity player, entity weapon)
 	}
 }
 
+void function PrimaryWeaponMetagame_Init()
+{
+	array<string> Weapons
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_realistic_ttv:
+			Weapons = 
+			[
+				"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2",
+				"mp_weapon_r97 optic_cq_threat bullets_mag_l2 stock_tactical_l2",
+				"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3",
+				"mp_weapon_vinson stock_tactical_l2 highcal_mag_l3"
+			]
+		break 
+		
+		default:
+			Weapons = 
+			[
+				"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
+				"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
+				"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
+				"mp_weapon_hemlok barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2"
+			]
+	}
+
+	Weapons = ValidateBlacklistedWeapons( Weapons )
+	
+	if( Weapons.len() == 0 )
+		mAssert( false, "No valid weapons remain in secondary list. If this is intentional, comment this assert" )
+		
+	file.metagameWeaponsPrimary = Weapons
+}
+
 void function GiveRandomPrimaryWeaponMetagame(entity player)
 {
-	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
-	//todo: init outside func
+	__GiveWeapon( player, clone file.metagameWeaponsPrimary, WEAPON_INVENTORY_SLOT_PRIMARY_0, RandomIntRangeInclusive( 0, file.metagameWeaponsPrimary.len() - 1 )  )
+}
 
-    array<string> Weapons = [
-		"mp_weapon_rspn101 barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2",
-		"mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l2 stock_tactical_l2 hopup_turbocharger",
-		"mp_weapon_hemlok barrel_stabilizer_l2 optic_cq_hcog_bruiser stock_tactical_l2 highcal_mag_l2"
-	]
-
-	//R5RDEV-1
-	// foreach(weapon in Weapons)
-	// {
-		// array<string> weaponfullstring = split( weapon , " ")
-		// string weaponName = weaponfullstring[0]
-		// if(file.blacklistedWeapons.find(weaponName) != -1)
-				// Weapons.removebyvalue(weapon)
-	// }
+void function SecondaryWeaponMetagame_Init()
+{
+	array<string> Weapons
+	
+	switch( Playlist() )
+	{
+		case ePlaylists.fs_realistic_ttv:
+			Weapons = 
+			[
+				"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2 stock_tactical_l2",
+				"mp_weapon_mastiff shotgun_bolt_l2 stock_tactical_l2",
+				"mp_weapon_shotgun shotgun_bolt_l2 stock_tactical_l2"
+			]
+		break 
+		
+		default:
+			Weapons = 
+			[
+				"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
+				"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
+				"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
+				"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
+				"mp_weapon_mastiff shotgun_bolt_l2 stock_tactical_l2",
+				"mp_weapon_energy_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2",
+				"mp_weapon_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2"
+			]
+	}
 	
 	Weapons = ValidateBlacklistedWeapons( Weapons )
-
-	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+	
+	if( Weapons.len() == 0 )
+		mAssert( false, "No valid weapons remain in secondary list. If this is intentional, comment this assert" )
+	
+	file.metagameWeaponsSecondary = Weapons	
 }
 
 void function GiveRandomSecondaryWeaponMetagame(entity player)
 {
-	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
-
-	//todo: init outside func..
-    array<string> Weapons = [
-		"mp_weapon_volt_smg laser_sight_l2 optic_cq_hcog_classic energy_mag_l2 stock_tactical_l2",
-		"mp_weapon_r97 laser_sight_l2 optic_cq_hcog_classic stock_tactical_l2 bullets_mag_l2",
-		"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2",
-		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l2 hopup_headshot_dmg",
-		"mp_weapon_mastiff shotgun_bolt_l2 stock_tactical_l2",
-		"mp_weapon_energy_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2",
-		"mp_weapon_shotgun shotgun_bolt_l2 optic_cq_hcog_classic stock_tactical_l2"
-	]
-
-	//R5RDEV-1
-	// foreach(weapon in Weapons)
-	// {
-		// array<string> weaponfullstring = split( weapon , " ")
-		// string weaponName = weaponfullstring[0]
-		// if(file.blacklistedWeapons.find(weaponName) != -1)
-				// Weapons.removebyvalue(weapon)
-	// }
-	
-	Weapons = ValidateBlacklistedWeapons( Weapons )
-
-	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+	__GiveWeapon( player, clone file.metagameWeaponsSecondary, WEAPON_INVENTORY_SLOT_PRIMARY_1, RandomIntRangeInclusive( 0, file.metagameWeaponsSecondary.len() - 1 ) )
 }
 
 void function GiveRandomPrimaryWeapon(entity player)
@@ -2264,7 +2320,7 @@ void function GiveRandomPrimaryWeapon(entity player)
 	
 	Weapons = ValidateBlacklistedWeapons( Weapons )
 
-	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( -1, Weapons.len() ) )
 }
 
 void function GiveRandomSecondaryWeapon( entity player)
@@ -2291,7 +2347,7 @@ void function GiveRandomSecondaryWeapon( entity player)
 	
 	Weapons = ValidateBlacklistedWeapons( Weapons )
 
-	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( -1, Weapons.len() ) )
 }
 
 void function GiveActualGungameWeapon(int index, entity player)
@@ -4006,6 +4062,13 @@ void function SimpleChampionUI()
 		//////// 	NEXT MAP 	////////
 		////////////////////////////////
 		
+		if( Flowstate_IsHaloMode() && Flowstate_CycleHaloPlaylists() )
+		{
+			waitthread g__InternalCheckReload()
+			Halo_GotoNextPlaylist()
+			return
+		}
+		
 		//(mk): cycle map
 		string to_map = GetMapName()
 
@@ -4015,6 +4078,7 @@ void function SimpleChampionUI()
 		waitthread g__InternalCheckReload()
 		
 		GameRules_ChangeMap( to_map, GetCurrentPlaylistName() )
+		return
 	} //flowstate rounds
 	
 	
@@ -7083,6 +7147,7 @@ array<entity> function FSDM_ReturnBestPlayers_FromChampions( array<entity> champ
 			break 
 			
 		case ePlaylists.fs_dm:
+		case ePlaylists.fs_realistic_ttv:
 		case ePlaylists.fs_1v1:
 		case ePlaylists.fs_tdm:
 		case ePlaylists.fs_lgduels_1v1:
@@ -7195,6 +7260,7 @@ array<entity> function Tracker_DetermineBestChampions( array<entity> championCan
 			break
 			
 		case ePlaylists.fs_dm:
+		case ePlaylists.fs_realistic_ttv:
 		case ePlaylists.fs_1v1:
 		case ePlaylists.fs_tdm:
 		case ePlaylists.fs_lgduels_1v1:
@@ -7306,10 +7372,7 @@ void function Common_DissolveDropable( entity prop )
 	(
 		void function() : ( prop )
 		{
-			if( is1v1EnabledAndAllowed() )
-				wait MODE1V1_ITEM_DISSOLVE_TIME
-			else
-				wait Flowstate_GetDissolveTime()
+			wait Flowstate_GetDissolveTime()
 			
 			if( IsValid( prop ) )
 				prop.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 200 )
@@ -7442,6 +7505,50 @@ void function PrintKillHistoryFor( entity player )
 {
 	foreach( KillHistory history in player.p.killHistoryArray )
 		printt( string( history.victim ), history.killTime, " seconds ago: ", Time() - history.killTime )
+}
+
+
+
+
+const array<int> CYCLE_HALO_PLAYLISTS_ARR =
+[
+	ePlaylists.fs_haloMod_ctf,
+	ePlaylists.fs_haloMod_oddball,
+	ePlaylists.fs_haloMod
+]
+
+void function Halo_GotoNextPlaylist()
+{
+	if( !Flowstate_IsHaloMode() || !Flowstate_CycleHaloPlaylists() )
+		return
+		
+	string nextPlaylist 		= GetCurrentPlaylistName()
+    int currentPlaylistEnum 	= Playlist()
+    int currentIndex 			= CYCLE_HALO_PLAYLISTS_ARR.find( currentPlaylistEnum )
+	int playlistLen 			= AllPlaylistsArray().len()
+    int nextIndex 				= ( currentIndex + 1 ) % CYCLE_HALO_PLAYLISTS_ARR.len()
+   
+	if( nextIndex > -1 && nextIndex < playlistLen )
+	{
+		int nextPlaylistIndex = CYCLE_HALO_PLAYLISTS_ARR[ nextIndex ]
+		nextPlaylist = AllPlaylistsArray()[ nextPlaylistIndex ]
+	}
+
+	string serverName = "_invalidHostname"
+	string serverDesc
+		
+	if ( IsDedicated() )
+	{
+		serverName = GetConVarString( "hostname" )
+		serverDesc = GetConVarString( "hostdesc" )
+	}
+	else //TODO(mk): Listen server get server name/desc
+	{
+		serverName = GetCurrentPlaylistVarString( "halo_servername", "[ HALO ] " + GetServerID() )
+		serverDesc = GetCurrentPlaylistVarString( "halo_serverdesc", "Listen server - auto Halo playlist cycle" )
+	}
+		
+	CreateServer( serverName, serverDesc, GetMapName(), nextPlaylist, 0 )
 }
 
 void function FS_Hack_CreateBulletsCollisionVolume( vector origin, float large = 15000 )

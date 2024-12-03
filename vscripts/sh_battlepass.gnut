@@ -286,7 +286,7 @@ void function ShBattlePass_LevelInit()
 			}
 		}
 
-#if DEV && CLIENT 
+#if DEVELOPER && CLIENT 
 		printt( "---------------- CHARACTER CHALLENGES ----------------" )
 		foreach ( zoneStatType, zoneTbl in zoneChallenges )
 		{

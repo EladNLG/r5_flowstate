@@ -165,6 +165,13 @@ enum eTunnelExpirationType
 	INVALID_END_POS,
 	INVALID_TUNNEL
 }
+
+enum eDirection
+{
+	NONE = -1,
+	ENDTOSTART,
+	STARTTOEND
+}
 #endif
 
 global struct PhaseTunnelData
@@ -177,6 +184,7 @@ global struct PhaseTunnelData
 	PhaseTunnelPortalData&     startPortal
 	PhaseTunnelPortalData&     endPortal
 	bool                       expired
+	entity 					   owner
 
 	#if SERVER
 		int expirationType
@@ -750,6 +758,7 @@ void function PhaseTunnel_OpenTunnel( PhaseTunnelData tunnelData, entity player 
 	tunnelEnt.DisableHibernation()
 	SetTeam( tunnelEnt, team )
 	tunnelEnt.SetOwner( player )
+	tunnelData.owner = player 
 
 	ArrayRemoveInvalid( file.allTunnelEnts )
 	file.allTunnelEnts.append( tunnelEnt )
@@ -823,6 +832,38 @@ void function DEV_PhaseTunnel_DestroyAll()
 }
 #endif
 
+const float STANDARD_PORTAL_DESTROY_DELAY = 3.0
+void function RemovePortalDelayed( entity player, PhaseTunnelData tunnelData )
+{
+	wait STANDARD_PORTAL_DESTROY_DELAY
+	
+	if( IsValid( tunnelData.tunnelEnt ) )
+	{
+		tunnelData.tunnelEnt.Signal( "PhaseTunnel_DestroyTunnel" )
+		
+		if( IsValid( player ) )
+			LocalMsg( player, "#FS_REMOVED_PORTAL", "#FS_REMOVED_PORTAL_DESC", eMsgUI.IBMM, 10 )
+	}
+}
+
+const vector MYSTIC_MAGICAL_ELEVATOR_SHAFT_ORIGIN = < 9761, 5392.29, -4295.97 >
+const float MAX_ELEVATOR_SUCKING_BEHAVIOR_RADIUS = 150
+bool function Realistic_InAllowedZone( vector origin )
+{
+	//printw( "checking allowed zone:", VectorToString( origin ) )
+	float dist2d = Distance2D( origin, MYSTIC_MAGICAL_ELEVATOR_SHAFT_ORIGIN )
+	
+	#if DEVELOPER 
+		DebugDrawCircle( MYSTIC_MAGICAL_ELEVATOR_SHAFT_ORIGIN, <0,0,0>, MAX_ELEVATOR_SUCKING_BEHAVIOR_RADIUS, 255, 0, 0, true, 10.0, 32 )
+	#endif
+	
+	if( dist2d > MAX_ELEVATOR_SUCKING_BEHAVIOR_RADIUS )
+		return true
+
+	return false
+}
+
+const float MAX_KIDNAP_TIME_AFTER_END_PORTAL = 1.85
 void function PhaseTunnel_WaitForPhaseTunnelExpiration( entity player, PhaseTunnelData tunnelData, float lifetime, bool DEBUG_DRAW = false )
 {
 	tunnelData.expirationType = eTunnelExpirationType.LIFE_TIME_END
@@ -837,6 +878,16 @@ void function PhaseTunnel_WaitForPhaseTunnelExpiration( entity player, PhaseTunn
 		player.EndSignal( "CleanUpPlayerAbilities" )
 		player.EndSignal( "PhaseTunnel_DestroyPlacement" )
 
+		if( Flowstate_IsRealisticMode() )
+		{
+			if( !Realistic_InAllowedZone( endPos ) )
+				thread RemovePortalDelayed( player, tunnelData )
+				
+			player.p.portalPlacements++
+			player.p.portalPlaceTime = Time()
+			thread CheckForKidnaps( tunnelData, MAX_KIDNAP_TIME_AFTER_END_PORTAL )
+		}
+			
 		EndThreadOn_PlayerChangedClass( player )
 	}
 
@@ -911,6 +962,55 @@ void function PhaseTunnel_WaitForPhaseTunnelExpiration( entity player, PhaseTunn
 				PutPlayerInSafeSpot( user, null, null, closestAirDrop, closestAirDrop )
 			}
 		}
+	}
+}
+
+void function CheckForKidnaps( PhaseTunnelData tunnelData, float checkForTime )
+{
+	float startTime = Time()
+	entity tunnelOwner = IsValid( tunnelData.owner ) ? tunnelData.owner : GetEnt( "worldspawn" )
+	
+	EndSignal( tunnelOwner, "OnDestroy" )
+	
+	array<entity> kidnapees
+	
+	while( Time() < startTime + checkForTime )
+	{
+		WaitFrame()
+		
+		if( tunnelData.entUsers.len() == 0 )
+			continue
+			
+		foreach( entity user in tunnelData.entUsers )
+		{
+			WaitFrame() 
+			
+			if( tunnelOwner == user )
+				continue 
+				
+			//printw( "Checking enter direction", user.e.portalDirection )
+			if( user.e.portalDirection == eDirection.ENDTOSTART && !kidnapees.contains( user ) )
+			{
+				kidnapees.append( user )
+				__HandleKidnap( tunnelOwner, user )	
+			}
+		}
+	}		
+}
+
+void function __HandleKidnap( entity kidnapper, entity victim )
+{
+	//printw( "Message kidnapper: ", kidnapper )
+	
+	if( !IsValid( kidnapper ) )
+		return
+	
+	if( kidnapper.IsPlayer() )
+	{
+		kidnapper.p.portalKidnaps++	
+	
+		string victimName = IsValid( victim ) ? victim.p.name : "unknown"	
+		LocalEventMsg( kidnapper, "#FS_KIDNAPPED", victimName + " in " + ( Time() - kidnapper.p.portalPlaceTime ) + " seconds" )
 	}
 }
 
@@ -1045,11 +1145,24 @@ void function OnPhaseTunnelTriggerEnter( entity trigger, entity ent )
 		thread OnPhaseTunnelTriggerEnter_Internal( trigger, ent )
 }
 
+const float MAX_PORTAL_ENTER_DETECTION_RADIUS = 64.0
 void function OnPhaseTunnelTriggerEnter_Internal( entity trigger, entity ent )
 {
 	entity tunnelEnt = trigger.GetOwner()
 
 	ent.EndSignal( "OnDestroy", "OnDeath" )
+
+	OnThreadEnd 
+	(
+		void function() : ( ent )
+		{
+			if( IsValid( ent ) )
+			{
+				//Warning( "setting to none" )
+				ent.e.portalDirection = eDirection.NONE
+			}
+		}
+	)
 
 	if ( !(trigger in file.triggerEndpoint ) )
 		return
@@ -1069,6 +1182,15 @@ void function OnPhaseTunnelTriggerEnter_Internal( entity trigger, entity ent )
 
 	PhaseTunnelTravelState travelState
 	travelState.shiftStyle = eShiftStyle.Tunnel
+
+	float dist2d = Distance2D( portalData.startOrigin, ent.GetOrigin() ) //(mk): portalData.startOrigin --- this is really the "END" of the user placed portal
+	bool bEnteredFromEnd = dist2d <= MAX_PORTAL_ENTER_DETECTION_RADIUS	//maybe adjust proxim	
+	
+	#if DEVELOPER
+		DebugDrawCircle( portalData.startOrigin, portalData.endAngles, MAX_PORTAL_ENTER_DETECTION_RADIUS, 255, 0, 0, true, 10, 32 )
+	#endif
+	
+	ent.e.portalDirection = bEnteredFromEnd ? eDirection.ENDTOSTART : eDirection.STARTTOEND	
 
 	//todo-iholstead: remove me once R5DEV-578675 is closed
 	printf("OnPhaseTunnelTriggerEnter_Internal called on "+ ent )

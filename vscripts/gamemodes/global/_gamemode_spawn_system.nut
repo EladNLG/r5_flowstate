@@ -1926,6 +1926,13 @@ string function DEV_SpawnsPlaylist( string playlist = "", bool bDisablePrints = 
 			case "fs_1v1":
 				DEV_SetTeamCount( 2 )
 				break
+				
+			case "fs_realistic_ttv":
+				DEV_SetTeamCount( 1 )
+				DebugDrawSphere( < 9864.35, 5497.93, -3567.97 >, 4100, 255, 0, 0, true, 800.0 )
+				break
+				
+			//
 		}
 	}
 	
@@ -3749,7 +3756,7 @@ array<LocPair> function customDevSpawnsList()
 	//add sq code spawns for usage with DEV_LoadPak()
 	spawns = 
 	[
-	
+
 	]
 	
 	return spawns

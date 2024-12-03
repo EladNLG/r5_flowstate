@@ -46,6 +46,7 @@ function CodeCallback_RegisterClass_CPlayer()
 	CPlayer.stimmedForever <- false
 	CPlayer.ClientCommandsEnabled <- true
 	CPlayer.ScriptClassRegistered <- true
+	CPlayer.canUseZipline <- true
 
 	RegisterSignal( "CleanUpPlayerAbilities" )
 	RegisterSignal( "ChallengeReceived" )
@@ -397,6 +398,25 @@ function CodeCallback_RegisterClass_CPlayer()
 	function CPlayer::SetPlayerStatInt( statname, value )
 	{
 		SetPlayerStatInt( expect entity(this).p.UID, expect string( statname ), expect int( value ) )
+	}
+	
+	function CPlayer::SetCanUseZipline( setting ) //todo: move to code 
+	{
+		entity player = expect entity ( this )
+		
+		player.canUseZipline = expect bool( setting )
+		
+		if( player.canUseZipline )
+		{
+			player.Zipline_Allow()
+			player.p.ziplineUsages = 0
+			player.canUseZipline = true
+		}
+		else
+		{
+			player.Zipline_Disallow()
+			player.canUseZipline = false
+		}
 	}
 }
 

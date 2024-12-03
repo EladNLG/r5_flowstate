@@ -699,6 +699,7 @@ Scripts:
 	client/objects/cl_drone_crypto.nut
 
 	client/rui/cl_weapon_status.gnut
+	client/rui/cl_custom_use_prompt.gnut
 
 	client/_cl_model_viewer.nut
 	client/cl_passives.gnut
@@ -1048,6 +1049,7 @@ Scripts:
 [
 	gamemodes/fs_tdm/_4d_tutorial.nut
 	gamemodes/fs_tdm/_gamemode_fsdm.nut
+	gamemodes/fs_realistic_ttv/_realistic_mode.nut
 	gamemodes/fs_tdm/_gamemode_fsdm_oddball.nut
 	gamemodes/fs_1v1/_notifications.nut
 	gamemodes/fs_1v1/_gamemode_1v1.nut

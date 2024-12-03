@@ -42,6 +42,8 @@ struct {
 	int healthkitAmount = 0
 	int medkitAmount = 0
 	
+	int maxRounds = -1
+	
 } file;
 
 struct CTFPoint
@@ -100,6 +102,7 @@ void function LoadPlaylistSettings()
 	file.batteryAmount = GetCurrentPlaylistVarInt( "spawn_with_number_batteries", 0 )
 	file.healthkitAmount = GetCurrentPlaylistVarInt( "spawn_with_number_healthkit", 0 )
 	file.medkitAmount = GetCurrentPlaylistVarInt( "spawn_with_number_medkit", 0 )
+	file.maxRounds = GetCurrentPlaylistVarInt( "max_rounds", -1 )
 }
 
 void function _CustomCTF_Init()
@@ -494,9 +497,13 @@ void function StartRound()
 		player.SetPlayerNetInt("kills", 0)
 		player.SetPlayerNetInt("captures", 0)
 		player.SetPlayerNetInt("returns", 0)
+		
+		
 
 		if( Flowstate_IsHaloMode() )
 		{
+			Common_ClearPlayerData( player )
+			
 			if( player.GetTeam() == TEAM_IMC )
 			{
 				player.SetBodyModelOverride( $"mdl/Humans/pilots/w_master_chief_pink.rmdl" )
@@ -597,6 +604,9 @@ void function StartRound()
 		}
 	}
 	
+	//Stats
+	Tracker_SetStartLog()
+	
 	wait 1.5
 	// set
 	SetGameState(eGameState.Playing)
@@ -658,6 +668,8 @@ void function StartRound()
 	SetGlobalNetTime( "flowstate_DMRoundEndTime", endTime )
 	file.ctfState = eCTFState.IN_PROGRESS
 	SetGlobalNetInt( "FSDM_GameState", file.ctfState )
+
+	array<entity> winners = []
 
 	while( Time() <= endTime )
 	{
@@ -731,6 +743,15 @@ void function StartRound()
 
 			if( TeamWon == 69 )
 				file.winnerTeam = -1
+			else 
+				winners = GetPlayerArrayOfTeam( TeamWon )
+			
+			foreach( entity winner in winners )
+			{
+				if( winner.IsPlayer() )
+					winner.p.wonctf = true
+			}
+			
 
 			foreach( player in GetPlayerArray() )
 			{
@@ -952,9 +973,30 @@ void function StartRound()
 	file.ctfState = eCTFState.WINNER_DECIDED
 	SetGlobalNetInt( "FSDM_GameState", file.ctfState )
 	
+	#if TRACKER
+		if( winners.len() )
+			Tracker_SetShouldShip( true )		
+	#endif
+		
 	PIN_RoundEnd( file.currentRound )
-	
 	file.currentRound++
+	
+	if( Flowstate_IsHaloMode() && 
+		Flowstate_CycleHaloPlaylists() &&
+		file.maxRounds > -1 && 
+		file.currentRound >= file.maxRounds 
+	)
+	{
+		waitthread g__InternalCheckReload()
+		Halo_GotoNextPlaylist()
+	}
+	else 
+		waitthread g__InternalCheckReload()
+}
+
+void function Common_ClearPlayerData( entity player )
+{
+	player.p.wonctf = false
 }
 
 // purpose: display the UI for randomization of tied maps at the end of voting

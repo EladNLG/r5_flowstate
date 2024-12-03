@@ -498,6 +498,9 @@ global struct ServerEntityStruct
 	array<void functionref( entity player, int state )> onPlayerGamestateChangedCallbacks
 	int gamemode1v1State = -1
 	array<entity> myWaypoints
+	
+	//portal enter direction, eDirection.NONE = -1, eDirection.STARTTOEND, eDirection.ENDTOSTART
+	int portalDirection = -1
 }
 
 global struct MeritData
@@ -838,6 +841,10 @@ global struct ServerPlayerStruct
 	array<int> audioQueue = []
 	int unmuteTime = -1
 	int msg
+	bool wonctf = false
+	int portalPlacements = 0
+	int portalKidnaps = 0
+	float portalPlaceTime = 0
 	
 	//for adding specific spawn behavior on a player basis.
 	array<void functionref(entity)> playerSpawnedCallbacks

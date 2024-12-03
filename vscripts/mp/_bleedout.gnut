@@ -48,7 +48,7 @@ const asset FX_REVIVE_PROTOTYPE_END = $"P_armor_3P_max_CP"
 const string GUARDIAN_ANGEL_SOUND = "Survival_Gameplay_Revival_GoldBackpack_Start"
 const string GUARDIAN_ANGEL_SUCCESS_SOUND = "Survival_Gameplay_Revival_GoldBackpack_End"
 
-#if DEV
+#if DEVELOPER
 const bool DEBUG_DRAG_REVIVE_PLACEMENT = false
 #endif
 
